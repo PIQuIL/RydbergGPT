@@ -1,11 +1,12 @@
 # Imports
 
 import torch
+from torch import nn
 
 ########################################################################################
 
 
-class WavefunctionBase(torch.nn.Module):
+class WavefunctionBase(nn.Module):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
