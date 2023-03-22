@@ -3,3 +3,6 @@ __pycache__/
 
 *.sublime-project
 *.sublime-workspace
+*.log
+*.aux
+*.synctex
