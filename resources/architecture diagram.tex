@@ -1,0 +1,59 @@
+\documentclass{standalone}
+\usepackage{amsmath,amssymb,pgfmath,pgffor,tikz,xcolor,xifthen}
+\usetikzlibrary{calc,decorations.pathmorphing,decorations.pathreplacing,patterns}
+
+
+\begin{document}
+
+\def\x{10}
+\def\y{2}
+
+\begin{tikzpicture}
+
+
+
+    \coordinate (transformerencoderbox) at (0,0);
+    \coordinate (transformerencoderbox_south) at ($(transformerencoderbox) + (\x/2,-\y)$);
+    \coordinate (transformerencoderbox_west) at ($(transformerencoderbox) + (0,-\y/2)$);
+
+    \draw [-,fill=teal!15] (transformerencoderbox) --++ (0,-\y) --++ (\x,0) --++ (0,\y) --++ (-\x,0);
+    \node [anchor=north] (transformerencoder) at ($(transformerencoderbox) + (\x/2,0)$) {\Large Transformer Encoder};
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+    \coordinate (transformerdecoderbox) at ($(transformerencoderbox) + (0,-\y) + (0,-2)$);
+    \coordinate (transformerdecoderbox_north) at ($(transformerdecoderbox) + (\x/2,0)$);
+    \coordinate (transformerdecoderbox_west) at ($(transformerdecoderbox) + (0,-\y)$);
+    \coordinate (transformerdecoderbox_east) at ($(transformerdecoderbox) + (\x,-\y)$);
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    \draw [-,fill=teal!15] (transformerdecoderbox) --++ (0,-2*\y) --++ (\x,0) --++ (0,2*\y) --++ (-\x,0);
+    \node [anchor=north] (transformerdecoder) at ($(transformerdecoderbox) + (\x/2,0)$) {\Large Transformer Decoder};
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    \coordinate (encoderinput) at ($(transformerencoderbox_west) + (-2,0)$);
+    \coordinate (decoderinput) at ($(transformerdecoderbox_west) + (-2,0)$);
+    \coordinate (decoderoutput) at ($(transformerdecoderbox_east) + (2,0)$);
+
+    \draw [->,line width=2pt] (encoderinput) to (transformerencoderbox_west);
+    \node [anchor=east] at (encoderinput) {\Large $H$ (shape: $[B,T,4]$)};
+
+
+    \draw [->,line width=2pt] (decoderinput) to (transformerdecoderbox_west);
+    \node [anchor=east] at (decoderinput) {\Large $\sigma$ (shape: $[B,S,4]$)};
+
+    \draw [->,line width=2pt] (transformerdecoderbox_east) to (decoderoutput);
+    \node [anchor=west] at (decoderoutput) {\Large $P$ (shape: $[B,S,2]$)};
+
+
+    \draw [->,line width=2pt] (transformerencoderbox_south) to (transformerdecoderbox_north);
+    \node [anchor=west] at ($.5*(transformerencoderbox_south) + .5*(transformerdecoderbox_north)$) {\Large $X$ (shape: $[B,T,E]$)};
+
+
+
+\end{tikzpicture}
+
+\end{document}
