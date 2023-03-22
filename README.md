@@ -8,9 +8,8 @@ Vanilla transformer architecture taken from [Attention is All You Need](https://
 ![Architecture](https://github.com/PIQuIL/RydbergGPT/blob/main/resources/architecture%20diagram.jpg)
 
 ```math
-$H_i = \{ (\Omega_i, \Delta_i, R^{x}_i, R^{y}_i) \}_i$ = Hamiltonian parameters for spin $i$ \
-$\sigma_i$ = one-hot encoding of measured state of spin $i$ \
-$P_i = P(\sigma_i | \sigma_{<i})$ = conditional probabilities \
+H_i = (\Omega_i, \Delta_i, R^{x}_i, R^{y}_i) = Hamiltonian parameters for spin i \sigma_i = one-hot encoding of measured state of spin i
+P_i = P(\sigma_i | \sigma_{<i}) = conditional probabilities
 ```
 
 ## Installation
