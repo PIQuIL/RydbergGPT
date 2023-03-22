@@ -5,7 +5,7 @@ A large language model (LLM) for Rydberg atom physics.
 
 Vanilla transformer architecture taken from [Attention is All You Need](https://research.google/pubs/pub46201/).
 
-![Architecture](resources/architecture diagram.svg)
+![Architecture](https://raw.githubusercontent.com/PIQuIL/RydbergGPT/main/resources/architecture%20diagram.svg?token=GHSAT0AAAAAACAM5DQT4NQTLGTBMIFI2WTIZA3HWUA)
 
 ## Installation
 
