@@ -1,6 +1,6 @@
 \documentclass{standalone}
 \usepackage{amsmath,amssymb,pgfmath,pgffor,tikz,xcolor,xifthen}
-\usetikzlibrary{calc,decorations.pathmorphing,decorations.pathreplacing,patterns}
+\usetikzlibrary{calc,decorations.pathmorphing,decorations.pathreplacing,patterns,backgrounds}
 
 
 \begin{document}
@@ -8,7 +8,13 @@
 \def\x{10}
 \def\y{2}
 
-\begin{tikzpicture}
+\begin{tikzpicture}[
+    scale=.5,
+    show background rectangle,
+    background rectangle/.style={fill=white},
+    color=black,
+    help lines/.style={color=lightgray,line width=0.2pt}
+    ]
 
 
 
