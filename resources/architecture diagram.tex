@@ -5,13 +5,17 @@
 
 \begin{document}
 
-\def\x{10}
-\def\y{2}
+\def\x{18}
+\def\xx{24}
+\def\y{8}
+\def\d{3}
+\def\a{1}
+\def\b{3}
 
 \begin{tikzpicture}[
     scale=1.,
     show background rectangle,
-    background rectangle/.style={fill=lightgrey!5},
+    background rectangle/.style={fill=white},
     color=black,]
 
     \coordinate (transformerencoderbox) at (0,0);
@@ -19,20 +23,64 @@
     \coordinate (transformerencoderbox_west) at ($(transformerencoderbox) + (0,-\y/2)$);
 
     \draw [-,fill=teal!15] (transformerencoderbox) --++ (0,-\y) --++ (\x,0) --++ (0,\y) --++ (-\x,0);
-    \node [anchor=north] (transformerencoder) at ($(transformerencoderbox) + (\x/2,0)$) {\Large Transformer Encoder};
+    \node [anchor=south] (transformerencoder) at ($(transformerencoderbox) + (\x/2,0) + (0,0.5)$) {\huge Transformer Encoder};
+
+    \coordinate (encodermha) at ($(transformerencoderbox_west) + (0.5*\x-1.5*\d-0.5,0)  $);
+    \coordinate (encoderlayernorm1) at ($(encodermha) + (\d,0)$);
+    \coordinate (encoderdense) at ($(encoderlayernorm1) + (\d,0)$);
+    \coordinate (encoderlayernorm2) at ($(encoderdense) + (\d,0)$);
+    \coordinate (encoderblockmultiplier) at ($(encodermha) + (-\a,\b) + (3*\d+1+2*\a,0)$);
+
+    \node [anchor=south west] at (encoderblockmultiplier) {\Large $\times N_{\mathrm{block}}$};
+
+    \draw [dashed, fill=yellow!10] ($(encodermha) + (-\a,\b)$) --++ (3*\d+1+2*\a,0) --++ (0,-2*\b) --++ (-3*\d-1-2*\a,0) --++ (0,2*\b);
+
+    \node [draw, rectangle, fill=red!10, minimum width=1.cm,anchor=west] at (encodermha) {\rotatebox{270}{\Large Multi Head Attention}};
+
+    \node [draw, rectangle, fill=blue!10, minimum width=1.cm,anchor=west] at (encoderlayernorm1) {\rotatebox{270}{\textwidth 1pt \Large Layer Normalization}};
+
+    \node [draw, rectangle, fill=green!10, minimum width=1.cm,anchor=west] at (encoderdense) {\rotatebox{270}{\textwidth 1pt \Large Dense Layer}};
+
+    \node [draw, rectangle, fill=blue!10, minimum width=1.cm,anchor=west] at (encoderlayernorm2) {\rotatebox{270}{\textwidth 1pt \Large Layer Normalization}};
+
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
     \coordinate (transformerdecoderbox) at ($(transformerencoderbox) + (0,-\y) + (0,-2)$);
-    \coordinate (transformerdecoderbox_north) at ($(transformerdecoderbox) + (\x/2,0)$);
-    \coordinate (transformerdecoderbox_west) at ($(transformerdecoderbox) + (0,-\y)$);
-    \coordinate (transformerdecoderbox_east) at ($(transformerdecoderbox) + (\x,-\y)$);
+    \coordinate (transformerdecoderbox_north) at ($(transformerdecoderbox) + (\xx/2,0)$);
+    \coordinate (transformerdecoderbox_west) at ($(transformerdecoderbox) + (0,-\y/2)$);
+    \coordinate (transformerdecoderbox_east) at ($(transformerdecoderbox) + (\xx,-\y/2)$);
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    \draw [-,fill=teal!15] (transformerdecoderbox) --++ (0,-2*\y) --++ (\x,0) --++ (0,2*\y) --++ (-\x,0);
-    \node [anchor=north] (transformerdecoder) at ($(transformerdecoderbox) + (\x/2,0)$) {\Large Transformer Decoder};
+    \draw [-,fill=teal!15] (transformerdecoderbox) --++ (0,-\y) --++ (\xx,0) --++ (0,\y) --++ (-\xx,0);
+    \node [anchor=north] (transformerdecoder) at ($(transformerdecoderbox) + (\xx/2,-\y) + (0,-0.5)$) {\huge Transformer Decoder};
+
+
+    \coordinate (decodermha) at ($(transformerdecoderbox_west) + (0.5*\xx-2.5*\d-0.5,0) $);
+    \coordinate (decoderlayernorm1) at ($(decodermha) + (\d,0)$);
+    \coordinate (encoderdecodermha) at ($(decoderlayernorm1) + (\d,0)$);
+    \coordinate (decoderlayernorm2) at ($(encoderdecodermha) + (\d,0)$);
+    \coordinate (decoderdense) at ($(decoderlayernorm2) + (\d,0)$);
+    \coordinate (decoderlayernorm3) at ($(decoderdense) + (\d,0)$);
+    \coordinate (decoderblockmultiplier) at ($(decodermha) + (-\a,\b) + (5*\d+1+2*\a,0)$);
+
+    \draw [dashed, fill=yellow!10] ($(decodermha) + (-\a,\b)$) --++ (5*\d+1+2*\a,0) --++ (0,-2*\b) --++ (-5*\d-1-2*\a,0) --++ (0,2*\b);
+
+    \node [anchor=south west] at (decoderblockmultiplier) {\Large $\times N_{\mathrm{block}}$};
+
+    \node [draw, rectangle, fill=red!10, minimum width=1.cm,anchor=west] at (decodermha) {\rotatebox{270}{\Large Multi Head Attention}};
+
+    \node [draw, rectangle, fill=red!10, minimum width=1.cm,anchor=west] at (encoderdecodermha) {\rotatebox{270}{\Large Multi Head Attention}};
+
+    \node [draw, rectangle, fill=green!10, minimum width=1.cm,anchor=west] at (decoderdense) {\rotatebox{270}{\textwidth 1pt \Large Dense Layer}};
+
+    \node [draw, rectangle, fill=blue!10, minimum width=1.cm,anchor=west] at (decoderlayernorm1) {\rotatebox{270}{\textwidth 1pt \Large Layer Normalization}};
+
+    \node [draw, rectangle, fill=blue!10, minimum width=1.cm,anchor=west] at (decoderlayernorm2) {\rotatebox{270}{\textwidth 1pt \Large Layer Normalization}};
+
+    \node [draw, rectangle, fill=blue!10, minimum width=1.cm,anchor=west] at (decoderlayernorm3) {\rotatebox{270}{\textwidth 1pt \Large Layer Normalization}};
+
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -51,8 +99,8 @@
     \node [anchor=west] at (decoderoutput) {\Large $P$ (shape: $[B,S,2]$)};
 
 
-    \draw [->,line width=2pt] (transformerencoderbox_south) to (transformerdecoderbox_north);
-    \node [anchor=west] at ($.5*(transformerencoderbox_south) + .5*(transformerdecoderbox_north)$) {\Large $X$ (shape: $[B,T,E]$)};
+    \draw [->,line width=2pt] (transformerencoderbox_south) --++ (0,-2);
+    \node [anchor=west] at ($(transformerencoderbox_south) + .5*(0,-2)$) {\Large $X$ (shape: $[B,T,E]$)};
 
 
 
