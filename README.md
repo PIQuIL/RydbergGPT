@@ -11,7 +11,7 @@ Vanilla transformer architecture taken from [Attention is All You Need](https://
 \begin{align}
 H_i &= (\Omega_i, \Delta_i, R^{x}_i, R^{y}_i) = \text{Hamiltonian parameters of qubit $i$,} \\
 \sigma_i &= \text{one-hot encoding of measured spin of qubit $i$,} \\
-P_i &= P(\sigma_i | \sigma_{< i}) = \text{probability distribution for measurement of qubit $i$ condition on measurement of the previous qubits,} \\
+P_i &= P(\sigma_i | \sigma_{< i}) = \text{conditional probability distribution of spin $i$} \\
 i &= \text{sequence index (either $T$ or $S$ axis shown in the architecture diagram).}
 \end{align}
 ```
