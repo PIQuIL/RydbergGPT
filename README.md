@@ -7,11 +7,14 @@ Vanilla transformer architecture taken from [Attention is All You Need](https://
 
 ![Architecture](https://github.com/PIQuIL/RydbergGPT/blob/main/resources/architecture%20diagram.jpg)
 
-$$
-H_i = (\Omega_i, \Delta_i, R^{x}_i, R^{y}_i) = Hamiltonian parameters for spin i \\
-\sigma_i = one-hot encoding of measured state of spin i \\
-P_i = P(\sigma_i | \sigma_{<i}) = conditional probabilities
-$$
+```math
+\begin{align}
+H_i &= (\Omega_i, \Delta_i, R^{x}_i, R^{y}_i) = \text{Hamiltonian parameters of qubit $i$,} \\
+\sigma_i &= \text{one-hot encoding of measured spin of qubit $i$,} \\
+P_i &= P(\sigma_i | \sigma_{< i}) = \text{probability distribution for measurement of qubit $i$ condition on measurement of the previous qubits,} \\
+i &= \text{sequence index (either $T$ or $S$ axis shown in the architecture diagram).}
+\end{align}
+```
 
 ## Installation
 
