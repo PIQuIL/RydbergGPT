@@ -8,7 +8,11 @@
 \def\x{10}
 \def\y{2}
 
-\begin{tikzpicture}
+\begin{tikzpicture}[
+    scale=1.,
+    show background rectangle,
+    background rectangle/.style={fill=lightgrey!5},
+    color=black,]
 
     \coordinate (transformerencoderbox) at (0,0);
     \coordinate (transformerencoderbox_south) at ($(transformerencoderbox) + (\x/2,-\y)$);
