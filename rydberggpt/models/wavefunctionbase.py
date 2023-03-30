@@ -16,7 +16,7 @@ class WavefunctionBase(nn.Module):
         raise NotImplementedError()
         return
 
-    def sample(self, x):
+    def P(self, x):
         raise NotImplementedError()
         return
 
@@ -25,11 +25,7 @@ class WavefunctionBase(nn.Module):
         raise NotImplementedError()
         return
 
-    def P_i(self, b):
-        raise NotImplementedError()
-        return
-
-    def P(self, b):
+    def sample(self, x):
         raise NotImplementedError()
         return
 

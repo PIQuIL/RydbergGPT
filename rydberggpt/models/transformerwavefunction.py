@@ -25,14 +25,14 @@ class TransformerEncoderBlock(nn.Module):
         pass
 
     def forward(self, x):
-        y = x
-        y1 = self.selfattention(y, y, y)[0]
-        y = y + y1
-        y = self.layernorm1(y)
-        y1 = self.linear(y)
-        y = y + y1
-        y = self.layernorm2(y)
-        return y
+        p = x
+        p1 = self.selfattention(p, p, p)[0]
+        p = p + p1
+        p = self.layernorm1(p)
+        p1 = self.linear(p)
+        p = p + p1
+        p = self.layernorm2(p)
+        return p
 
     pass
 
@@ -54,12 +54,12 @@ class TransformerEncoder(nn.Module):
         pass
 
     def forward(self, x):
-        y = x
+        p = x
 
         for i in range(self.N_block):
-            y = self._modules["encoderblock{}".format(i)](y)
+            p = self._modules["encoderblock{}".format(i)](p)
 
-        return y
+        return p
 
     pass
 
@@ -89,7 +89,7 @@ class TransformerDecoderBlock(nn.Module):
         pass
 
     def forward(self, x):
-        y, z = x
+        p, y = x
 
         N_seq = y.shape[-2]
         c = torch.meshgrid(torch.arange(N_seq), torch.arange(N_seq), indexing="ij")
@@ -98,7 +98,7 @@ class TransformerDecoderBlock(nn.Module):
         y1 = self.causalattention(y, y, y, attn_mask=c)[0]
         y = y + y1
         y = self.layernorm1(y)
-        y1 = self.encoderdecoderattention(y, z, z)[0]
+        y1 = self.encoderdecoderattention(y, p, p)[0]
         y = y + y1
         y = self.layernorm2(y)
         y1 = self.linear(y)
@@ -125,10 +125,10 @@ class TransformerDecoder(nn.Module):
         pass
 
     def forward(self, x):
-        y = x
+        p, y = x
 
         for i in range(self.N_block):
-            y = self._modules["decoderblock{}".format(i)](y)
+            y = self._modules["decoderblock{}".format(i)](x)
 
         return y
 
@@ -142,33 +142,51 @@ class TransformerWavefunction(WavefunctionBase):
     def __init__(self, N_emb=16, N_head=1, N_block=1, **kwargs):
         super().__init__(**kwargs)
 
+        self.add_module(module=nn.Linear(4, N_emb), name="encoderembedding")
+        self.add_module(module=nn.Linear(2, N_emb), name="decoderembedding")
         self.add_module(
             module=TransformerEncoder(N_emb, N_head, N_block), name="encoder"
         )
         self.add_module(
             module=TransformerDecoder(N_emb, N_head, N_block), name="decoder"
         )
+        self.add_module(module=nn.Linear(N_emb, 2), name="linear")
+        self.add_module(module=nn.Softmax(-1), name="softmax")
 
         pass
 
     def forward(self, x):
-        raise NotImplementedError()
-        return
+        p, y = x
 
-    def sample(self, x):
-        raise NotImplementedError()
-        return
+        y = nn.functional.one_hot(y, 2)
+        y = y.to(torch.float)
+
+        p = self.encoderembedding(p)
+        y = self.decoderembedding(y)
+
+        p = self.encoder(p)
+        y = self.decoder([p, y])
+
+        y = self.linear(y)
+        y = self.softmax(y)
+
+        return y
+
+    def P(self, x):
+        p, y = x
+
+        y = nn.functional.one_hot(y, 2)
+        y = y.to(torch.float)
+
+        P = torch.prod(torch.sum(self(x) * y, axis=-1), axis=-1)
+        return P
 
     @property
     def psi(self):
         raise NotImplementedError()
         return
 
-    def P_i(self, b):
-        raise NotImplementedError()
-        return
-
-    def P(self, b):
+    def sample(self, x):
         raise NotImplementedError()
         return
 
@@ -181,3 +199,6 @@ class TransformerWavefunction(WavefunctionBase):
         return
 
     pass
+
+
+########################################################################################

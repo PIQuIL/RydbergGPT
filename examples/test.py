@@ -12,18 +12,17 @@ import torch
 ########################################################################################
 
 
-N = 10
+N = 20
 D = 1000
 
-x = torch.rand((D, N, 2), dtype=torch.float)
+p = torch.rand((D, N, 4), dtype=torch.float)
+x = torch.randint(0, 2, (D, N), dtype=torch.int64)
 
 ########################################################################################
 
-N_emb, N_head, N_block = 2, 1, 1
+N_emb, N_head, N_block = 10, 2, 2
 
+model = rgpt.TransformerWavefunction(N_emb, N_head, N_block)
 
-model = rgpt.TransformerEncoder(N_emb, N_head, N_block)
-
-model = rgpt.TransformerDecoder(N_emb, N_head, N_block)
-
-print(model([x,x]))
+y = model([p, x])
+P = model.P([p, x])
