@@ -1,5 +1,5 @@
 # RydbergGPT
-A large language model (LLM) for Rydberg atom physics.
+A large language model (LLM) for Rydberg atom array physics.
 
 ## Architecture
 
@@ -15,6 +15,9 @@ P_i &= P(\sigma_i | \sigma_{< i}) = \text{conditional probability distribution o
 i &= \text{sequence index (either $T$ or $S$ axis shown in the architecture diagram).}
 \end{align}
 ```
+
+The transformer encoder encodes the Rydberg Hamiltonian into a sequential latent space. \\
+The transformer decoder encodes a ground state wavefunction based on the encoded Rydberg Hamiltonian.
 
 ## Installation
 
