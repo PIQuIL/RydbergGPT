@@ -7,3 +7,5 @@ __pycache__/
 *.aux
 *.synctex
 *.synctex.gz
+
+data/
