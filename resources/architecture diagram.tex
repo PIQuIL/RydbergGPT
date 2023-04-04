@@ -169,8 +169,11 @@
     \node [draw, rectangle, fill=gray!10, minimum width=1.cm,anchor=west] at (decoderemb) {\rotatebox{270}{\Large Embedding Layer}};
 
 
-    \node [circle, fill=white, draw] at (encoderposemb) {\Large $\bigoplus$};
-    \node [circle, fill=white, draw] at (decoderposemb) {\Large $\bigoplus$};
+    \node [circle, fill=white, draw, minimum size=0.8cm,line width=1.5] (encoderposembnode) at (encoderposemb) {};
+    \draw[looseness=2,line width=1.5] (encoderposembnode.west) to[out=70,in =110] (encoderposembnode.center) to [out=-70,in=-110](encoderposembnode.east);
+
+    \node [circle, fill=white, draw, minimum size=0.8cm,line width=1.5] (decoderposembnode) at (decoderposemb) {};
+    \draw[looseness=2,line width=1.5] (decoderposembnode.west) to[out=70,in =110] (decoderposembnode.center) to [out=-70,in=-110](decoderposembnode.east);
 
 
 \end{tikzpicture}
