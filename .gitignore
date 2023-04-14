@@ -133,4 +133,9 @@ dmypy.json
 *.hdf5
 
 resources/
-data/
+
+logs/
+
+.vscode/
+
+data/*
