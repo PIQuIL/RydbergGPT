@@ -11,7 +11,7 @@ class SublayerConnection(nn.Module):
     """
     This module implements a residual connection followed by a layer norm.
 
-    Parameters:
+    Args:
         size (int): The input size.
         dropout (float): The dropout rate.
     """
@@ -25,7 +25,7 @@ class SublayerConnection(nn.Module):
         """
         Compute the forward pass through the module.
 
-        Parameters:
+        Args:
             x (torch.Tensor): The input tensor.
             sublayer (nn.Module): The sublayer module.
 
@@ -39,7 +39,7 @@ class PositionwiseFeedForward(nn.Module):
     """
     A two-layer feed-forward network.
 
-    Parameters:
+    Args:
         d_model (int): The input size.
         d_ff (int): The hidden size.
         dropout (float, optional): The dropout rate. Defaults to 0.1.
@@ -55,7 +55,7 @@ class PositionwiseFeedForward(nn.Module):
         """
         Compute the forward pass through the module.
 
-        Parameters:
+        Args:
             x (torch.Tensor): The input tensor.
 
         Returns:
@@ -68,7 +68,7 @@ class Embeddings(nn.Module):
     """
     The embedding layer.
 
-    Parameters:
+    Args:
         d_model (int): The embedding size.
         vocab_size (int): The vocabulary size.
     """
