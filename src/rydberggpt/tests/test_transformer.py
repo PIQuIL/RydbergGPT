@@ -1,8 +1,9 @@
 import pytest
 import torch
+from torch import nn
 
-from rydberggpt.models import TransformerWavefunction
-from rydberggpt.models.transformer.loss import LabelSmoothing
+from rydberggpt.models.transformer_wavefunction import TransformerWavefunction
+from rydberggpt.training.loss import LabelSmoothing
 
 
 def get_dummy_data():
@@ -19,6 +20,8 @@ def get_dummy_data():
 def test_model_minimizes_loss():
     # prepare dummy data
     H, dataset = get_dummy_data()
+    inputs = nn.functional.one_hot(dataset, 2)
+    inputs = inputs.to(torch.float)
 
     # initialize model, criterion, and optimizer
     model = TransformerWavefunction(10, 2, 2)
@@ -26,14 +29,14 @@ def test_model_minimizes_loss():
     optimizer = torch.optim.Adam(model.parameters(), lr=0.05)
 
     # calculate initial loss
-    cond_probs = model.forward([H, dataset])
-    first_loss = criterion(cond_probs, dataset)
+    cond_probs = model.forward([H, inputs])
+    first_loss = criterion(cond_probs, inputs)
 
     # train the model for 50 iterations
     for _ in range(50):
         optimizer.zero_grad()
-        cond_probs = model.forward([H, dataset])
-        loss = criterion(cond_probs, dataset)
+        cond_probs = model.forward([H, inputs])
+        loss = criterion(cond_probs, inputs)
         loss.backward()
         optimizer.step()
 
@@ -43,3 +46,4 @@ def test_model_minimizes_loss():
 
 if __name__ == "__main__":
     pytest.main([__file__])
+    # test_model_minimizes_loss()
