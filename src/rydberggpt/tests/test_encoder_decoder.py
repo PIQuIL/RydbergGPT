@@ -1,6 +1,7 @@
 import copy
 from dataclasses import dataclass
 
+import numpy as np
 import pytest
 import torch
 import torch.optim as optim
@@ -8,9 +9,8 @@ from torch import nn
 from tqdm import tqdm
 
 from rydberggpt.data.loading.dataset_rydberg import get_dataloaders, load_dataset
-from rydberggpt.models import TransformerWavefunction
+from rydberggpt.models.rydberg_transformer import get_rydberg_transformer
 from rydberggpt.models.transformer.layers import DecoderLayer, EncoderLayer
-from rydberggpt.models.transformer.loss import LabelSmoothing
 from rydberggpt.models.transformer.models import (
     Decoder,
     Encoder,
@@ -18,6 +18,7 @@ from rydberggpt.models.transformer.models import (
     Generator,
 )
 from rydberggpt.models.transformer.modules import PositionwiseFeedForward
+from rydberggpt.training.loss import KLLoss, LabelSmoothing
 
 # seed everything
 torch.manual_seed(0)
@@ -44,6 +45,9 @@ def init_data():
         num_atoms: int = None
         num_samples: int = None
         delta: float = None
+        # rydberg
+        num_states: int = 2
+        num_encoder_embedding_dims: int = 4
 
     # LOAD DATA
     data, dataset_config = load_dataset(delta_id=0)
@@ -59,36 +63,15 @@ def init_data():
     return config, train_loader, val_loader, test_loader
 
 
-def init_model(config):
-    c = copy.deepcopy
-    attn = nn.MultiheadAttention(config.d_model, config.num_heads, batch_first=True)
-    ff = PositionwiseFeedForward(config.d_model, config.d_ff, config.dropout)
-
-    model = TransformerWavefunction(
-        encoder=Encoder(
-            EncoderLayer(config.d_model, c(attn), c(ff), config.dropout),
-            config.num_blocks,
-        ),
-        decoder=Decoder(
-            DecoderLayer(config.d_model, c(attn), c(attn), c(ff), config.dropout),
-            config.num_blocks,
-        ),
-        src_embed=nn.Linear(4, config.d_model),
-        tgt_embed=nn.Linear(2, config.d_model),
-        generator=Generator(config.d_model, 2),
-        config=config,
-    )
-    return model
-
-
-def test_encoder_decoder(model):
+def test_encoder_decoder():
+    config, train_loader, val_loader, test_loader = init_data()
+    model = get_rydberg_transformer(config)
     # define the loss function
-    criterion = LabelSmoothing(0.0)
+    criterion = LabelSmoothing()
     optimizer = optim.Adam(model.parameters(), lr=config.learning_rate)
-    # H = torch.rand((config.batch_size, dataset_config.num_atoms, 4), dtype=torch.float)
 
     # loop over the data for the specified number of epochs
-    for i in range(50):
+    for i in range(10):
         # set the model to train mode
         model.train()
 
@@ -97,92 +80,121 @@ def test_encoder_decoder(model):
             inputs, condition = batch
             inputs = nn.functional.one_hot(inputs, 2)
             inputs = inputs.to(torch.float)
-
-            # print(condition.shape)
             optimizer.zero_grad()
-            # assert inputs.dtype == torch.int64
 
-            temp = model.forward(inputs, condition)
-            log_cond_probs = model.generator(temp)
+            embedding = model.forward(inputs, condition)
+            log_cond_probs = model.generator(embedding)
             loss = criterion(log_cond_probs, inputs)
-            print(loss)
             # assert loss is not Nan
             assert not torch.isnan(loss), "Loss is NaN"
+
             loss.backward()
             optimizer.step()
 
+            print(loss.item())
+            # Stop the training loop if the loss is less than or equal to 0.1
+            if loss.item() <= 0.1:
+                print("Loss reached the desired value of 0.1, stopping training.")
+                break
 
-def test_encoder_decoder_sequentially(model):
-    c = copy.deepcopy
-    attn = nn.MultiheadAttention(config.d_model, config.num_heads, batch_first=True)
-    ff = PositionwiseFeedForward(config.d_model, config.d_ff, config.dropout)
+        else:
+            # If the inner loop wasn't broken, continue with the next epoch
+            continue
 
-    # define the loss function
-    criterion = LabelSmoothing(0.0)
-    optimizer = optim.Adam(model.parameters(), lr=config.learning_rate)
-    # H = torch.rand((config.batch_size, dataset_config.num_atoms, 4), dtype=torch.float)
+        # If the inner loop was broken, break the outer loop as well
+        break
 
-    import numpy as np
 
-    # loop over the data for the specified number of epochs
-    for i in range(50):
-        # for epoch in range(config.num_epochs):
-        # set the model to train mode
-        model.train()
+# def _test_encoder_decoder_sequentially(model):
+#     c = copy.deepcopy
+#     attn = nn.MultiheadAttention(config.d_model, config.num_heads, batch_first=True)
+#     ff = PositionwiseFeedForward(config.d_model, config.d_ff, config.dropout)
 
-        # loop over the training data in batches
-        for i, batch in enumerate(train_loader):
-            inputs, condition = batch
-            inputs = nn.functional.one_hot(inputs, 2)
-            inputs = inputs.to(torch.float)
+#     # define the loss function
+#     criterion = KLLoss()
+#     optimizer = optim.Adam(model.parameters(), lr=config.learning_rate)
 
-            # print(condition.shape)
-            optimizer.zero_grad()
-            # assert inputs.dtype == torch.int64
+#     src_embed_layer = nn.Linear(4, config.d_model)
 
-            # 1. embed the condition or prompt
-            src_emb = nn.Linear(4, config.d_model)(condition)
+#     encoder = Encoder(
+#         EncoderLayer(config.d_model, c(attn), c(ff), config.dropout),
+#         config.num_blocks,
+#     )
 
-            # 2. run the encoder
-            encoder_out = Encoder(
-                EncoderLayer(config.d_model, c(attn), c(ff), config.dropout),
-                config.num_blocks,
-            )(src_emb)
-            assert encoder_out.shape == (
-                config.batch_size,
-                config.num_atoms,
-                config.d_model,
-            )
+#     dec_emb_layer = nn.Linear(2, config.d_model)
 
-            # 3. embed the inputs
-            dec_emb = nn.Linear(2, config.d_model)(inputs)
-            assert dec_emb.shape == (
-                config.batch_size,
-                config.num_atoms,
-                config.d_model,
-            )
+#     decoder = Decoder(
+#         DecoderLayer(config.d_model, c(attn), c(attn), c(ff), config.dropout),
+#         config.num_blocks,
+#     )
 
-            # 4. run the decoder
-            decoder_out = Decoder(
-                DecoderLayer(config.d_model, c(attn), c(attn), c(ff), config.dropout),
-                config.num_blocks,
-            )(dec_emb, encoder_out)
+#     generator = Generator(config.d_model, 2)
 
-            # 5. generate the output log cond probabilities
-            log_cond_probs = Generator(config.d_model, 2)(decoder_out)
+#     # loop over the data for the specified number of epochs
+#     for i in range(50):
+#         # for epoch in range(config.num_epochs):
+#         # set the model to train mode
+#         model.train()
 
-            # temp = model.forward(inputs, condition)
-            # log_cond_probs = model.generator(temp)
-            loss = criterion(log_cond_probs, inputs)
+#         # loop over the training data in batches
+#         for i, batch in enumerate(train_loader):
+#             inputs, condition = batch
+#             inputs = nn.functional.one_hot(inputs, 2)
+#             inputs = inputs.to(torch.float)
+#             optimizer.zero_grad()
+#             # assert inputs.dtype == torch.int64
+#             # 1. embed the condition or prompt
+#             src_emb = src_embed_layer(condition)
 
-            assert not torch.isnan(loss), "Loss is NaN"
-            # check that loss is going minized
-            loss.backward()
-            optimizer.step()
+#             # 2. run the encoder
+#             encoder_out = encoder(src_emb)
+
+#             assert encoder_out.shape == (
+#                 config.batch_size,
+#                 config.num_atoms,
+#                 config.d_model,
+#             )
+
+#             # 3. embed the inputs
+#             dec_emb = dec_emb_layer(inputs)
+#             assert dec_emb.shape == (
+#                 config.batch_size,
+#                 config.num_atoms,
+#                 config.d_model,
+#             )
+
+#             # 4. run the decoder
+#             decoder_out = decoder(dec_emb, encoder_out)
+
+#             # 5. generate the output log cond probabilities
+#             log_cond_probs = generator(decoder_out)
+
+#             loss = criterion(log_cond_probs, inputs)
+#             print(loss)
+
+#             loss.backward()
+#             optimizer.step()
+
+#             assert not torch.isnan(loss), "Loss is NaN"
+#             # check that loss is going minized
+
+#             # Stop the training loop if the loss is less than or equal to 0.1
+#             if loss.item() <= 0.1:
+#                 print("Loss reached the desired value of 0.1, stopping training.")
+#                 break
+
+#         else:
+#             # If the inner loop wasn't broken, continue with the next epoch
+#             continue
+
+#         # If the inner loop was broken, break the outer loop as well
+#         break
 
 
 if __name__ == "__main__":
-    config, train_loader, val_loader, test_loader = init_data()
-    model = init_model(config)
-    test_encoder_decoder(model)
-    test_encoder_decoder_sequentially(model)
+    pytest.main([__file__])
+    # run pytest
+    # config, train_loader, val_loader, test_loader = init_data()
+    # model = get_rydberg_transformer(config)
+    # test_encoder_decoder(model)
+    # test_encoder_decoder_sequentially(model)
