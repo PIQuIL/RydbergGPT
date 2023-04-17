@@ -48,7 +48,7 @@ class RydbergTransformer(EncoderDecoder):
     modules, respectively. The encoder and decoder are followed by an embedding layer and a generator
     layer.
 
-    Parameters:
+    Args:
         encoder (Encoder[EncoderLayer]): The encoder module.
         decoder (Decoder[DecoderLayer]): The decoder module.
         src_embed (nn.Module): The source embeddings module.
@@ -72,51 +72,51 @@ class RydbergTransformer(EncoderDecoder):
         super().__init__(encoder, decoder, src_embed, tgt_embed, generator)
         self.config = config
 
-    def get_log_probs(self, x, cond):
-        """
-        Compute the log probabilities of a given input tensor.
+    # def get_log_probs(self, x, cond):
+    #     """
+    #     Compute the log probabilities of a given input tensor.
 
-        Parameters:
-            x (torch.Tensor): The input tensor.
-            cond (torch.Tensor): The conditional tensor.
+    #     Parameters:
+    #         x (torch.Tensor): The input tensor.
+    #         cond (torch.Tensor): The conditional tensor.
 
-        Returns:
-            torch.Tensor: The log probabilities.
-        """
-        log_cond_probs = self.forward(x, cond)
-        log_probs = torch.einsum("bnd,bnd->b", log_cond_probs, x).sum(-1)
-        return log_probs
+    #     Returns:
+    #         torch.Tensor: The log probabilities.
+    #     """
+    #     log_cond_probs = self.forward(x, cond)
+    #     log_probs = torch.einsum("bnd,bnd->b", log_cond_probs, x).sum(-1)
+    #     return log_probs
 
-    @property
-    def psi(self):
-        """
-        The wave function of the model.
+    # @property
+    # def psi(self):
+    #     """
+    #     The wave function of the model.
 
-        Returns:
-            NotImplementedError
-        """
-        raise NotImplementedError()
+    #     Returns:
+    #         NotImplementedError
+    #     """
+    #     raise NotImplementedError()
 
-    def sample(self, x: torch.Tensor):
-        """
-        Generate a sample from the model.
+    # def sample(self, x: torch.Tensor):
+    #     """
+    #     Generate a sample from the model.
 
-        Parameters:
-            x (torch.Tensor): The input tensor.
+    #     Parameters:
+    #         x (torch.Tensor): The input tensor.
 
-        Returns:
-            NotImplementedError
-        """
-        raise NotImplementedError()
+    #     Returns:
+    #         NotImplementedError
+    #     """
+    #     raise NotImplementedError()
 
-    def varloss(self, H: torch.Tensor):
-        """
-        Compute the variational loss.
+    # def varloss(self, H: torch.Tensor):
+    #     """
+    #     Compute the variational loss.
 
-        Parameters:
-            H (torch.Tensor): The energy tensor.
+    #     Parameters:
+    #         H (torch.Tensor): The energy tensor.
 
-        Returns:
-            NotImplementedError
-        """
-        raise NotImplementedError()
+    #     Returns:
+    #         NotImplementedError
+    #     """
+    #     raise NotImplementedError()
