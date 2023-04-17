@@ -1,3 +1,5 @@
+[![Python package](https://github.com/PIQuIL/RydbergGPT/actions/workflows/python-package.yml/badge.svg)](https://github.com/PIQuIL/RydbergGPT/actions/workflows/python-package.yml)
+
 # RydbergGPT
 A large language model (LLM) for Rydberg atom array physics.
 
@@ -22,6 +24,8 @@ The transformer decoder encodes a ground state wavefunction based on the encoded
 ## Installation
 
 ## Documentation
+
+## 
 
 ## References
 
