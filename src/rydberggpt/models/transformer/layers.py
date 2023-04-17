@@ -14,7 +14,7 @@ class DecoderLayer(nn.Module):
     """
     Decoder is made of self-attn, src-attn, and feed forward.
 
-    Parameters:
+    Args:
         size (int): The input size.
         self_attn (nn.MultiheadAttention): The self-attention module.
         src_attn (nn.MultiheadAttention): The source-attention module.
@@ -41,7 +41,7 @@ class DecoderLayer(nn.Module):
         """
         Compute the forward pass through the decoder.
 
-        Parameters:
+        Args:
             x (torch.Tensor): The input tensor.
             memory (torch.Tensor): The memory tensor.
 
@@ -58,7 +58,7 @@ class EncoderLayer(nn.Module):
     """
     Encoder is made up of self-attn and feed forward.
 
-    Parameters:
+    Args:
         size (int): The input size.
         self_attn (nn.MultiheadAttention): The self-attention module.
         feed_forward (PositionwiseFeedForward): The feed forward module.
@@ -82,7 +82,7 @@ class EncoderLayer(nn.Module):
         """
         Compute the forward pass through the encoder.
 
-        Parameters:
+        Args:
             x (torch.Tensor): The input tensor.
 
         Returns:
