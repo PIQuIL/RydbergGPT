@@ -1,9 +1,9 @@
 # Imports
 
-from .wavefunctionbase import WavefunctionBase
-
 import torch
 from torch import nn
+
+from .wavefunctionbase import WavefunctionBase
 
 ########################################################################################
 
@@ -158,8 +158,8 @@ class TransformerWavefunction(WavefunctionBase):
     def forward(self, x):
         p, y = x
 
-        y = nn.functional.one_hot(y, 2)
-        y = y.to(torch.float)
+        # y = nn.functional.one_hot(y, 2)
+        # y = y.to(torch.float)
 
         p = self.encoderembedding(p)
         y = self.decoderembedding(y)
