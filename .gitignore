@@ -140,3 +140,5 @@ logs/
 
 data/*
 *.sublime-*
+
+checkpoints/
