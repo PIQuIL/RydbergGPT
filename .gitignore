@@ -139,3 +139,4 @@ logs/
 .vscode/
 
 data/*
+*.sublime-*
