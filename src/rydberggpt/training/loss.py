@@ -1,13 +1,33 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import Tensor
 
 
 class KLLoss(nn.Module):
+    """
+    KLLoss is a custom loss function class that computes the Kullback-Leibler divergence
+    between the target distribution (tgt) and the conditional log probabilities
+    (cond_log_probs).
+    """
+
     def __init__(self):
         super(KLLoss, self).__init__()
 
-    def forward(self, cond_log_probs, tgt):
+    def forward(self, cond_log_probs: Tensor, tgt: Tensor) -> Tensor:
+        """
+        Computes the Kullback-Leibler divergence loss between the target distribution (tgt)
+        and the conditional log probabilities (cond_log_probs).
+
+        Args:
+            cond_log_probs (torch.Tensor): The conditional log probabilities tensor
+                                            with shape (batch_size, seq_length, vocab_size).
+            tgt (torch.Tensor): The target distribution tensor with shape
+                                 (batch_size, seq_length, vocab_size).
+
+        Returns:
+            torch.Tensor: The computed Kullback-Leibler divergence loss, a scalar tensor.
+        """
         batchsize = tgt.shape[0]
         # cond_probs = torch.exp(cond_log_probs)  # used for debugging
         temp = torch.einsum("bnd,bnd->bn", cond_log_probs, tgt)
@@ -31,7 +51,7 @@ class LabelSmoothing(nn.Module):
         super(LabelSmoothing, self).__init__()
         self.smoothing = smoothing
 
-    def forward(self, cond_log_probs, tgt):
+    def forward(self, cond_log_probs: Tensor, tgt: Tensor) -> Tensor:
         """Compute the cross-entropy loss with label smoothing.
 
         Args:
@@ -45,12 +65,8 @@ class LabelSmoothing(nn.Module):
         """
         # TODO implement label smoothing
         batchsize = tgt.shape[0]
-        # log_probs = torch.einsum("bnd,bnd->b", cond_log_probs, tgt).sum(-1)
-        # log_probs = torch.sum(torch.sum(cond_log_probs * tgt, axis=-1), axis=-1)
-        cond_probs = torch.exp(cond_log_probs)  # used for debugging
+        # cond_probs = torch.exp(cond_log_probs)  # used for debugging
         temp = torch.einsum("bnd,bnd->bn", cond_log_probs, tgt)
         log_probs = torch.sum(temp, axis=-1)
-        # assert torch.allclose(log_probs_test, log_probs_test_2)
-        # assert torch.allclose(log_probs, torch.sum(log_probs_test_2))
         loss = -torch.sum(log_probs) / batchsize
         return loss
