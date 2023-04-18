@@ -25,7 +25,17 @@ The transformer decoder encodes a ground state wavefunction based on the encoded
 
 ## Documentation
 
-## 
+
+## Acknowledgements
+
+We found several very helpful codebases when building this repo, and we sincerely thank their authors:
+
++ Transformer Tutorials:
+    + [Annotated Transformer](https://github.com/harvardnlp/annotated-transformer/)
++ Transformer quantum state:
+    + [Predicting Properties of Quantum Systems with Conditional Generative Models](https://github.com/PennyLaneAI/generative-quantum-states)
+    + [Transformer Quantum State](https://github.com/yuanhangzhang98/transformer_quantum_state)
+
 
 ## References
 
@@ -37,6 +47,3 @@ year    = {2017},
 URL = {https://arxiv.org/pdf/1706.03762.pdf}
 }
 ```
-
-
-
