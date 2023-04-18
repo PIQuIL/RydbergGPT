@@ -1,47 +1,33 @@
-import matplotlib
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
+from typing import List, Tuple, Union
+
 import numpy as np
 import torch
-from matplotlib.lines import Line2D
-
-# def one_hot(data, num_classes):
-#     """
-#     Convert a one-dimensional array of labels into a matrix of one-hot labels.
-#     :param data: numpy array of shape (num_samples,)
-#     :param num_classes: number of classes
-#     :return: numpy array of shape (num_samples, num_classes)
-#     """
-#     return np.eye(num_classes)[data]
+from torch import nn
 
 
-# def measurement2readout_obs(measurments):
-#     if isinstance(measurments, torch.Tensor):
-#         measurments = torch2numpy(measurments)
-#     assert measurments.min() >= 0 and measurments.max() <= 5
-#     observables = measurments // 2
-#     readouts = 2.0 * (measurments % 2) - 1
-#     return readouts, observables
+def to_one_hot(
+    data: Union[torch.Tensor, List[int], Tuple[int]], num_classes: int
+) -> torch.Tensor:
+    """
+    Converts the input data into one-hot representation.
 
+    Args:
+    - data: Input data to be converted into one-hot. It can be a 1D tensor, list or tuple of integers.
+    - num_classes: Number of classes in the one-hot representation.
 
-# def torch2numpy(*tensors):
-#     arrays = []
-#     for tensor in tensors:
-#         arrays.append(tensor.detach().cpu().numpy())
-#     if len(arrays) == 1:
-#         return arrays[0]
-#     else:
-#         return tuple(arrays)
+    Returns:
+    - data: The one-hot representation of the input data.
+    """
 
+    if isinstance(data, (list, tuple)):
+        data = torch.tensor(data, dtype=torch.int64)
+    elif not isinstance(data, torch.Tensor):
+        raise TypeError("Input data must be a tensor, list or tuple of integers.")
+        
 
-# def numpy2torch(*arrays, device=torch.device("cpu")):
-#     tensors = []
-#     for array in arrays:
-#         tensors.append(torch.from_numpy(array).to(device))
-#     if len(tensors) == 1:
-#         return tensors[0]
-#     else:
-#         return tuple(tensors)
+    data = nn.functional.one_hot(data, num_classes)
+
+    return data.to(torch.float)
 
 
 def get_dummy_dataset(n_atoms: int, batch_size: int, dim: int) -> torch.Tensor:
