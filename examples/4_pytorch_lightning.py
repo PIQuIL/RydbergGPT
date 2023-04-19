@@ -114,44 +114,45 @@ class RydbergGPTTrainer(pl.LightningModule):
     #     self.example_input_array = (measurements, cond)
 
 
-seed = 42
-# seed everything
-torch.manual_seed(seed)
-np.random.seed(seed)
-device = "cuda" if torch.cuda.is_available() else "cpu"
+if __name__ == "__main__":
+    seed = 42
+    # seed everything
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
-# create model and train configs
-config = Config(
-    device=device,
-)
+    # create model and train configs
+    config = Config(
+        device=device,
+    )
 
-train_loader, val_loader = get_rydberg_dataloader(config.batch_size)
+    train_loader, val_loader = get_rydberg_dataloader(config.batch_size)
 
-model = get_rydberg_encoder_decoder(config)
+    model = get_rydberg_encoder_decoder(config)
 
-logger = TensorBoardLogger(save_dir="logs")
-# Create a ModelCheckpoint callback
-checkpoint_callback = ModelCheckpoint(
-    monitor="val_loss",  # Metric to monitor, e.g., validation loss
-    mode="min",  # Save the model with the minimum validation loss
-    save_top_k=3,  # Save the top 3 best models based on the monitored metric
-    save_last=True,  # Save the last model
-    verbose=True,  # Log when a new checkpoint is saved
-    dirpath=f"logs/lightning_logs/version_{logger.version}/checkpoints",  # Save checkpoints in the logger's version directory
-    filename="best-checkpoint-{epoch}-{val_loss:.2f}",  # Checkpoint filename format
-)
+    logger = TensorBoardLogger(save_dir="logs")
+    # Create a ModelCheckpoint callback
+    checkpoint_callback = ModelCheckpoint(
+        monitor="val_loss",  # Metric to monitor, e.g., validation loss
+        mode="min",  # Save the model with the minimum validation loss
+        save_top_k=3,  # Save the top 3 best models based on the monitored metric
+        save_last=True,  # Save the last model
+        verbose=True,  # Log when a new checkpoint is saved
+        dirpath=f"logs/lightning_logs/version_{logger.version}/checkpoints",  # Save checkpoints in the logger's version directory
+        filename="best-checkpoint-{epoch}-{val_loss:.2f}",  # Checkpoint filename format
+    )
 
-# create the trainer class
-rydberg_gpt_trainer = RydbergGPTTrainer(model, config)
-# rydberg_gpt_trainer.set_example_input_array(data, config)
+    # create the trainer class
+    rydberg_gpt_trainer = RydbergGPTTrainer(model, config)
+    # rydberg_gpt_trainer.set_example_input_array(data, config)
 
-# https://lightning.ai/docs/pytorch/stable/common/trainer.html
-trainer = pl.Trainer(
-    max_epochs=config.num_epochs,
-    callbacks=[checkpoint_callback],  # Add the ModelCheckpoint callback
-    devices="auto",
-    accelerator=device,
-    logger=logger,
-)
+    # https://lightning.ai/docs/pytorch/stable/common/trainer.html
+    trainer = pl.Trainer(
+        max_epochs=config.num_epochs,
+        callbacks=[checkpoint_callback],  # Add the ModelCheckpoint callback
+        devices="auto",
+        accelerator=device,
+        logger=logger,
+    )
 
-trainer.fit(rydberg_gpt_trainer, train_loader, val_loader)
+    trainer.fit(rydberg_gpt_trainer, train_loader, val_loader)
