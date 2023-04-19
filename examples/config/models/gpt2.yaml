@@ -8,7 +8,7 @@ transformer:
 training:
   devices: 2
   strategy: "ddp"
-  accelerator: null
+  accelerator: "gpu"
   precision: 16 # half precision saves lots of memory! 32 is default
   max_epochs: 20
   batch_size: 128

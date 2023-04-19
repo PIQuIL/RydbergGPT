@@ -15,6 +15,7 @@ from pytorch_lightning.callbacks import (
     StochasticWeightAveraging,
 )
 from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.strategies import DDPStrategy
 
 # from pytorch_lightning.profilers import AdvancedProfiler, SimpleProfiler
 from pytorch_lightning.utilities.model_summary import ModelSummary
@@ -119,9 +120,14 @@ def main(config_path: str):
         filename="performance_logs",
     )
 
+    if config.strategy == "ddp":
+        strategy = DDPStrategy(find_unused_parameters=True)
+    else:
+        strategy = config.strategy
+
     trainer = pl.Trainer(
         devices=config.devices,
-        strategy=config.strategy,
+        strategy=strategy,
         accelerator=config.accelerator,
         precision=config.precision,
         max_epochs=config.max_epochs,
