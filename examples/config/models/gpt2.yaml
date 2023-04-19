@@ -1,13 +1,13 @@
 transformer:
   num_heads: 8
-  d_model: 32
-  num_blocks: 2
-  d_ff: 128
+  d_model: 128
+  num_blocks: 8
+  d_ff: 512 # usually 4 * d_model
   dropout: 0.1
 
 training:
   num_epochs: 10
-  batch_size: 16
+  batch_size: 64
   learning_rate: 0.01
 
 dataset:
@@ -21,5 +21,6 @@ rydberg:
 
 misc:
   device: null
-  profiling: null
+  profiling: True
   seed: 42
+  prog_bar: False
