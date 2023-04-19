@@ -6,7 +6,9 @@ from torch.utils.data import DataLoader, Dataset
 from rydberggpt.utils import to_one_hot
 
 
-def get_rydberg_dataloader(batch_size=32, test_size=0.2):
+def get_rydberg_dataloader(
+    batch_size: int = 32, test_size: float = 0.2, num_workers: int = 0
+):
     df = pd.read_hdf("data/dataset.h5", key="data")
     # Split the DataFrame into train and validation DataFrames
     train_df, test_df = train_test_split(df, test_size=test_size, random_state=42)
@@ -16,8 +18,18 @@ def get_rydberg_dataloader(batch_size=32, test_size=0.2):
     val_dataset = RydbergDataset(test_df)
 
     # Create a DataLoader for each set with the custom Dataset
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+    )
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+    )
     return train_loader, val_loader
 
 
