@@ -14,12 +14,12 @@ from rydberggpt.models.transformer.models import (
 from rydberggpt.models.transformer.modules import PositionwiseFeedForward
 
 
-def get_rydberg_transformer(config):
+def get_rydberg_encoder_decoder(config):
     c = copy.deepcopy
     attn = nn.MultiheadAttention(config.d_model, config.num_heads, batch_first=True)
     ff = PositionwiseFeedForward(config.d_model, config.d_ff, config.dropout)
 
-    model = RydbergTransformer(
+    model = RydbergEncoderDecoder(
         encoder=Encoder(
             EncoderLayer(config.d_model, c(attn), c(ff), config.dropout),
             config.num_blocks,
@@ -41,7 +41,7 @@ def get_rydberg_transformer(config):
     return model
 
 
-class RydbergTransformer(EncoderDecoder):
+class RydbergEncoderDecoder(EncoderDecoder):
     """
     RydbergTransformer is a specific implementation of the Encoder-Decoder architecture
     that uses an encoder and decoder composed of multiple layers of EncoderLayer and DecoderLayer
