@@ -1,10 +1,7 @@
-from typing import List, Tuple
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from rydberggpt.models.transformer.layers import DecoderLayer, EncoderLayer
 from rydberggpt.models.transformer.utils import clones
 
 
@@ -174,18 +171,3 @@ class Generator(nn.Module):
                           with log-softmax applied along the last dimension.
         """
         return F.log_softmax(self.proj(x), dim=-1)  # [batch_size, seq_len, vocab_size]
-
-
-class EncoderOnly(nn.Module):
-    def __init__(self, encoder, embed, generator):
-        super(EncoderOnly, self).__init__()
-        self.encoder = encoder
-        self.embed = embed
-        self.generator = generator
-
-    def forward(self, src):
-        "Take in and process masked src and target sequences."
-        return self.encode(src)
-
-    def encode(self, src):
-        return self.encoder(self.src_embed(src))
