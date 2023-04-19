@@ -4,7 +4,9 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 import torch.optim as optim
-import torch.profiler  # Add the torch.profiler import
+import torch.profiler
+from config.base_config import Config
+from config.utils import create_config_from_yaml
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 
@@ -14,35 +16,11 @@ from rydberggpt.training.loss import KLLoss
 from rydberggpt.utils import to_one_hot
 
 
-@dataclass
-class Config:
-    # transformer
-    num_heads: int = 8
-    d_model: int = 32
-    num_blocks: int = 2
-    d_ff = 4 * d_model
-    dropout = 0.1
-    # training
-    num_epochs: int = 10
-    batch_size: int = 16
-    learning_rate: float = 0.01
-    # dataset
-    num_atoms: int = None
-    num_samples: int = None
-    delta: float = None
-    # rydberg
-    num_states: int = 2
-    num_encoder_embedding_dims: int = 4
-    # misc
-    device: str = None
-    profiling: bool = False
-
-
 class RydbergGPTTrainer(pl.LightningModule):
     def __init__(
         self,
         model,
-        config: Config,
+        config: dataclass,
     ):
         super().__init__()
         self.config = config
@@ -115,16 +93,20 @@ class RydbergGPTTrainer(pl.LightningModule):
 
 
 if __name__ == "__main__":
-    seed = 42
+    config_name = "encoder_decoder_small"
+    yaml_path = f"examples/config/models/{config_name}.yaml"
+    config = create_config_from_yaml(yaml_path=yaml_path)
+
     # seed everything
-    torch.manual_seed(seed)
-    np.random.seed(seed)
+    torch.manual_seed(config.seed)
+    np.random.seed(config.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # create model and train configs
     config = Config(
         device=device,
     )
+    print(config)
 
     train_loader, val_loader = get_rydberg_dataloader(config.batch_size)
 
