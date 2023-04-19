@@ -14,11 +14,13 @@ training:
   batch_size: 128
   learning_rate: 0.001
   optimizer: "Adam"
+  criterion: "KLLoss"
 
 dataset:
   num_atoms: null
   num_samples: null
   delta: null
+  num_workers: 32
 
 rydberg:
   num_states: 2
