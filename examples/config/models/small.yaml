@@ -2,7 +2,7 @@ transformer:
   num_heads: 8
   d_model: 32
   num_blocks: 2
-  d_ff: 128
+  d_ff: 128 # usually 4 * d_model
   dropout: 0.1
 
 training:
