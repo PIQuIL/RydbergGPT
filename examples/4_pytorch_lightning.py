@@ -58,7 +58,7 @@ class RydbergGPTTrainer(pl.LightningModule):
             loss = self.criterion(cond_log_probs, measurements)
 
         assert not torch.isnan(loss), "Loss is NaN"
-        self.log("train_loss", loss, prog_bar=True)
+        self.log("train_loss", loss, prog_bar=config.prog_bar)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -74,7 +74,7 @@ class RydbergGPTTrainer(pl.LightningModule):
             cond_log_probs = self.forward(measurements, cond)
             loss = self.criterion(cond_log_probs, measurements)
 
-        self.log("val_loss", loss, prog_bar=True)
+        self.log("val_loss", loss, prog_bar=config.prog_bar)
         return loss
 
     def configure_optimizers(self):
@@ -106,7 +106,6 @@ if __name__ == "__main__":
     config = Config(
         device=device,
     )
-    print(config)
 
     train_loader, val_loader = get_rydberg_dataloader(config.batch_size)
 
