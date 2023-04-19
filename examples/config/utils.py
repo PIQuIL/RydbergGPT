@@ -1,19 +1,27 @@
-from dataclasses import asdict, dataclass, replace
+from dataclasses import make_dataclass
+from typing import Any, Dict, Type
 
 import yaml
 
-from config.base_config import Config
+
+def create_dataclass_from_dict(name: str, data: Dict[str, Any]) -> Type:
+    fields = [(key, type(value)) for key, value in data.items()]
+    return make_dataclass(name, fields)
 
 
-def create_config_from_yaml(yaml_path: str) -> Config:
-    with open(yaml_path, "r") as file:
-        yaml_config = yaml.safe_load(file)
-
-    # Flatten the nested dictionary
+def flatten_yaml(yaml_config: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
     flattened_config = {}
     for section, section_values in yaml_config.items():
         for key, value in section_values.items():
-            flattened_config[key] = value
+            flattened_config[f"{key}"] = value
+    return flattened_config
 
-    # Create a new Config object with values from the YAML file
+
+def create_config_from_yaml(yaml_path: str):
+    with open(yaml_path, "r") as file:
+        yaml_config = yaml.safe_load(file)
+
+    flattened_config = flatten_yaml(yaml_config)
+    Config = create_dataclass_from_dict("Config", flattened_config)
+
     return Config(**flattened_config)
