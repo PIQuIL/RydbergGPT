@@ -101,11 +101,7 @@ if __name__ == "__main__":
     torch.manual_seed(config.seed)
     np.random.seed(config.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
-
-    # create model and train configs
-    config = Config(
-        device=device,
-    )
+    config = Config(device=device)
 
     train_loader, val_loader = get_rydberg_dataloader(config.batch_size)
 
@@ -125,7 +121,6 @@ if __name__ == "__main__":
 
     # create the trainer class
     rydberg_gpt_trainer = RydbergGPTTrainer(model, config)
-    # rydberg_gpt_trainer.set_example_input_array(data, config)
 
     # https://lightning.ai/docs/pytorch/stable/common/trainer.html
     trainer = pl.Trainer(
