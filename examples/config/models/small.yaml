@@ -9,6 +9,7 @@ training:
   num_epochs: 10
   batch_size: 16
   learning_rate: 0.01
+  optimizer: "Adam"
 
 dataset:
   num_atoms: null
@@ -21,6 +22,7 @@ rydberg:
 
 misc:
   device: null
-  profiling: True
+  precision: 16
+  profiler: "SimpleProfiler"
   seed: 42
-  prog_bar: False
+  prog_bar: True
