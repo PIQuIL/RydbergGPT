@@ -5,7 +5,6 @@ import pytorch_lightning as pl
 import torch
 import torch.optim as optim
 import torch.profiler
-from config.base_config import Config
 from config.utils import create_config_from_yaml
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
@@ -101,7 +100,12 @@ if __name__ == "__main__":
     torch.manual_seed(config.seed)
     np.random.seed(config.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    config = Config(device=device)
+    config.device = device
+
+    if config.device == "cpu":
+        config.profiling = False
+
+    print(f"Using device: {config.device}")
 
     train_loader, val_loader = get_rydberg_dataloader(config.batch_size)
 
