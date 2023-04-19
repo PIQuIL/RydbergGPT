@@ -20,7 +20,7 @@ dataset:
   num_atoms: null
   num_samples: null
   delta: null
-  num_workers: 32
+  num_workers: 8 # dataset is currently too small max might be 32
 
 rydberg:
   num_states: 2
