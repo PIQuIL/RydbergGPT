@@ -142,7 +142,7 @@ if __name__ == "__main__":
         description="Run deep learning model with specified config."
     )
     parser.add_argument(
-        "config_file_name",
+        "config_name",
         nargs="?",
         default="small",
         help="Name of the configuration file without the .yaml extension. (default: small)",
@@ -150,7 +150,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    config_name = args.config_file_name
+    config_name = args.config_name
     yaml_path = f"examples/config/models/{config_name}.yaml"
 
     main(config_path=yaml_path)
