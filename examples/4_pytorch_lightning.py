@@ -5,25 +5,23 @@ import numpy as np
 import pytorch_lightning as pl
 import pytorch_lightning.profilers as pl_profilers
 import torch
+import torch.nn as nn
 import torch.optim as optim
 import torch.profiler
+import yaml
 from config.utils import create_config_from_yaml
 from pytorch_lightning.callbacks import (
     DeviceStatsMonitor,
     ModelCheckpoint,
-    RichModelSummary,
     StochasticWeightAveraging,
 )
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.strategies import DDPStrategy
 
-# from pytorch_lightning.profilers import AdvancedProfiler, SimpleProfiler
-from pytorch_lightning.utilities.model_summary import ModelSummary
-
 from rydberggpt.data.loading.rydberg_dataset import get_rydberg_dataloader
 from rydberggpt.models.encoder_decoder_transformer import get_rydberg_encoder_decoder
+from rydberggpt.training.callbacks.module_info_callback import ModelInfoCallback
 from rydberggpt.training.loss import KLLoss
-from rydberggpt.utils import to_one_hot
 
 
 class RydbergGPTTrainer(pl.LightningModule):
@@ -32,12 +30,14 @@ class RydbergGPTTrainer(pl.LightningModule):
         model,
         config: dataclass,
         logger: TensorBoardLogger,
+        example_input_array: torch.tensor = None,
     ):
         super().__init__()
         self.config = config
         self.save_hyperparameters(asdict(config))
         self.model = model
         self.criterion = KLLoss()
+        self.example_input_array = example_input_array
 
     def forward(self, measurements, cond):
         out = self.model.forward(measurements, cond)
@@ -46,9 +46,6 @@ class RydbergGPTTrainer(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         cond, measurements = batch
-        cond = cond.unsqueeze(1)  # [batch_size, 1, 4]
-        measurements = to_one_hot(measurements, self.config.num_states)
-
         cond_log_probs = self.forward(measurements, cond)
         loss = self.criterion(cond_log_probs, measurements)
         self.log("train_loss", loss)
@@ -56,9 +53,6 @@ class RydbergGPTTrainer(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         cond, measurements = batch
-        cond = cond.unsqueeze(1)  # [batch_size, 1, 4]
-        measurements = to_one_hot(measurements, self.config.num_states)
-
         cond_log_probs = self.forward(measurements, cond)
         loss = self.criterion(cond_log_probs, measurements)
         self.log("val_loss", loss)
@@ -71,52 +65,44 @@ class RydbergGPTTrainer(pl.LightningModule):
         )
         return optimizer
 
-    # def set_example_input_array(self, data, config):
-    #     train_loader, _, _ = get_dataloaders(data, config)
-    #     example_batch = next(iter(train_loader))
-    #     measurements, cond = example_batch
-    #     measurements = nn.functional.one_hot(measurements, 2)
-    #     measurements = measurements.to(torch.float)
-    #     # print(measurements.shape)
-    #     # print(cond.shape)
-    #     self.example_input_array = (measurements, cond)
+
+def set_example_input_array(train_loader):
+    example_batch = next(iter(train_loader))
+    cond, measurements = example_batch
+    return measurements, cond
 
 
 def main(config_path: str):
     config = create_config_from_yaml(yaml_path=config_path)
-
     torch.manual_seed(config.seed)
     np.random.seed(config.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     config.device = device
-
     train_loader, val_loader = get_rydberg_dataloader(config.batch_size)
-
+    input_array = set_example_input_array(train_loader)
     model = get_rydberg_encoder_decoder(config)
-
     logger = TensorBoardLogger(save_dir="logs")
-    rydberg_gpt_trainer = RydbergGPTTrainer(model, config, logger=logger)
-    # Create a ModelCheckpoint callback
-    checkpoint_callback = ModelCheckpoint(
-        monitor="val_loss",  # Metric to monitor, e.g., validation loss
-        mode="min",  # Save the model with the minimum validation loss
-        save_top_k=3,  # Save the top 3 best models based on the monitored metric
-        save_last=True,  # Save the last model
-        verbose=True,  # Log when a new checkpoint is saved
-        dirpath=f"logs/lightning_logs/version_{logger.version}/checkpoints",  # Save checkpoints in the logger's version directory
-        filename="best-checkpoint-{epoch}-{val_loss:.2f}",  # Checkpoint filename format
+    log_path = f"logs/lightning_logs/version_{logger.version}"
+    rydberg_gpt_trainer = RydbergGPTTrainer(
+        model, config, logger=logger, example_input_array=input_array
     )
 
     callbacks = [
-        checkpoint_callback,
+        ModelCheckpoint(
+            monitor="train_loss",
+            save_top_k=3,
+            save_last=True,
+            filename="best-checkpoint-{epoch}-{train_loss:.2f}",
+        ),
         DeviceStatsMonitor(),
         StochasticWeightAveraging(config.learning_rate),
+        ModelInfoCallback(),
     ]
 
     # https://lightning.ai/docs/pytorch/stable/common/trainer.html
     profiler_class = getattr(pl_profilers, config.profiler)
     profiler = profiler_class(
-        dirpath=f"logs/lightning_logs/version_{logger.version}",
+        dirpath=log_path,
         filename="performance_logs",
     )
 
