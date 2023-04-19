@@ -25,3 +25,4 @@ class Config:
     device: Optional[str] = None
     profiling: Optional[bool] = None
     seed: Optional[int] = None
+    prog_bar: Optional[bool] = None
