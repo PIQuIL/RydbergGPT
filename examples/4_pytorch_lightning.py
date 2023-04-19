@@ -50,8 +50,6 @@ class RydbergGPTTrainer(pl.LightningModule):
 
         cond_log_probs = self.forward(measurements, cond)
         loss = self.criterion(cond_log_probs, measurements)
-
-        assert not torch.isnan(loss), "Loss is NaN"
         self.log("train_loss", loss)
         return loss
 
@@ -62,7 +60,6 @@ class RydbergGPTTrainer(pl.LightningModule):
 
         cond_log_probs = self.forward(measurements, cond)
         loss = self.criterion(cond_log_probs, measurements)
-
         self.log("val_loss", loss)
         return loss
 
@@ -123,15 +120,15 @@ def main(config_path: str):
     )
 
     trainer = pl.Trainer(
-        max_epochs=config.num_epochs,
+        devices=config.devices,
+        strategy=config.strategy,
+        accelerator=config.accelerator,
+        precision=config.precision,
+        max_epochs=config.max_epochs,
         callbacks=callbacks,
-        devices="auto",
-        accelerator=device,
         logger=logger,
         profiler=profiler,
         enable_progress_bar=config.prog_bar,
-        precision=config.precision,
-        # strategy=config.strategy,
     )
 
     trainer.fit(rydberg_gpt_trainer, train_loader, val_loader)
@@ -145,6 +142,12 @@ if __name__ == "__main__":
         "--config_name",
         default="small",
         help="Name of the configuration file without the .yaml extension. (default: small)",
+    )
+    parser.add_argument(
+        "--devices",
+        type=int,
+        default=0,
+        help="Number of devices (GPUs) to use. (default: 0)",
     )
 
     args = parser.parse_args()
