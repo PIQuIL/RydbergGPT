@@ -78,7 +78,9 @@ def main(config_path: str):
     np.random.seed(config.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     config.device = device
-    train_loader, val_loader = get_rydberg_dataloader(config.batch_size)
+    train_loader, val_loader = get_rydberg_dataloader(
+        config.batch_size, test_size=0.2, num_workers=config.num_workers
+    )
     input_array = set_example_input_array(train_loader)
     model = get_rydberg_encoder_decoder(config)
     logger = TensorBoardLogger(save_dir="logs")
