@@ -3,6 +3,8 @@ import torch
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 
+from rydberggpt.utils import to_one_hot
+
 
 def get_rydberg_dataloader(batch_size=32, test_size=0.2):
     df = pd.read_hdf("data/dataset.h5", key="data")
@@ -28,8 +30,10 @@ class RydbergDataset(Dataset):
 
     def __getitem__(self, index):
         row = self.dataframe.iloc[index]
-        delta_omega_lx_ly = torch.tensor(
+        cond = torch.tensor(
             [row["delta"], row["omega"], row["Lx"], row["Ly"]], dtype=torch.float32
         )
-        measurement = torch.tensor(row["measurement"], dtype=torch.int64)
-        return delta_omega_lx_ly, measurement
+        cond = cond.unsqueeze(0)  # [batch_size, 1, 4]
+        measurements = torch.tensor(row["measurement"], dtype=torch.int64)
+        measurements = to_one_hot(measurements, 2)  # because Rydberg states are 0 or 1
+        return cond, measurements
