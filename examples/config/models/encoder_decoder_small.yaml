@@ -1,0 +1,25 @@
+transformer:
+  num_heads: 8
+  d_model: 32
+  num_blocks: 2
+  d_ff: 128
+  dropout: 0.1
+
+training:
+  num_epochs: 10
+  batch_size: 16
+  learning_rate: 0.01
+
+dataset:
+  num_atoms: null
+  num_samples: null
+  delta: null
+
+rydberg:
+  num_states: 2
+  num_encoder_embedding_dims: 4
+
+misc:
+  device: null
+  profiling: null
+  seed: 42
