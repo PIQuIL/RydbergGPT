@@ -3,12 +3,21 @@ from dataclasses import asdict, dataclass
 
 import numpy as np
 import pytorch_lightning as pl
+import pytorch_lightning.profilers as pl_profilers
 import torch
 import torch.optim as optim
 import torch.profiler
 from config.utils import create_config_from_yaml
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import (
+    DeviceStatsMonitor,
+    ModelCheckpoint,
+    RichModelSummary,
+    StochasticWeightAveraging,
+)
 from pytorch_lightning.loggers import TensorBoardLogger
+
+# from pytorch_lightning.profilers import AdvancedProfiler, SimpleProfiler
+from pytorch_lightning.utilities.model_summary import ModelSummary
 
 from rydberggpt.data.loading.rydberg_dataset import get_rydberg_dataloader
 from rydberggpt.models.encoder_decoder_transformer import get_rydberg_encoder_decoder
@@ -21,24 +30,13 @@ class RydbergGPTTrainer(pl.LightningModule):
         self,
         model,
         config: dataclass,
-        # logger: TensorBoardLogger,
+        logger: TensorBoardLogger,
     ):
         super().__init__()
         self.config = config
         self.save_hyperparameters(asdict(config))
         self.model = model
         self.criterion = KLLoss()
-
-        if self.config.profiling:
-            self.profiler = torch.profiler.profile(  # Add the profiler as an attribute
-                schedule=torch.profiler.schedule(wait=0, warmup=1, active=3),
-                on_trace_ready=torch.profiler.tensorboard_trace_handler(
-                    f"logs/lightning_logs/version_{self.logger.version}/profiler"
-                ),
-                record_shapes=True,
-                profile_memory=True,
-                with_stack=True,
-            )
 
     def forward(self, measurements, cond):
         out = self.model.forward(measurements, cond)
@@ -50,16 +48,11 @@ class RydbergGPTTrainer(pl.LightningModule):
         cond = cond.unsqueeze(1)  # [batch_size, 1, 4]
         measurements = to_one_hot(measurements, self.config.num_states)
 
-        if self.config.profiling:
-            with self.profiler:  # Use the profiler context manager
-                cond_log_probs = self.forward(measurements, cond)
-                loss = self.criterion(cond_log_probs, measurements)
-        else:
-            cond_log_probs = self.forward(measurements, cond)
-            loss = self.criterion(cond_log_probs, measurements)
+        cond_log_probs = self.forward(measurements, cond)
+        loss = self.criterion(cond_log_probs, measurements)
 
         assert not torch.isnan(loss), "Loss is NaN"
-        self.log("train_loss", loss, prog_bar=self.config.prog_bar)
+        self.log("train_loss", loss)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -67,19 +60,17 @@ class RydbergGPTTrainer(pl.LightningModule):
         cond = cond.unsqueeze(1)  # [batch_size, 1, 4]
         measurements = to_one_hot(measurements, self.config.num_states)
 
-        if self.config.profiling:
-            with self.profiler:  # Use the profiler context manager
-                cond_log_probs = self.forward(measurements, cond)
-                loss = self.criterion(cond_log_probs, measurements)
-        else:
-            cond_log_probs = self.forward(measurements, cond)
-            loss = self.criterion(cond_log_probs, measurements)
+        cond_log_probs = self.forward(measurements, cond)
+        loss = self.criterion(cond_log_probs, measurements)
 
-        self.log("val_loss", loss, prog_bar=self.config.prog_bar)
+        self.log("val_loss", loss)
         return loss
 
     def configure_optimizers(self):
-        optimizer = optim.Adam(self.model.parameters(), lr=self.config.learning_rate)
+        optimizer_class = getattr(optim, self.config.optimizer)
+        optimizer = optimizer_class(
+            self.model.parameters(), lr=self.config.learning_rate
+        )
         return optimizer
 
     # def set_example_input_array(self, data, config):
@@ -101,17 +92,12 @@ def main(config_path: str):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     config.device = device
 
-    if config.device == "cpu":
-        config.profiling = False
-        # config.prog_bar = True
-
-    print(f"Using device: {config.device}")
-
     train_loader, val_loader = get_rydberg_dataloader(config.batch_size)
 
     model = get_rydberg_encoder_decoder(config)
 
     logger = TensorBoardLogger(save_dir="logs")
+    rydberg_gpt_trainer = RydbergGPTTrainer(model, config, logger=logger)
     # Create a ModelCheckpoint callback
     checkpoint_callback = ModelCheckpoint(
         monitor="val_loss",  # Metric to monitor, e.g., validation loss
@@ -123,16 +109,29 @@ def main(config_path: str):
         filename="best-checkpoint-{epoch}-{val_loss:.2f}",  # Checkpoint filename format
     )
 
-    # create the trainer class
-    rydberg_gpt_trainer = RydbergGPTTrainer(model, config)
+    callbacks = [
+        checkpoint_callback,
+        DeviceStatsMonitor(),
+        StochasticWeightAveraging(config.learning_rate),
+    ]
 
     # https://lightning.ai/docs/pytorch/stable/common/trainer.html
+    profiler_class = getattr(pl_profilers, config.profiler)
+    profiler = profiler_class(
+        dirpath=f"logs/lightning_logs/version_{logger.version}",
+        filename="performance_logs",
+    )
+
     trainer = pl.Trainer(
         max_epochs=config.num_epochs,
-        callbacks=[checkpoint_callback],  # Add the ModelCheckpoint callback
+        callbacks=callbacks,
         devices="auto",
         accelerator=device,
         logger=logger,
+        profiler=profiler,
+        enable_progress_bar=config.prog_bar,
+        precision=config.precision,
+        # strategy=config.strategy,
     )
 
     trainer.fit(rydberg_gpt_trainer, train_loader, val_loader)
