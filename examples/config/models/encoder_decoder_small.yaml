@@ -21,5 +21,6 @@ rydberg:
 
 misc:
   device: null
-  profiling: null
+  profiling: True
   seed: 42
+  prog_bar: False
