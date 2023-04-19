@@ -48,14 +48,14 @@ class RydbergGPTTrainer(pl.LightningModule):
         cond, measurements = batch
         cond_log_probs = self.forward(measurements, cond)
         loss = self.criterion(cond_log_probs, measurements)
-        self.log("train_loss", loss)
+        self.log("train_loss", loss, sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         cond, measurements = batch
         cond_log_probs = self.forward(measurements, cond)
         loss = self.criterion(cond_log_probs, measurements)
-        self.log("val_loss", loss)
+        self.log("val_loss", loss, sync_dist=True)
         return loss
 
     def configure_optimizers(self):
