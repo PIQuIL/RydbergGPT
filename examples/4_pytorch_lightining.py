@@ -1,21 +1,20 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 import numpy as np
 import pytorch_lightning as pl
 import torch
 import torch.optim as optim
-
-# from lightning.pytorch import Trainer, seed_everything
+from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch import nn, optim
 from torch.utils.data import DataLoader
+from torchsummary import summary
 
 # seed_everything(42, workers=True)
-from rydberggpt.data.loading.dataset_rydberg import get_dataloaders, load_dataset
-from rydberggpt.models.rydberg_transformer import get_rydberg_transformer
-from rydberggpt.models.transformer.layers import DecoderLayer, EncoderLayer
-from rydberggpt.models.transformer.loss import LabelSmoothing
-from rydberggpt.models.transformer.models import Decoder, Encoder, Generator
+from rydberggpt.data.loading.rydberg_dataset import get_rydberg_dataloader
+from rydberggpt.models.encoder_decoder_transformer import get_rydberg_encoder_decoder
+from rydberggpt.training.loss import KLLoss, LabelSmoothing
+from rydberggpt.utils import to_one_hot
 
 
 @dataclass
@@ -25,7 +24,7 @@ class Config:
     d_model: int = 32
     num_blocks: int = 2
     d_ff = 4 * d_model
-    dropout = 0.0
+    dropout = 0.1
     # training
     num_epochs: int = 10
     batch_size: int = 16
@@ -37,90 +36,103 @@ class Config:
     # rydberg
     num_states: int = 2
     num_encoder_embedding_dims: int = 4
+    device: str = None
 
 
 class RydbergGPTTrainer(pl.LightningModule):
     def __init__(
         self,
         model,
-        data,
         config: Config,
     ):
         super().__init__()
-        self.model = model
-        self.data = data
         self.config = config
+        self.save_hyperparameters(asdict(config))
+        self.model = model
+        self.criterion = KLLoss()
 
-        self.criterion = LabelSmoothing(0.0)
-
-    def forward(self, inputs, cond):
-        out = self.model.forward(inputs, cond)
+    def forward(self, measurements, cond):
+        out = self.model.forward(measurements, cond)
         cond_log_probs = self.model.generator(out)
         return cond_log_probs
 
     def training_step(self, batch, batch_idx):
-        inputs, cond = batch
-        inputs = nn.functional.one_hot(inputs, 2)
-        inputs = inputs.to(torch.float)
+        cond, measurements = batch
+        cond = cond.unsqueeze(1)  # [batch_size, 1, 4]
+        measurements = to_one_hot(measurements, self.config.num_states)
 
-        cond_log_probs = self.forward(inputs, cond)
-        loss = self.criterion(cond_log_probs, inputs)
+        cond_log_probs = self.forward(measurements, cond)
+        loss = self.criterion(cond_log_probs, measurements)
         assert not torch.isnan(loss), "Loss is NaN"
         self.log("train_loss", loss, prog_bar=True)
-        return loss  # add this line
+        return loss
 
     def validation_step(self, batch, batch_idx):
-        inputs, cond = batch
-        inputs = nn.functional.one_hot(inputs, 2)
-        inputs = inputs.to(torch.float)
+        cond, measurements = batch
+        cond = cond.unsqueeze(1)  # [batch_size, 1, 4]
+        measurements = to_one_hot(measurements, self.config.num_states)
 
-        cond_log_probs = self.forward(inputs, cond)
-        loss = self.criterion(cond_log_probs, inputs)
+        cond_log_probs = self.forward(measurements, cond)
+        loss = self.criterion(cond_log_probs, measurements)
         self.log("val_loss", loss, prog_bar=True)
-        return loss  # add this line
+        return loss
 
     def configure_optimizers(self):
         optimizer = optim.Adam(self.model.parameters(), lr=self.config.learning_rate)
         return optimizer
 
-    def train_dataloader(self):
-        train_loader, _, _ = get_dataloaders(self.data, self.config)
-        return train_loader
-
-    def val_dataloader(self):
-        _, val_loader, _ = get_dataloaders(self.data, self.config)
-        return val_loader
+    # def set_example_input_array(self, data, config):
+    #     train_loader, _, _ = get_dataloaders(data, config)
+    #     example_batch = next(iter(train_loader))
+    #     measurements, cond = example_batch
+    #     measurements = nn.functional.one_hot(measurements, 2)
+    #     measurements = measurements.to(torch.float)
+    #     # print(measurements.shape)
+    #     # print(cond.shape)
+    #     self.example_input_array = (measurements, cond)
 
 
 seed = 42
 # seed everything
 torch.manual_seed(seed)
 np.random.seed(seed)
-
-
-# LOAD DATA
-data, dataset_config = load_dataset(delta_id=0)
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # create model and train configs
 config = Config(
-    num_atoms=dataset_config.num_atoms,
-    num_samples=dataset_config.num_samples,
-    delta=dataset_config.delta,
+    device=device,
 )
 
-model = get_rydberg_transformer(config)
+train_loader, val_loader = get_rydberg_dataloader(config.batch_size)
+# train_loader, val_loader, _ = get_dataloaders(data, config)
+
+model = get_rydberg_encoder_decoder(config)
+
+# Create a ModelCheckpoint callback
+checkpoint_callback = ModelCheckpoint(
+    monitor="val_loss",  # Metric to monitor, e.g., validation loss
+    mode="min",  # Save the model with the minimum validation loss
+    save_top_k=3,  # Save the top 3 best models based on the monitored metric
+    save_last=True,  # Save the last model
+    verbose=True,  # Log when a new checkpoint is saved
+    dirpath="checkpoints",  # Directory to save the checkpoints
+    filename="best-checkpoint-{epoch}-{val_loss:.2f}",  # Checkpoint filename format
+)
 
 # create the trainer class
-rydberg_gpt_trainer = RydbergGPTTrainer(model, data, config)
-logger = TensorBoardLogger(save_dir="logs", log_graph=True)
+rydberg_gpt_trainer = RydbergGPTTrainer(model, config)
+# rydberg_gpt_trainer.set_example_input_array(data, config)
+
+# logger = TensorBoardLogger(save_dir="logs", log_graph=True)
+logger = TensorBoardLogger(save_dir="logs")
 
 # https://lightning.ai/docs/pytorch/stable/common/trainer.html
-device = "cuda" if torch.cuda.is_available() else "cpu"
 trainer = pl.Trainer(
     max_epochs=config.num_epochs,
+    callbacks=[checkpoint_callback],  # Add the ModelCheckpoint callback
     devices="auto",
     accelerator=device,
     logger=logger,
 )
 
-trainer.fit(rydberg_gpt_trainer)
+trainer.fit(rydberg_gpt_trainer, train_loader, val_loader)
