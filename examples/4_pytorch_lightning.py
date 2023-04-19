@@ -1,3 +1,4 @@
+import argparse
 from dataclasses import asdict, dataclass
 
 import numpy as np
@@ -20,6 +21,7 @@ class RydbergGPTTrainer(pl.LightningModule):
         self,
         model,
         config: dataclass,
+        # logger: TensorBoardLogger,
     ):
         super().__init__()
         self.config = config
@@ -31,7 +33,7 @@ class RydbergGPTTrainer(pl.LightningModule):
             self.profiler = torch.profiler.profile(  # Add the profiler as an attribute
                 schedule=torch.profiler.schedule(wait=0, warmup=1, active=3),
                 on_trace_ready=torch.profiler.tensorboard_trace_handler(
-                    f"logs/lightning_logs/version_{logger.version}/profiler"
+                    f"logs/lightning_logs/version_{self.logger.version}/profiler"
                 ),
                 record_shapes=True,
                 profile_memory=True,
@@ -57,7 +59,7 @@ class RydbergGPTTrainer(pl.LightningModule):
             loss = self.criterion(cond_log_probs, measurements)
 
         assert not torch.isnan(loss), "Loss is NaN"
-        self.log("train_loss", loss, prog_bar=config.prog_bar)
+        self.log("train_loss", loss, prog_bar=self.config.prog_bar)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -73,7 +75,7 @@ class RydbergGPTTrainer(pl.LightningModule):
             cond_log_probs = self.forward(measurements, cond)
             loss = self.criterion(cond_log_probs, measurements)
 
-        self.log("val_loss", loss, prog_bar=config.prog_bar)
+        self.log("val_loss", loss, prog_bar=self.config.prog_bar)
         return loss
 
     def configure_optimizers(self):
@@ -91,12 +93,9 @@ class RydbergGPTTrainer(pl.LightningModule):
     #     self.example_input_array = (measurements, cond)
 
 
-if __name__ == "__main__":
-    config_name = "encoder_decoder_small"
-    yaml_path = f"examples/config/models/{config_name}.yaml"
-    config = create_config_from_yaml(yaml_path=yaml_path)
+def main(config_path: str):
+    config = create_config_from_yaml(yaml_path=config_path)
 
-    # seed everything
     torch.manual_seed(config.seed)
     np.random.seed(config.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -104,6 +103,7 @@ if __name__ == "__main__":
 
     if config.device == "cpu":
         config.profiling = False
+        # config.prog_bar = True
 
     print(f"Using device: {config.device}")
 
@@ -136,3 +136,22 @@ if __name__ == "__main__":
     )
 
     trainer.fit(rydberg_gpt_trainer, train_loader, val_loader)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Run deep learning model with specified config."
+    )
+    parser.add_argument(
+        "config_file_name",
+        nargs="?",
+        default="small",
+        help="Name of the configuration file without the .yaml extension. (default: small)",
+    )
+
+    args = parser.parse_args()
+
+    config_name = args.config_file_name
+    yaml_path = f"examples/config/models/{config_name}.yaml"
+
+    main(config_path=yaml_path)
