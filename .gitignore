@@ -154,3 +154,5 @@ logs
 plots/
 
 *.hdf5
+
+images
