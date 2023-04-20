@@ -1,8 +1,8 @@
 transformer:
   num_heads: 8
-  d_model: 256
+  d_model: 128
   num_blocks: 8
-  d_ff: 1024 # usually 4 * d_model
+  d_ff: 512 # usually 4 * d_model
   dropout: 0.1
 
 training:
@@ -11,7 +11,7 @@ training:
   accelerator: "gpu"
   precision: 16 # half precision saves lots of memory! 32 is default
   max_epochs: 20
-  batch_size: 512
+  batch_size: 256 # 512 OOM for 3 devices. The batch size should not depend on ngpus. 
   learning_rate: 0.001
   optimizer: "Adam"
   criterion: "KLLoss"
