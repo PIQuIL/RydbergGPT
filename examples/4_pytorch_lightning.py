@@ -8,7 +8,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.profiler
-import yaml
 from config.utils import create_config_from_yaml
 from pytorch_lightning.callbacks import (
     DeviceStatsMonitor,
@@ -78,6 +77,8 @@ def main(config_path: str):
     np.random.seed(config.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     config.device = device
+    # TODO make dataloader pytorch_lightning loaders
+    # https://lightning.ai/docs/pytorch/stable/data/datamodule.html
     train_loader, val_loader = get_rydberg_dataloader(
         config.batch_size, test_size=0.2, num_workers=config.num_workers
     )
