@@ -57,6 +57,7 @@ class RydbergGPTTrainer(pl.LightningModule):
         self.log("val_loss", loss, sync_dist=True)
         return loss
 
+    # TODO add learning rate scheduler
     def configure_optimizers(self):
         optimizer_class = getattr(optim, self.config.optimizer)
         optimizer = optimizer_class(
