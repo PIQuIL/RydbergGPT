@@ -84,6 +84,9 @@ def main(config_path: str):
         config.batch_size, test_size=0.2, num_workers=config.num_workers
     )
     input_array = set_example_input_array(train_loader)
+
+    # TODO start from checkpoint if specified
+    # TODO add torch compile!
     model = get_rydberg_encoder_decoder(config)
     logger = TensorBoardLogger(save_dir="logs")
     log_path = f"logs/lightning_logs/version_{logger.version}"
@@ -116,9 +119,9 @@ def main(config_path: str):
         strategy = config.strategy
 
     trainer = pl.Trainer(
-        devices=config.devices,
+        devices=-1,
         strategy=strategy,
-        accelerator=config.accelerator,
+        accelerator="auto",
         precision=config.precision,
         max_epochs=config.max_epochs,
         callbacks=callbacks,
