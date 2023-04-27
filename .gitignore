@@ -156,3 +156,5 @@ plots/
 *.hdf5
 
 images
+
+_bin/
