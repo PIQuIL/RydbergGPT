@@ -1,0 +1,12 @@
+Bootstrap: docker
+From: pytorch/pytorch:latest
+
+%files
+    requirements.txt
+
+%post
+    # Make sure pip is up-to-date
+    pip install --upgrade pip
+
+    # Install packages from requirements.txt using pip
+    pip install -r requirements.txt
