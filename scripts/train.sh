@@ -8,7 +8,7 @@
 module purge
 
 # Declare the Python script name as a variable
-python_script_name="train_distr.py"
+python_script_name="train.py"
 # python_script_name="examples/3_train_encoder_decoder.py"
 
 apptainer exec ~/RydbergGPT/images/pytorch.sif python ~/RydbergGPT/${python_script_name} --config_name=gpt2
