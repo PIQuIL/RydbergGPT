@@ -32,6 +32,7 @@ We found several very helpful codebases when building this repo, and we sincerel
 
 + Transformer Tutorials:
     + [Annotated Transformer](https://github.com/harvardnlp/annotated-transformer/)
+    + [Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)
 + Transformer quantum state:
     + [Predicting Properties of Quantum Systems with Conditional Generative Models](https://github.com/PennyLaneAI/generative-quantum-states)
     + [Transformer Quantum State](https://github.com/yuanhangzhang98/transformer_quantum_state)
