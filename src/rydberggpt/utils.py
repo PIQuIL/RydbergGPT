@@ -1,7 +1,9 @@
-from typing import List, Tuple, Union
+from dataclasses import make_dataclass
+from typing import Any, Dict, List, Tuple, Type, Union
 
 import numpy as np
 import torch
+import yaml
 from torch import nn
 
 
@@ -23,7 +25,6 @@ def to_one_hot(
         data = torch.tensor(data, dtype=torch.int64)
     elif not isinstance(data, torch.Tensor):
         raise TypeError("Input data must be a tensor, list or tuple of integers.")
-        
 
     data = nn.functional.one_hot(data, num_classes)
 
@@ -70,3 +71,26 @@ def get_dummy_dataset(n_atoms: int, batch_size: int, dim: int) -> torch.Tensor:
     dataset = torch.from_numpy(dataset).float()
 
     return dataset
+
+
+def create_dataclass_from_dict(name: str, data: Dict[str, Any]) -> Type:
+    fields = [(key, type(value)) for key, value in data.items()]
+    return make_dataclass(name, fields)
+
+
+def flatten_yaml(yaml_config: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+    flattened_config = {}
+    for section, section_values in yaml_config.items():
+        for key, value in section_values.items():
+            flattened_config[f"{key}"] = value
+    return flattened_config
+
+
+def create_config_from_yaml(yaml_path: str):
+    with open(yaml_path, "r") as file:
+        yaml_config = yaml.safe_load(file)
+
+    flattened_config = flatten_yaml(yaml_config)
+    Config = create_dataclass_from_dict("Config", flattened_config)
+
+    return Config(**flattened_config)
