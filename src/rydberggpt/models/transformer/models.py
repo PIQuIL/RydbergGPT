@@ -105,8 +105,8 @@ class Encoder(nn.Module):
         """
         for layer in self.layers:
             x = layer(x)
-        return x  # [batch_size, seq_length, d_model]
-        # return self.norm(x)
+        # return x
+        return self.norm(x)  # [batch_size, seq_length, d_model]
 
 
 class Decoder(nn.Module):
@@ -139,8 +139,8 @@ class Decoder(nn.Module):
         """
         for layer in self.layers:
             x = layer(x, memory)
-        return x  # [batch_size, seq_len, d_model]
-        # return self.norm(x)
+        # return x
+        return self.norm(x)  # [batch_size, seq_len, d_model]
 
 
 class Generator(nn.Module):
