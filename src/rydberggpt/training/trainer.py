@@ -59,6 +59,7 @@ class RydbergGPTTrainer(pl.LightningModule):
         )
 
         # Add learning rate scheduler
+        # https://pytorch.org/docs/stable/optim.html
         scheduler = optim.lr_scheduler.StepLR(
             optimizer,
             # step_size=self.config.scheduler_step_size,
