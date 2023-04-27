@@ -4,6 +4,7 @@ transformer:
   num_blocks: 8
   d_ff: 512 # usually 4 * d_model
   dropout: 0.1
+  compile: True
 
 training:
   strategy: "ddp" # "auto"
