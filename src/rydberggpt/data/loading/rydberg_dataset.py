@@ -3,6 +3,7 @@ import torch
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 
+from rydberggpt.data.dataclasses import Batch, custom_collate
 from rydberggpt.utils import to_one_hot
 
 
@@ -40,12 +41,14 @@ def get_rydberg_dataloader(
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
+        collate_fn=custom_collate,
     )
     val_loader = DataLoader(
         val_dataset,
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
+        collate_fn=custom_collate,
     )
     return train_loader, val_loader
 
@@ -76,29 +79,36 @@ class RydbergDataset(Dataset):
         """
         return len(self.dataframe)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> Batch:
         """
-        Get the data sample at the specified index.
+        Get the Batch object at the specified index.
 
         Args:
-            index (int): The index of the data sample.
+            index (int): The index of the Batch object in the dataset.
 
         Returns:
-            tuple: A tuple containing the conditions, shifted measurements, and measurements tensors.
-                cond (torch.Tensor): A tensor representing the input conditions. Shape: [1, 4].
-                shifted_measurements (torch.Tensor): A tensor representing the shifted measurements. Shape: [N, 2].
-                measurements (torch.Tensor): A tensor representing the original measurements. Shape: [N, 2].
+            Batch: A Batch object containing the data for the specified index.
         """
         row = self.dataframe.iloc[index]
         cond = torch.tensor(
-            [row["delta"], row["omega"], row["Lx"], row["Ly"]], dtype=torch.float32
+            [row["delta"], row["omega"], row["Lx"], row["Ly"], row["beta"]],
+            dtype=torch.float32,
         )
         cond = cond.unsqueeze(0)  # [batch_size, 1, 4] 1 is the sequ length dim
-        measurements = torch.tensor(row["measurement"], dtype=torch.int64)
-        measurements = to_one_hot(measurements, 2)  # because Rydberg states are 0 or 1
+        coupling_matrix = torch.tensor(row["V"], dtype=torch.float32)
+        measurements = torch.tensor(
+            row["measurement"][:16], dtype=torch.int64
+        )  # TODO REMOVE THIS
+        m_onehot = to_one_hot(measurements, 2)  # because Rydberg states are 0 or 1
 
-        _, dim = measurements.shape
-        shifted_measurements = torch.cat(
-            (torch.zeros(1, dim), measurements[:-1]), dim=0
+        _, dim = m_onehot.shape
+        m_shifted_onehot = torch.cat((torch.zeros(1, dim), m_onehot[:-1]), dim=0)
+        return Batch(
+            cond=cond,
+            delta=row["delta"],
+            omega=row["omega"],
+            beta=row["beta"],
+            m_onehot=m_onehot,
+            m_shifted_onehot=m_shifted_onehot,
+            coupling_matrix=coupling_matrix,
         )
-        return cond, shifted_measurements, measurements
