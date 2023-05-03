@@ -1,17 +1,17 @@
 transformer:
   num_heads: 8
   d_model: 32
-  num_blocks: 2
+  num_blocks: 3
   d_ff: 128 # usually 4 * d_model
-  dropout: 0.1
+  dropout: 0.0
   compile: False
 
 training:
   strategy: "auto"
-  precision: "16-mixed" # half precision saves lots of memory! 32 is default
-  max_epochs: 1000
-  batch_size: 16
-  learning_rate: 0.005
+  precision: 16-mixed # half precision saves lots of memory! 32 is default
+  max_epochs: 100
+  batch_size: 2
+  learning_rate: 0.0005
   optimizer: "Adam"
   criterion: "KLLoss"
 
@@ -20,11 +20,11 @@ dataset:
   num_samples: null
   delta: null
   num_workers: 0
-  dataset_name: dataset_small
+  dataset_name: dataset
 
 rydberg:
   num_states: 2
-  num_encoder_embedding_dims: 4
+  num_encoder_embedding_dims: 3
 
 profiler: 
   profiler: "PyTorchProfiler"
