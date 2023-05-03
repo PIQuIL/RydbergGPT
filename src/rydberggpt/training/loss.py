@@ -13,6 +13,7 @@ class KLLoss(nn.Module):
 
     def __init__(self):
         super(KLLoss, self).__init__()
+        self.criterion = nn.KLDivLoss(reduction="batchmean")
 
     def forward(self, cond_log_probs: Tensor, tgt: Tensor) -> Tensor:
         """
@@ -28,11 +29,7 @@ class KLLoss(nn.Module):
         Returns:
             torch.Tensor: The computed Kullback-Leibler divergence loss, a scalar tensor.
         """
-        batchsize = tgt.shape[0]
-        # cond_probs = torch.exp(cond_log_probs)  # used for debugging
-        temp = torch.einsum("bnd,bnd->bn", cond_log_probs, tgt)
-        log_probs = torch.sum(temp, axis=-1)
-        loss = -torch.sum(log_probs) / batchsize
+        loss = self.criterion(cond_log_probs, tgt)
         return loss
 
 
@@ -50,9 +47,10 @@ class LabelSmoothing(nn.Module):
     def __init__(self, smoothing=0.0):
         super(LabelSmoothing, self).__init__()
         self.smoothing = smoothing
+        self.criterion = nn.KLDivLoss(reduction="batchmean")
 
     def forward(self, cond_log_probs: Tensor, tgt: Tensor) -> Tensor:
-        """Compute the cross-entropy loss with label smoothing.
+        """Compute the KLDiv loss with label smoothing.
 
         Args:
             cond_probs (torch.Tensor): Tensor of shape (batch_size, num_atoms, dim) containing the
@@ -63,10 +61,14 @@ class LabelSmoothing(nn.Module):
         Returns:
             torch.Tensor: Scalar tensor representing the loss with label smoothing.
         """
-        # TODO implement label smoothing
-        batchsize = tgt.shape[0]
-        # cond_probs = torch.exp(cond_log_probs)  # used for debugging
-        temp = torch.einsum("bnd,bnd->bn", cond_log_probs, tgt)
-        log_probs = torch.sum(temp, axis=-1)
-        loss = -torch.sum(log_probs) / batchsize
+        assert 0 <= self.smoothing < 1
+        num_classes = tgt.shape[-1]
+
+        # Compute smoothed target labels
+        with torch.no_grad():
+            smoothed_tgt = tgt * (1.0 - self.smoothing) + self.smoothing / num_classes
+
+        # Compute the Kullback-Leibler divergence loss
+        loss = self.criterion(cond_log_probs, smoothed_tgt)
+
         return loss
