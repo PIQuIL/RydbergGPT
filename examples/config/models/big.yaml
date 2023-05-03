@@ -23,7 +23,7 @@ dataset:
 
 rydberg:
   num_states: 2
-  num_encoder_embedding_dims: 4
+  num_encoder_embedding_dims: 3
 
 profiler: 
   profiler: "PyTorchProfiler" # https://pytorch-lightning.readthedocs.io/en/1.6.5/advanced/profiler.html 
