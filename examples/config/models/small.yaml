@@ -9,11 +9,12 @@ transformer:
 training:
   strategy: "auto"
   precision: 16-mixed # half precision saves lots of memory! 32 is default
-  max_epochs: 100
+  max_epochs: 1000
   batch_size: 2
   learning_rate: 0.0005
   optimizer: "Adam"
   criterion: "KLLoss"
+  from_checkpoint: null
 
 dataset:
   num_atoms: null
