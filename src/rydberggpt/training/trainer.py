@@ -31,26 +31,35 @@ class RydbergGPTTrainer(pl.LightningModule):
         return cond_log_probs
 
     def training_step(self, batch, batch_idx):
-        cond, m_shifted_onehot, m_onehot = batch
-        cond_log_probs = self.forward(m_shifted_onehot, cond)
-        loss = self.criterion(cond_log_probs, m_onehot)
+        cond_log_probs = self.forward(batch.m_shifted_onehot, batch.graph)
+        loss = self.criterion(cond_log_probs, batch.m_onehot)
         self.log("train_loss", loss, sync_dist=True)
         return loss
 
-    def validation_step(self, batch, batch_idx):
-        cond, m_shifted_onehot, m_onehot = batch
-        cond_log_probs = self.forward(m_shifted_onehot, cond)
-        loss = self.criterion(cond_log_probs, m_onehot)
-        self.log("val_loss", loss, sync_dist=True)
-        return loss
-
-    # # TODO add learning rate scheduler
-    # def configure_optimizers(self):
-    #     optimizer_class = getattr(optim, self.config.optimizer)
-    #     optimizer = optimizer_class(
-    #         self.model.parameters(), lr=self.config.learning_rate
+    # def validation_step(self, batch, batch_idx):  # batch denotes the batch
+    #     self.model.eval()
+    #     # TODO add calculation of energy function as well
+    #     # we can track the energy of the dataset vs the energy of the model
+    #     batch_size, num_atoms, _ = batch.m_onehot.shape
+    #     m = torch.argmax(batch.m_onehot, dim=-1)
+    #     samples, log_probs = self.model.get_samples_and_log_probs(
+    #         batch_size, batch.cond, num_atoms, device=self.device
     #     )
-    #     return optimizer
+    #     # log_probs = cond_log_probs.sum(dim=-1)
+    #     energy = self.model.get_energy(
+    #         V=batch.coupling_matrix,
+    #         omega=batch.omega,
+    #         delta=batch.delta,
+    #         samples=samples,
+    #         cond=batch.cond,
+    #         log_probs=log_probs,
+    #         num_atoms=num_atoms,
+    #         device=self.device,
+    #     )
+    #     # cond_log_probs = self.forward(batch.m_shifted_onehot, batch.cond)
+    #     # loss = self.criterion(cond_log_probs, batch.m_onehot)
+    #     self.log("energy", energy, sync_dist=True)
+    #     return energy
 
     def configure_optimizers(self):
         optimizer_class = getattr(optim, self.config.optimizer)
