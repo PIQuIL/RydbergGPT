@@ -1,3 +1,4 @@
+import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -5,7 +6,7 @@ import torch.nn.functional as F
 from rydberggpt.models.transformer.utils import clones
 
 
-class EncoderDecoder(nn.Module):
+class EncoderDecoder(pl.LightningModule):
     """
     A standard Encoder-Decoder architecture. Base for this and many other models.
     """
@@ -14,7 +15,7 @@ class EncoderDecoder(nn.Module):
         self,
         encoder: nn.Module,
         decoder: nn.Module,
-        src_embed: nn.Module,
+        # src_embed: nn.Module,
         tgt_embed: nn.Module,
         generator: nn.Module,
     ):
@@ -24,14 +25,13 @@ class EncoderDecoder(nn.Module):
         Args:
             encoder (nn.Module): The encoder module.
             decoder (nn.Module): The decoder module.
-            src_embed (nn.Module): The source embedding module.
             tgt_embed (nn.Module): The target embedding module.
             generator (nn.Module): The generator module.
         """
         super(EncoderDecoder, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
-        self.src_embed = src_embed
+        # self.src_embed = src_embed
         self.tgt_embed = tgt_embed
         self.generator = generator
 
@@ -59,7 +59,8 @@ class EncoderDecoder(nn.Module):
         Returns:
             torch.Tensor: The encoded tensor of shape (batch_size, src_seq_length, d_model_tgt).
         """
-        return self.encoder(self.src_embed(src))
+        return self.encoder(src)
+        # return self.encoder(self.src_embed(src))
 
     def decode(self, tgt: torch.Tensor, memory: torch.Tensor) -> torch.Tensor:
         """
