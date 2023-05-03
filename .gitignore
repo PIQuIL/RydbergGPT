@@ -158,3 +158,5 @@ plots/
 images
 
 _bin/
+
+examples/_not_in_use/
