@@ -2,12 +2,11 @@ import copy
 from typing import Tuple
 
 import torch
-
-# from einops import rearrange
+from pytorch_lightning import LightningModule
 from torch import Tensor, nn
+from torch_geometric.nn import GATConv, GCNConv
 
-from rydberggpt.models.encoder.custom_encoder import CustomEncoder
-from rydberggpt.models.graph_embedding.gcn_embedding import GraphEmbedding
+from rydberggpt.models.graph_embedding.models import GraphEmbedding
 from rydberggpt.models.transformer.layers import DecoderLayer, EncoderLayer
 from rydberggpt.models.transformer.models import (
     Decoder,
@@ -27,45 +26,23 @@ def get_rydberg_graph_encoder_decoder(config):
     attn = nn.MultiheadAttention(config.d_model, config.num_heads, batch_first=True)
     position = PositionalEncoding(config.d_model, config.dropout)
     ff = PositionwiseFeedForward(config.d_model, config.d_ff, config.dropout)
-    # encoder = CustomEncoder(config)
-    encoder = GraphEmbedding(
-        in_node_dim=2, d_hidden=64, d_model=config.d_model, num_layers=2
-    )
-
-    model = RydbergEncoderDecoder(
-        encoder=encoder,
-        decoder=Decoder(
-            DecoderLayer(config.d_model, c(attn), c(attn), c(ff), config.dropout),
-            config.num_blocks,
-        ),
-        tgt_embed=nn.Sequential(
-            nn.Linear(config.num_states, config.d_model), c(position)
-        ),
-        generator=Generator(config.d_model, 2),
-        config=config,
-    )
-
-    for p in model.parameters():
-        if p.dim() > 1:
-            nn.init.xavier_uniform_(p)
-
-    return model
-
-
-def get_rydberg_encoder_decoder(config):
-    c = copy.deepcopy
-    attn = nn.MultiheadAttention(config.d_model, config.num_heads, batch_first=True)
-    position = PositionalEncoding(config.d_model, config.dropout)
-    ff = PositionwiseFeedForward(config.d_model, config.d_ff, config.dropout)
 
     model = RydbergEncoderDecoder(
         encoder=Encoder(
             EncoderLayer(config.d_model, c(attn), c(ff), config.dropout),
-            1,
+            config.num_blocks_encoder,
         ),
         decoder=Decoder(
             DecoderLayer(config.d_model, c(attn), c(attn), c(ff), config.dropout),
-            config.num_blocks,
+            config.num_blocks_decoder,
+        ),
+        src_embed=GraphEmbedding(
+            graph_layer=GCNConv,  # GATConv
+            in_node_dim=config.in_node_dim,
+            d_hidden=config.graph_hidden_dim,
+            d_model=config.d_model,
+            num_layers=config.graph_num_layers,
+            dropout=config.dropout,
         ),
         tgt_embed=nn.Sequential(
             nn.Linear(config.num_states, config.d_model), c(position)
@@ -82,6 +59,7 @@ def get_rydberg_encoder_decoder(config):
 
 
 class RydbergEncoderDecoder(EncoderDecoder):
+
     """
     RydbergTransformer is a specific implementation of the Encoder-Decoder architecture
     that uses an encoder and decoder composed of multiple layers of EncoderLayer and DecoderLayer
@@ -102,12 +80,12 @@ class RydbergEncoderDecoder(EncoderDecoder):
         self,
         encoder: Encoder,
         decoder: Decoder,
+        src_embed: nn.Module,
         tgt_embed: nn.Module,
         generator: Generator,
         config=None,
-        **kwargs,
     ):
-        super().__init__(encoder, decoder, tgt_embed, generator)
+        super().__init__(encoder, decoder, src_embed, tgt_embed, generator)
         self.config = config
 
     def get_log_probs(self, x, cond):
