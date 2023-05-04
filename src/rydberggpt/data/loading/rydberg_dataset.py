@@ -18,8 +18,9 @@ def get_rydberg_dataloader(
     batch_size: int = 32,
     test_size: float = 0.2,
     num_workers: int = 0,
+    data_path: str = "data",
 ) -> tuple[DataLoader, DataLoader]:
-    df, graph_data = read_subfolder_data()
+    df, graph_data = read_subfolder_data(data_path=data_path)
     # train_df, test_df = train_test_split(df, test_size=test_size, random_state=42)
 
     train_dataset = RydbergDataset(df, graph_data)
