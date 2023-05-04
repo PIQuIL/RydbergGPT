@@ -15,7 +15,7 @@ class DecoderLayer(nn.Module):
     Decoder is made of self-attn, src-attn, and feed forward.
 
     Args:
-        size (int): The input size.
+        size (int): The input size. (d_model)
         self_attn (nn.MultiheadAttention): The self-attention module.
         src_attn (nn.MultiheadAttention): The source-attention module.
         feed_forward (PositionwiseFeedForward): The feed forward module.
@@ -59,7 +59,7 @@ class EncoderLayer(nn.Module):
     Encoder is made up of self-attn and feed forward.
 
     Args:
-        size (int): The input size.
+        size (int): The input size. (d_model)
         self_attn (nn.MultiheadAttention): The self-attention module.
         feed_forward (PositionwiseFeedForward): The feed forward module.
         dropout (float): The dropout rate.
@@ -90,40 +90,3 @@ class EncoderLayer(nn.Module):
         """
         x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x)[0])
         return self.sublayer[1](x, self.feed_forward)
-
-
-#########
-# alternative implementation
-class DecoderLayer1(nn.Module):
-    def __init__(self, d_model, num_heads, config, **kwargs):
-        super().__init__(**kwargs)
-
-        self.d_model = d_model
-        self.num_heads = num_heads
-        self.config = config
-
-        self.self_attn = nn.MultiheadAttention(d_model, num_heads, batch_first=True)
-        self.src_attn = nn.MultiheadAttention(d_model, num_heads, batch_first=True)
-        self.ln = clones(nn.LayerNorm(d_model), 3)
-        self.linear = nn.Linear(d_model, d_model)
-
-    def forward(self, x, memory):
-        x = x + self.self_attn(x, x, x, is_causal=True)[0]
-        x = x + self.src_attn(self.ln[0](x), memory, memory)[0]
-        x = x + self.linear(self.ln[1](x))
-        return self.ln[2](x)
-
-
-# atlernative implementation, this layer converges a bit faster
-class EncoderLayer1(nn.Module):
-    def __init__(self, d_model, num_heads, config, **kwargs):
-        super().__init__(**kwargs)
-        self.attn = nn.MultiheadAttention(d_model, num_heads, batch_first=True)
-        self.ln = clones(nn.LayerNorm(d_model), 2)
-        self.linear = nn.Linear(d_model, d_model)
-        # self.config = config
-
-    def forward(self, x):
-        x = x + self.attn(x, x, x)[0]
-        x = x + self.linear(self.ln[0](x))
-        return self.ln[1](x)
