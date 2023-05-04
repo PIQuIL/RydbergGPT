@@ -1,10 +1,11 @@
+import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
 
 
-class KLLoss(nn.Module):
+class KLLoss(pl.LightningModule):
     """
     KLLoss is a custom loss function class that computes the Kullback-Leibler divergence
     between the target distribution (tgt) and the conditional log probabilities
@@ -13,7 +14,7 @@ class KLLoss(nn.Module):
 
     def __init__(self):
         super(KLLoss, self).__init__()
-        self.criterion = nn.KLDivLoss(reduction="batchmean")
+        # self.criterion = nn.KLDivLoss(reduction="batchmean")
 
     def forward(self, cond_log_probs: Tensor, tgt: Tensor) -> Tensor:
         """
@@ -29,11 +30,17 @@ class KLLoss(nn.Module):
         Returns:
             torch.Tensor: The computed Kullback-Leibler divergence loss, a scalar tensor.
         """
-        loss = self.criterion(cond_log_probs, tgt)
+        # loss = self.criterion(cond_log_probs, tgt)
+        # cond_probs = torch.exp(cond_log_probs)  # used for debugging
+        batchsize = tgt.shape[0]
+        temp = torch.einsum("bnd,bnd->bn", cond_log_probs, tgt)
+        log_probs = torch.sum(temp, axis=-1)
+        loss = -torch.sum(log_probs) / batchsize
+
         return loss
 
 
-class LabelSmoothing(nn.Module):
+class LabelSmoothing(pl.LightningModule):
     """Implement label smoothing for a classification task. Label smoothing is a regularization
     technique that smooths the probability distribution of the target labels by replacing the
     hard 0s and 1s in the one-hot target vectors with small positive values.
