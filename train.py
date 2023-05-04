@@ -1,5 +1,4 @@
 import argparse
-import os
 from typing import Optional
 
 import numpy as np
@@ -20,24 +19,8 @@ from rydberggpt.data.loading.rydberg_dataset import get_rydberg_dataloader
 from rydberggpt.models.rydberg_encoder_decoder import get_rydberg_graph_encoder_decoder
 from rydberggpt.training.callbacks.module_info_callback import ModelInfoCallback
 from rydberggpt.training.trainer import RydbergGPTTrainer
+from rydberggpt.training.utils import find_latest_checkpoint, set_example_input_array
 from rydberggpt.utils import create_config_from_yaml
-
-
-def find_latest_checkpoint(from_checkpoint: int, log_dir: str = "logs/lightning_logs"):
-    log_dir = os.path.join(log_dir, f"version_{from_checkpoint}/checkpoints")
-    checkpoint_files = [file for file in os.listdir(log_dir) if file.endswith(".ckpt")]
-
-    if not checkpoint_files:
-        return None
-
-    checkpoint_files.sort(key=lambda x: os.path.getmtime(os.path.join(log_dir, x)))
-    latest_checkpoint = checkpoint_files[-1]
-    return os.path.join(log_dir, latest_checkpoint)
-
-
-def set_example_input_array(train_loader):
-    example_batch = next(iter(train_loader))
-    return example_batch.m_onehot, example_batch.graph
 
 
 def main(config_path: str):
@@ -124,7 +107,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--config_name",
-        default="small",
+        default="config_small",
         help="Name of the configuration file without the .yaml extension. (default: small)",
     )
     parser.add_argument(
@@ -137,6 +120,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     config_name = args.config_name
-    yaml_path = f"examples/config/models/{config_name}.yaml"
+    yaml_path = f"examples/config/{config_name}.yaml"
 
     main(config_path=yaml_path)
