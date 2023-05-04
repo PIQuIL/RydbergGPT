@@ -31,48 +31,6 @@ def to_one_hot(
     return data.to(torch.float)
 
 
-def get_dummy_dataset(n_atoms: int, batch_size: int, dim: int) -> torch.Tensor:
-    """Generates a random dataset for testing purposes.
-
-    The dataset has shape [batch_size, n_atoms, dim], where each dim contains only a single 1 and
-    the other elements are set to 0. The dataset is then converted to a PyTorch tensor of type
-    torch.float32.
-
-    Args:
-        n_atoms (int): The number of atoms in the dataset.
-        batch_size (int): The number of examples in the dataset.
-        dim (int): The number of dimensions in each example.
-
-    Returns:
-        torch.Tensor: A PyTorch tensor containing the random dataset, with shape [batch_size,
-            n_atoms, dim].
-    """
-    # Generate random dataset with shape [batch_size, n_atoms, dim] where each dim contains only
-    # a single 1
-    dataset = np.zeros((batch_size, n_atoms, dim))
-    for b in range(batch_size):
-        for t in range(n_atoms):
-            dataset[b, t, np.random.randint(dim)] = 1
-
-    # Check dataset shape
-    assert dataset.shape == (batch_size, n_atoms, dim), "dataset has wrong shape"
-
-    # Check that each dim contains only a single 1
-    assert np.allclose(
-        np.sum(dataset, axis=2), np.ones((batch_size, n_atoms))
-    ), "dataset contains more than one 1 per dim"
-
-    # Check that dataset contains only 0 and 1
-    assert np.allclose(
-        dataset, dataset.astype(bool)
-    ), "dataset contains values other than 0 and 1"
-
-    # Convert dataset to PyTorch tensor of type torch.float32
-    dataset = torch.from_numpy(dataset).float()
-
-    return dataset
-
-
 def create_dataclass_from_dict(name: str, data: Dict[str, Any]) -> Type:
     fields = [(key, type(value)) for key, value in data.items()]
     return make_dataclass(name, fields)

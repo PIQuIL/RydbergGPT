@@ -1,4 +1,6 @@
 import argparse
+import os
+from typing import Optional
 
 import numpy as np
 import pytorch_lightning as pl
@@ -15,16 +17,27 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.strategies import DDPStrategy
 
 from rydberggpt.data.loading.rydberg_dataset import get_rydberg_dataloader
-from rydberggpt.models.encoder_decoder_transformer import get_rydberg_encoder_decoder
+from rydberggpt.models.rydberg_encoder_decoder import get_rydberg_graph_encoder_decoder
 from rydberggpt.training.callbacks.module_info_callback import ModelInfoCallback
 from rydberggpt.training.trainer import RydbergGPTTrainer
 from rydberggpt.utils import create_config_from_yaml
 
 
+def find_latest_checkpoint(from_checkpoint: int, log_dir: str = "logs/lightning_logs"):
+    log_dir = os.path.join(log_dir, f"version_{from_checkpoint}/checkpoints")
+    checkpoint_files = [file for file in os.listdir(log_dir) if file.endswith(".ckpt")]
+
+    if not checkpoint_files:
+        return None
+
+    checkpoint_files.sort(key=lambda x: os.path.getmtime(os.path.join(log_dir, x)))
+    latest_checkpoint = checkpoint_files[-1]
+    return os.path.join(log_dir, latest_checkpoint)
+
+
 def set_example_input_array(train_loader):
     example_batch = next(iter(train_loader))
-    cond, m_shifted_onehot, m_onehot = example_batch
-    return m_onehot, cond
+    return example_batch.m_onehot, example_batch.graph
 
 
 def main(config_path: str):
@@ -40,8 +53,8 @@ def main(config_path: str):
     )
     input_array = set_example_input_array(train_loader)
 
-    # TODO start from checkpoint if specified
-    model = get_rydberg_encoder_decoder(config)
+    model = get_rydberg_graph_encoder_decoder(config)
+
     if config.compile:
         # check that device is cuda
         if device != "cuda":
@@ -92,9 +105,17 @@ def main(config_path: str):
         logger=logger,
         profiler=profiler,
         enable_progress_bar=config.prog_bar,
+        # overfit_batches=1,
     )
 
-    trainer.fit(rydberg_gpt_trainer, train_loader, val_loader)
+    # Find the latest checkpoint
+    if config.from_checkpoint is not None:
+        checkpoint_path = find_latest_checkpoint(from_checkpoint=config.from_checkpoint)
+        trainer.fit(
+            rydberg_gpt_trainer, train_loader, val_loader, ckpt_path=checkpoint_path
+        )
+    else:
+        trainer.fit(rydberg_gpt_trainer, train_loader, val_loader)
 
 
 if __name__ == "__main__":
