@@ -1,12 +1,27 @@
 import yaml
-from pytorch_lightning.callbacks import Callback, ModelSummary
+from pytorch_lightning.callbacks import Callback
 from pytorch_lightning.utilities.model_summary import ModelSummary
 
 from rydberggpt.models.utils import extract_model_info
 
 
 class ModelInfoCallback(Callback):
-    def on_train_start(self, trainer, pl_module):
+    """
+    A custom PyTorch Lightning callback that logs model information at the start of training.
+
+    This callback extracts and logs information about the model's structure, total parameters, and
+    total trainable parameters at the beginning of the training process. The information is saved
+    as a YAML file in the logger's log directory.
+    """
+
+    def on_train_start(self, trainer, pl_module) -> None:
+        """
+        Run the callback at the beginning of training.
+
+        Args:
+            trainer (pytorch_lightning.Trainer): The PyTorch Lightning trainer instance.
+            pl_module (pytorch_lightning.LightningModule): The PyTorch Lightning module instance.
+        """
         # This will run at the beginning of training
         log_path = trainer.logger.log_dir
 
