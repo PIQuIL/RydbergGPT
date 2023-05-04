@@ -1,41 +1,30 @@
+import json
+import os
+
+import h5py
+import networkx as nx
 import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 
 from rydberggpt.data.dataclasses import Batch, custom_collate
+from rydberggpt.data.loading.graph_utils import networkx_to_pyg_data
+from rydberggpt.data.loading.utils import read_subfolder_data
 from rydberggpt.utils import to_one_hot
 
 
 def get_rydberg_dataloader(
     batch_size: int = 32,
     test_size: float = 0.2,
-    dataset_name: str = "dataset",
     num_workers: int = 0,
 ) -> tuple[DataLoader, DataLoader]:
-    """
-    Generate DataLoaders for the train and validation sets of a Rydberg atom dataset.
+    df, graph_data = read_subfolder_data()
+    # train_df, test_df = train_test_split(df, test_size=test_size, random_state=42)
 
-    Args:
-        batch_size (int, optional): The batch size for the DataLoader. Default is 32.
-        test_size (float, optional): The proportion of the dataset to be used as validation set. Default is 0.2.
-        dataset_name (str, optional): The filename of the dataset without the file extension. Default is "dataset".
-        num_workers (int, optional): The number of workers to use for data loading. Default is 0.
+    train_dataset = RydbergDataset(df, graph_data)
+    val_dataset = RydbergDataset(df, graph_data)
 
-    Returns:
-        tuple: A tuple containing the train and validation DataLoaders.
-            train_loader (DataLoader): The DataLoader for the train dataset.
-            val_loader (DataLoader): The DataLoader for the validation dataset.
-    """
-    df = pd.read_hdf(f"data/{dataset_name}.h5", key="data")
-    # Split the DataFrame into train and validation DataFrames
-    train_df, test_df = train_test_split(df, test_size=test_size, random_state=42)
-
-    # Create the RydbergDataset for train and validation sets
-    train_dataset = RydbergDataset(train_df)
-    val_dataset = RydbergDataset(test_df)
-
-    # Create a DataLoader for each set with the custom Dataset
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
@@ -61,7 +50,7 @@ class RydbergDataset(Dataset):
         dataframe (pd.DataFrame): The input dataframe containing Rydberg atom data.
     """
 
-    def __init__(self, dataframe):
+    def __init__(self, dataframe, graph_data):
         """
         Initialize the RydbergDataset with the given dataframe.
 
@@ -69,6 +58,7 @@ class RydbergDataset(Dataset):
             dataframe (pd.DataFrame): The input dataframe containing Rydberg atom data.
         """
         self.dataframe = dataframe
+        self.graph_data = graph_data
 
     def __len__(self):
         """
@@ -90,25 +80,25 @@ class RydbergDataset(Dataset):
             Batch: A Batch object containing the data for the specified index.
         """
         row = self.dataframe.iloc[index]
-        cond = torch.tensor(
-            [row["delta"], row["omega"], row["Lx"], row["Ly"], row["beta"]],
+        graph_dict = self.graph_data[index]  # dict
+        graph_nx = nx.node_link_graph(graph_dict)
+
+        node_features = torch.tensor(
+            [row["delta"], row["omega"], row["beta"]],
             dtype=torch.float32,
         )
-        cond = cond.unsqueeze(0)  # [batch_size, 1, 4] 1 is the sequ length dim
-        coupling_matrix = torch.tensor(row["V"], dtype=torch.float32)
-        measurements = torch.tensor(
-            row["measurement"][:16], dtype=torch.int64
-        )  # TODO REMOVE THIS
+        pyg_graph = networkx_to_pyg_data(graph_nx, node_features)
+
+        measurements = torch.tensor(row["measurement"], dtype=torch.int64)
         m_onehot = to_one_hot(measurements, 2)  # because Rydberg states are 0 or 1
 
         _, dim = m_onehot.shape
         m_shifted_onehot = torch.cat((torch.zeros(1, dim), m_onehot[:-1]), dim=0)
         return Batch(
-            cond=cond,
+            graph=pyg_graph,
             delta=row["delta"],
             omega=row["omega"],
             beta=row["beta"],
             m_onehot=m_onehot,
             m_shifted_onehot=m_shifted_onehot,
-            coupling_matrix=coupling_matrix,
         )
