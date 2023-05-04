@@ -15,7 +15,7 @@ class EncoderDecoder(pl.LightningModule):
         self,
         encoder: nn.Module,
         decoder: nn.Module,
-        # src_embed: nn.Module,
+        src_embed: nn.Module,
         tgt_embed: nn.Module,
         generator: nn.Module,
     ):
@@ -31,7 +31,7 @@ class EncoderDecoder(pl.LightningModule):
         super(EncoderDecoder, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
-        # self.src_embed = src_embed
+        self.src_embed = src_embed
         self.tgt_embed = tgt_embed
         self.generator = generator
 
@@ -59,8 +59,7 @@ class EncoderDecoder(pl.LightningModule):
         Returns:
             torch.Tensor: The encoded tensor of shape (batch_size, src_seq_length, d_model_tgt).
         """
-        return self.encoder(src)
-        # return self.encoder(self.src_embed(src))
+        return self.encoder(self.src_embed(src))
 
     def decode(self, tgt: torch.Tensor, memory: torch.Tensor) -> torch.Tensor:
         """
@@ -106,7 +105,6 @@ class Encoder(nn.Module):
         """
         for layer in self.layers:
             x = layer(x)
-        # return x
         return self.norm(x)  # [batch_size, seq_length, d_model]
 
 
@@ -140,7 +138,6 @@ class Decoder(nn.Module):
         """
         for layer in self.layers:
             x = layer(x, memory)
-        # return x
         return self.norm(x)  # [batch_size, seq_len, d_model]
 
 
