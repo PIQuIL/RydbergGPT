@@ -1,19 +1,31 @@
 transformer:
   num_heads: 8
   d_model: 128
-  num_blocks: 8
+  num_blocks_encoder: 2
+  num_blocks_decoder: 8
   d_ff: 512 # usually 4 * d_model
   dropout: 0.1
   compile: True
+
+graph_embedding:
+  graph_num_layers: 2
+  graph_hidden_dim: 64 
+  in_node_dim: 3 # omega delta beta
 
 training:
   strategy: "ddp" # "auto"
   precision: 16-mixed # half precision saves lots of memory! 32 is default
   max_epochs: 20
   batch_size: 256 # 512 OOM for 3 devices. The batch size should not depend on ngpus. 
-  learning_rate: 0.001
-  optimizer: "Adam"
+  learning_rate: 0.0005
   criterion: "KLLoss"
+  from_checkpoint: null
+
+optimizer: 
+  optimizer: "AdamW"
+  t_initial: 1
+  t_mult: 2
+  eta_min: 0.00001
 
 dataset:
   num_atoms: null
