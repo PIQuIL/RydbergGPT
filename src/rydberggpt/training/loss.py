@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from torch import Tensor
 
 
-class KLLoss(pl.LightningModule):
+class NLLLoss(pl.LightningModule):
     """
     KLLoss is a custom loss function class that computes the Kullback-Leibler divergence
     between the target distribution (tgt) and the conditional log probabilities
@@ -13,7 +13,7 @@ class KLLoss(pl.LightningModule):
     """
 
     def __init__(self):
-        super(KLLoss, self).__init__()
+        super(NLLLoss, self).__init__()
         # self.criterion = nn.KLDivLoss(reduction="batchmean")
 
     def forward(self, cond_log_probs: Tensor, tgt: Tensor) -> Tensor:
@@ -32,11 +32,11 @@ class KLLoss(pl.LightningModule):
         """
         # loss = self.criterion(cond_log_probs, tgt)
         # cond_probs = torch.exp(cond_log_probs)  # used for debugging
-        batchsize = tgt.shape[0]
-        temp = torch.einsum("bnd,bnd->bn", cond_log_probs, tgt)
-        log_probs = torch.sum(temp, axis=-1)
-        loss = -torch.sum(log_probs) / batchsize
-
+        # batchsize = tgt.shape[0]
+        # log_probs = torch.sum(temp, axis=-1)
+        # loss = -torch.sum(log_probs) / batchsize
+        log_probs = torch.einsum("bnd,bnd->b", cond_log_probs, tgt)
+        loss = -torch.mean(log_probs)
         return loss
 
 
