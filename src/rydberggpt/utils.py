@@ -1,3 +1,4 @@
+import os
 from dataclasses import make_dataclass
 from typing import Any, Dict, List, Tuple, Type, Union
 
@@ -39,8 +40,11 @@ def create_dataclass_from_dict(name: str, data: Dict[str, Any]) -> Type:
 def flatten_yaml(yaml_config: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
     flattened_config = {}
     for section, section_values in yaml_config.items():
-        for key, value in section_values.items():
-            flattened_config[f"{key}"] = value
+        if isinstance(section_values, dict):
+            for key, value in section_values.items():
+                flattened_config[f"{key}"] = value
+        else:
+            flattened_config[section] = section_values
     return flattened_config
 
 
@@ -52,3 +56,13 @@ def create_config_from_yaml(yaml_path: str):
     Config = create_dataclass_from_dict("Config", flattened_config)
 
     return Config(**flattened_config)
+
+
+def find_config_file(from_checkpoint: int, log_dir: str = "logs/lightning_logs"):
+    config_dir = os.path.join(log_dir, f"version_{from_checkpoint}")
+    config_file = "hparams.yaml"
+
+    if not os.path.exists(os.path.join(config_dir, config_file)):
+        raise FileNotFoundError(f"No config file found in {config_dir}")
+
+    return os.path.join(config_dir, config_file)
