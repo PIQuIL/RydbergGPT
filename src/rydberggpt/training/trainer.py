@@ -10,7 +10,7 @@ import torch.profiler
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch import optim
 
-from rydberggpt.training.loss import KLLoss
+from rydberggpt.training import loss
 
 
 class RydbergGPTTrainer(pl.LightningModule):
@@ -36,7 +36,7 @@ class RydbergGPTTrainer(pl.LightningModule):
         self.config = config
         self.save_hyperparameters(asdict(config))
         self.model = model
-        self.criterion = KLLoss()
+        self.criterion = getattr(loss, self.config.criterion)()
         self.example_input_array = example_input_array
 
     def forward(self, m_onehot: torch.Tensor, cond: torch.Tensor) -> torch.Tensor:
@@ -45,7 +45,7 @@ class RydbergGPTTrainer(pl.LightningModule):
 
         Args:
             m_onehot (torch.Tensor): One-hot encoded measurements tensor.
-            cond (torch.Tensor): Conditioning tensor.
+            cond (torch.Tensor): Conditioning tensor. # TODO prompt
 
         Returns:
             torch.Tensor: Conditional log probabilities tensor.
