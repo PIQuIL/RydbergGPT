@@ -9,8 +9,8 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 
 from rydberggpt.data.dataclasses import Batch, custom_collate
-from rydberggpt.data.loading.graph_utils import networkx_to_pyg_data
 from rydberggpt.data.loading.utils import read_subfolder_data
+from rydberggpt.data.loading.utils_graph import networkx_to_pyg_data
 from rydberggpt.utils import to_one_hot
 
 
@@ -85,7 +85,7 @@ class RydbergDataset(Dataset):
         graph_nx = nx.node_link_graph(graph_dict)
 
         node_features = torch.tensor(
-            [row["delta"], row["omega"], row["beta"]],
+            [row["delta"], row["omega"], row["beta"], row["blockade_radius"]],
             dtype=torch.float32,
         )
         pyg_graph = networkx_to_pyg_data(graph_nx, node_features)
