@@ -16,3 +16,4 @@ h5py
 pytest
 scikit-learn
 tables
+torch_geometric
