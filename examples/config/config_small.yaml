@@ -10,15 +10,15 @@ transformer:
 graph_embedding:
   graph_num_layers: 2
   graph_hidden_dim: 64 
-  in_node_dim: 3 # omega delta beta
+  in_node_dim: 4 # omega delta beta, blockade_radius
 
 training:
   strategy: "auto"
   precision: 16-mixed # half precision saves lots of memory! 32 is default
   max_epochs: 1000
-  batch_size: 2
+  batch_size: 32
   learning_rate: 0.001
-  criterion: "LabelSmoothing" #KLLoss
+  criterion: "NLLLoss" #KLLoss
   from_checkpoint: null
 
 optimizer: 
