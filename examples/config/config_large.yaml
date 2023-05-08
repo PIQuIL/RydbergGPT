@@ -10,7 +10,7 @@ transformer:
 graph_embedding:
   graph_num_layers: 3
   graph_hidden_dim: 128
-  in_node_dim: 3 # omega delta beta
+  in_node_dim: 4 # omega delta beta, blockade_radius
 
 training:
   strategy: "auto"
@@ -18,7 +18,7 @@ training:
   max_epochs: 20
   batch_size: 256 # 512 OOM for 3 devices. The batch size should not depend on ngpus. 
   learning_rate: 0.0005
-  criterion: "KLLoss"
+  criterion: "NLLLoss" 
   from_checkpoint: null
 
 optimizer: 
