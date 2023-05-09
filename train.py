@@ -19,12 +19,14 @@ from rydberggpt.data.loading.rydberg_dataset import get_rydberg_dataloader
 from rydberggpt.models.rydberg_encoder_decoder import get_rydberg_graph_encoder_decoder
 from rydberggpt.training.callbacks.module_info_callback import ModelInfoCallback
 from rydberggpt.training.trainer import RydbergGPTTrainer
-from rydberggpt.training.utils import find_latest_checkpoint, set_example_input_array
-from rydberggpt.utils import create_config_from_yaml
+from rydberggpt.training.utils import set_example_input_array
+from rydberggpt.utils import create_config_from_yaml, load_yaml_file
+from rydberggpt.utils_ckpt import find_best_ckpt, find_latest_ckpt, get_model_from_ckpt
 
 
-def main(config_path: str):
-    config = create_config_from_yaml(yaml_path=config_path)
+def main(config_path: str, config_name: str):
+    yaml_dict = load_yaml_file(config_path, config_name)
+    config = create_config_from_yaml(yaml_dict)
     torch.manual_seed(config.seed)
     np.random.seed(config.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -93,7 +95,7 @@ def main(config_path: str):
 
     # Find the latest checkpoint
     if config.from_checkpoint is not None:
-        checkpoint_path = find_latest_checkpoint(from_checkpoint=config.from_checkpoint)
+        checkpoint_path = find_latest_ckpt(from_checkpoint=config.from_checkpoint)
         trainer.fit(
             rydberg_gpt_trainer, train_loader, val_loader, ckpt_path=checkpoint_path
         )
@@ -120,6 +122,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     config_name = args.config_name
-    yaml_path = f"examples/config/{config_name}.yaml"
+    yaml_path = f"config/"
 
-    main(config_path=yaml_path)
+    main(config_path=yaml_path, config_name=config_name)
