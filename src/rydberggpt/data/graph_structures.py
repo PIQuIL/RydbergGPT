@@ -1,8 +1,42 @@
 import networkx as nx
 import numpy as np
 
+from rydberggpt.data.dataclasses import BaseGraph
 
-def generate_grid_graph(n_rows, n_cols, V_0=1.0):
+
+def get_graph(config: BaseGraph) -> nx.Graph:
+    """
+    Generates a graph based on the given configuration.
+
+    Args:
+        config (BaseGraph): The graph configuration, an instance of a subclass of the BaseGraph dataclass.
+
+    Returns:
+        nx.Graph: The generated graph based on the configuration.
+
+    Raises:
+        NotImplementedError: If the graph name provided in the configuration is not implemented.
+    """
+    if config.graph_name == "grid_graph":
+        graph = generate_grid_graph(config.n_rows, config.n_cols, config.V_0)
+    else:
+        raise NotImplementedError(f"Graph name {config.graph_name} not implemented.")
+    # TODO add more graph structures
+    return graph
+
+
+def generate_grid_graph(n_rows: int, n_cols: int, V_0: float) -> nx.Graph:
+    """
+    Generates a fully connected grid graph with weights based on the reciprocal of Euclidean distance.
+
+    Args:
+        n_rows (int): The number of rows in the grid.
+        n_cols (int): The number of columns in the grid.
+        V_0 (float): A scaling factor for the interaction strength between nodes.
+
+    Returns:
+        nx.Graph: The generated grid graph with node positions and edge weights.
+    """
     # Create an empty graph
     graph = nx.Graph()
 
