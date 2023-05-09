@@ -1,8 +1,7 @@
 import os
-from dataclasses import make_dataclass
+from dataclasses import dataclass, make_dataclass
 from typing import Any, Dict, List, Tuple, Type, Union
 
-import numpy as np
 import torch
 import yaml
 from torch import nn
@@ -33,11 +32,30 @@ def to_one_hot(
 
 
 def create_dataclass_from_dict(name: str, data: Dict[str, Any]) -> Type:
+    """
+    Create a dataclass from a dictionary.
+
+    Args:
+        name (str): The name of the dataclass.
+        data (Dict[str, Any]): A dictionary containing the dataclass fields and their values.
+
+    Returns:
+        Type: A new dataclass with the specified name and fields.
+    """
     fields = [(key, type(value)) for key, value in data.items()]
     return make_dataclass(name, fields)
 
 
 def flatten_yaml(yaml_config: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Flatten a nested YAML configuration dictionary.
+
+    Args:
+        yaml_config (Dict[str, Dict[str, Any]]): A nested dictionary representing the YAML configuration.
+
+    Returns:
+        Dict[str, Any]: A flattened dictionary with the nested structure removed.
+    """
     flattened_config = {}
     for section, section_values in yaml_config.items():
         if isinstance(section_values, dict):
@@ -48,19 +66,53 @@ def flatten_yaml(yaml_config: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
     return flattened_config
 
 
-def create_config_from_yaml(yaml_path: str):
+def load_yaml_file(path: str, yaml_file_name: str) -> Dict[str, Any]:
+    """
+    Load the content of a YAML file given its path and file name.
+
+    Args:
+        path (str): The path to the directory containing the YAML file.
+        yaml_file_name (str): The name of the YAML file.
+
+    Returns:
+        Dict[str, Any]: A dictionary containing the YAML content.
+    """
+    yaml_path = os.path.join(path, yaml_file_name)
     with open(yaml_path, "r") as file:
-        yaml_config = yaml.safe_load(file)
+        yaml_content = yaml.safe_load(file)
+    return yaml_content
 
-    flattened_config = flatten_yaml(yaml_config)
+
+def create_config_from_yaml(yaml_content: Dict) -> dataclass:
+    """
+    Create a dataclass config object from the given YAML content.
+
+    Args:
+        yaml_content (Dict): A dictionary containing the YAML content.
+
+    Returns:
+        dataclass: A dataclass object representing the config.
+    """
+    flattened_config = flatten_yaml(yaml_content)
     Config = create_dataclass_from_dict("Config", flattened_config)
-
     return Config(**flattened_config)
 
 
-def find_config_file(from_checkpoint: int, log_dir: str = "logs/lightning_logs"):
-    config_dir = os.path.join(log_dir, f"version_{from_checkpoint}")
-    config_file = "hparams.yaml"
+def load_config_file(checkpoint_path: str, config_file: str = "hparams.yaml") -> str:
+    """
+    Load the configuration file associated with a given checkpoint.
+
+    Args:
+        checkpoint_path (str): The path to the checkpoint file.
+        config_file (str, optional): The name of the configuration file, defaults to "hparams.yaml".
+
+    Returns:
+        str: The path to the configuration file.
+
+    Raises:
+        FileNotFoundError: If the configuration file is not found in the specified directory.
+    """
+    config_dir = os.path.dirname(os.path.dirname(checkpoint_path))
 
     if not os.path.exists(os.path.join(config_dir, config_file)):
         raise FileNotFoundError(f"No config file found in {config_dir}")
