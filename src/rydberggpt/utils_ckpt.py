@@ -9,6 +9,29 @@ from rydberggpt.training.trainer import RydbergGPTTrainer
 from rydberggpt.utils import create_config_from_yaml, load_yaml_file
 
 
+def get_ckpt_path(from_ckpt: int, log_dir: str = "logs/lightning_logs") -> str:
+    """
+    Get the checkpoint path from a specified checkpoint version number.
+
+    Args:
+        from_ckpt (int): The version number of the checkpoint.
+        log_dir (str, optional): The root directory where checkpoints are stored.
+                                 Defaults to "logs/lightning_logs".
+
+    Returns:
+        str: The path to the specified checkpoint version directory.
+
+    Raises:
+        FileNotFoundError: If no checkpoint is found in the specified directory.
+    """
+    log_dir = os.path.join(log_dir, f"version_{from_ckpt}")
+
+    if log_dir is None:
+        raise FileNotFoundError(f"No checkpoint found in {log_dir}")
+
+    return log_dir
+
+
 def find_latest_ckpt(log_dir: str):
     """
     Find the latest checkpoint file (based on modification time) in the specified log directory.
