@@ -18,6 +18,9 @@ from pytorch_lightning.strategies import DDPStrategy
 from rydberggpt.data.loading.rydberg_dataset import get_rydberg_dataloader
 from rydberggpt.models.rydberg_encoder_decoder import get_rydberg_graph_encoder_decoder
 from rydberggpt.training.callbacks.module_info_callback import ModelInfoCallback
+from rydberggpt.training.callbacks.stop_on_loss_threshold_callback import (
+    StopOnLossThreshold,
+)
 from rydberggpt.training.trainer import RydbergGPTTrainer
 from rydberggpt.training.utils import set_example_input_array
 from rydberggpt.utils import create_config_from_yaml, load_yaml_file
@@ -66,6 +69,7 @@ def main(config_path: str, config_name: str):
         StochasticWeightAveraging(config.learning_rate),
         ModelInfoCallback(),
         LearningRateMonitor(logging_interval="step"),
+        # StopOnLossThreshold(loss_threshold=150.0),
     ]
 
     # https://lightning.ai/docs/pytorch/stable/common/trainer.html
