@@ -77,6 +77,9 @@ def load_yaml_file(path: str, yaml_file_name: str) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: A dictionary containing the YAML content.
     """
+    if not yaml_file_name.endswith(".yaml"):
+        yaml_file_name += ".yaml"
+
     yaml_path = os.path.join(path, yaml_file_name)
     with open(yaml_path, "r") as file:
         yaml_content = yaml.safe_load(file)
