@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader, Dataset
 
 from rydberggpt.data.dataclasses import Batch, custom_collate
 from rydberggpt.data.loading.utils import read_subfolder_data
-from rydberggpt.data.loading.utils_graph import networkx_to_pyg_data
+from rydberggpt.data.utils_graph import networkx_to_pyg_data
 from rydberggpt.utils import to_one_hot
 
 
