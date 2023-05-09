@@ -5,6 +5,9 @@ import torch.nn.functional as F
 from torch import Tensor
 
 
+# TODO if we decide to use padding we have to modify this function.
+# If paddind is detected, meaning the start or stop token [0,0] is present,
+# we ignore the rest for computing the loss.
 class NLLLoss(pl.LightningModule):
     """
     KLLoss is a custom loss function class that computes the Kullback-Leibler divergence
@@ -30,16 +33,16 @@ class NLLLoss(pl.LightningModule):
         Returns:
             torch.Tensor: The computed Kullback-Leibler divergence loss, a scalar tensor.
         """
-        # loss = self.criterion(cond_log_probs, tgt)
-        # cond_probs = torch.exp(cond_log_probs)  # used for debugging
-        # batchsize = tgt.shape[0]
-        # log_probs = torch.sum(temp, axis=-1)
-        # loss = -torch.sum(log_probs) / batchsize
+
+        # TODO Given the target we look for the index where we reach a [0,0] token
+        # if reached mask all the cond_log_probs after that index to zero.
+        # Then compute the loss.
         log_probs = torch.einsum("bnd,bnd->b", cond_log_probs, tgt)
         loss = -torch.mean(log_probs)
         return loss
 
 
+# TODO not sure why this should be a good idea.
 class LabelSmoothing(pl.LightningModule):
     """Implement label smoothing for a classification task. Label smoothing is a regularization
     technique that smooths the probability distribution of the target labels by replacing the
@@ -54,7 +57,6 @@ class LabelSmoothing(pl.LightningModule):
     def __init__(self, smoothing=0.0):
         super(LabelSmoothing, self).__init__()
         self.smoothing = smoothing
-        self.criterion = nn.KLDivLoss(reduction="batchmean")
 
     def forward(self, cond_log_probs: Tensor, tgt: Tensor) -> Tensor:
         """Compute the KLDiv loss with label smoothing.
@@ -75,7 +77,6 @@ class LabelSmoothing(pl.LightningModule):
         with torch.no_grad():
             smoothed_tgt = tgt * (1.0 - self.smoothing) + self.smoothing / num_classes
 
-        # Compute the Kullback-Leibler divergence loss
-        loss = self.criterion(cond_log_probs, smoothed_tgt)
-
+        log_probs = torch.einsum("bnd,bnd->b", cond_log_probs, smoothed_tgt)
+        loss = -torch.mean(log_probs)
         return loss
