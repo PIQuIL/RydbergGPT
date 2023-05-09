@@ -1,9 +1,28 @@
+from abc import ABC
 from dataclasses import dataclass
 from typing import List
 
 import torch
 from torch_geometric.data import Batch as PyGBatch
 from torch_geometric.data import Data
+
+
+@dataclass
+class BaseGraph(ABC):
+    """A base dataclass representing a graph configuration."""
+
+    num_atoms: int
+    graph_name: str
+    V_0: float
+    delta: float
+    omega: float
+    beta: float  # we cannot know the temperature of the system. Maybe remove?
+
+
+@dataclass
+class GridGraph(BaseGraph):
+    n_rows: int
+    n_cols: int
 
 
 @dataclass
