@@ -5,7 +5,9 @@ import torch
 from rydberggpt.utils import to_one_hot
 
 
-# TODO refactor and test function
+# TODO refactor this function
+# TODO test function
+# TODO use schuylers fast code for energy calculation
 @torch.no_grad()
 def get_rydberg_energy(
     get_log_probs: Callable,
