@@ -8,6 +8,7 @@ from rydberggpt.utils import to_one_hot
 # TODO refactor this function
 # TODO test function
 # TODO use schuylers fast code for energy calculation
+# TODO do we need to worry about the sampling path? (i.e. snake path)
 @torch.no_grad()
 def get_rydberg_energy(
     get_log_probs: Callable,
