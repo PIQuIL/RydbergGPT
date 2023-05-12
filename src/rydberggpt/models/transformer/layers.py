@@ -48,8 +48,21 @@ class DecoderLayer(nn.Module):
         Returns:
             torch.Tensor: The output tensor.
         """
+
+        _attn_mask = torch.meshgrid(
+            torch.arange(x.shape[-2], device=x.device),
+            torch.arange(x.shape[-2], device=x.device),
+            indexing="ij",
+        )
+        _attn_mask = _attn_mask[0] >= _attn_mask[1]
+
+        attn_mask = _attn_mask.to(dtype=torch.float32)
+        attn_mask = attn_mask.masked_fill(torch.logical_not(_attn_mask), -torch.inf)
+
         m = memory
-        x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x, is_causal=True)[0])
+        x = self.sublayer[0](
+            x, lambda x: self.self_attn(x, x, x, attn_mask=attn_mask)[0]
+        )
         x = self.sublayer[1](x, lambda x: self.src_attn(x, m, m)[0])
         return self.sublayer[2](x, self.feed_forward)
 
