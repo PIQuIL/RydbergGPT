@@ -32,7 +32,9 @@ class SublayerConnection(nn.Module):
         Returns:
             torch.Tensor: The output tensor.
         """
-        return x + self.dropout(sublayer(self.layer_norm(x)))
+
+
+        return self.layer_norm(x + self.dropout(sublayer(x)))
 
 
 class PositionwiseFeedForward(nn.Module):
