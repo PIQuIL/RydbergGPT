@@ -138,6 +138,12 @@ class RydbergEncoderDecoder(EncoderDecoder):
         if cond.num_graphs == 1:
             cond = Batch([cond.clone() for _ in range(batch_size)])
 
+        assert (
+            cond.num_graphs == batch_size
+        ), "Incompatible arguments, batch_size ({}) does not match cond.num_graphs ({})".format(
+            batch_size, cond.num_graphs
+        )
+
         m = torch.zeros(batch_size, 1, 2, device=self.device)
 
         for i in range(num_atoms):
