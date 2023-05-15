@@ -45,6 +45,8 @@ def get_rydberg_energy(
         samples[:, i].bitwise_xor_(True)  # [batch_size, seq_len]
 
     temp = torch.logsumexp(offdiagonal_lp / 2, dim=1)  # [batch_size]
+    temp = temp.to(log_probs)
+
     offdiagonal_lp = temp - log_probs / 2
     # end
 
