@@ -151,7 +151,7 @@ class RydbergEncoderDecoder(EncoderDecoder):
                 ]
             )
             next_outcome = next_outcome.reshape(next_outcome.shape[1], 1)
-            next_outcome = torch.nn.functional.one_hot(next_outcome.long(), 2)
+            next_outcome = to_one_hot(next_outcome, 2)
 
             m = torch.cat((m, next_outcome), dim=-2)
 
