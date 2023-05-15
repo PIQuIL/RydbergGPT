@@ -32,9 +32,11 @@ class SublayerConnection(nn.Module):
         Returns:
             torch.Tensor: The output tensor.
         """
-
-
-        return self.layer_norm(x + self.dropout(sublayer(x)))
+        # NOTE For GPT2 the authors moved Layer normalization (Ba et al., 2016)
+        # to the input of each sub-block.
+        # see Sec. 2.3 https://d4mucfpksywv.cloudfront.net/better-language-models/language_models_are_unsupervised_multitask_learners.pdf
+        return x + self.dropout(sublayer(self.layer_norm(x)))
+        # return self.layer_norm(x + self.dropout(sublayer(x)))
 
 
 class PositionwiseFeedForward(nn.Module):
