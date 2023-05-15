@@ -47,7 +47,10 @@ class EncoderDecoder(pl.LightningModule):
             torch.Tensor: The output tensor after passing through the encoder-decoder architecture,
                           with shape (batch_size, tgt_seq_length, d_model).
         """
-        return self.decode(tgt, self.encode(src))
+
+        memory, batch_mask = self.encode(src)
+
+        return self.decode(tgt, memory, batch_mask)
 
     def encode(self, src: torch.Tensor) -> torch.Tensor:
         """
@@ -59,9 +62,14 @@ class EncoderDecoder(pl.LightningModule):
         Returns:
             torch.Tensor: The encoded tensor of shape (batch_size, src_seq_length, d_model_tgt).
         """
-        return self.encoder(self.src_embed(src))
 
-    def decode(self, tgt: torch.Tensor, memory: torch.Tensor) -> torch.Tensor:
+        x, batch_mask = self.src_embed(src)
+
+        return self.encoder(x, batch_mask=batch_mask), batch_mask
+
+    def decode(
+        self, tgt: torch.Tensor, memory: torch.Tensor, batch_mask: torch.Tensor
+    ) -> torch.Tensor:
         """
         Decode the target tensor using the memory tensor.
 
@@ -72,7 +80,7 @@ class EncoderDecoder(pl.LightningModule):
         Returns:
             torch.Tensor: The decoded tensor of shape (batch_size, tgt_seq_length, d_model).
         """
-        return self.decoder(self.tgt_embed(tgt), memory)
+        return self.decoder(self.tgt_embed(tgt), memory, batch_mask=batch_mask)
 
 
 class Encoder(nn.Module):
@@ -92,19 +100,20 @@ class Encoder(nn.Module):
         self.layers = clones(layer, N)
         self.norm = nn.LayerNorm(layer.size)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, batch_mask: torch.Tensor) -> torch.Tensor:
         """
         Pass the input through each layer in turn.
 
         Args:
             x (torch.Tensor): The input tensor to the encoder of shape (batch_size, seq_length, d_model).
+            batch_mask (torch.Tensor): The mask tensor for batches.
 
         Returns:
             torch.Tensor: The output tensor after passing through all layers of the encoder,
                           with the same shape as the input tensor (batch_size, seq_length, d_model).
         """
         for layer in self.layers:
-            x = layer(x)
+            x = layer(x, batch_mask=batch_mask)
         return self.norm(x)  # [batch_size, seq_length, d_model]
 
 
@@ -125,19 +134,22 @@ class Decoder(nn.Module):
         self.layers = clones(layer, n_layers)
         self.norm = nn.LayerNorm(layer.size)
 
-    def forward(self, x: torch.Tensor, memory: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self, x: torch.Tensor, memory: torch.Tensor, batch_mask: torch.Tensor
+    ) -> torch.Tensor:
         """
         Pass the (masked) input through all layers of the decoder.
 
         Args:
             x (torch.Tensor): The input tensor to the decoder of shape (batch_size, seq_length, d_model).
             memory (torch.Tensor): The memory tensor, typically the output of the encoder.
+            batch_mask (torch.Tensor): The mask tensor for batches.
 
         Returns:
             torch.Tensor: The output tensor after passing through all layers of the decoder of shape (batch_size, seq_length, d_model).
         """
         for layer in self.layers:
-            x = layer(x, memory)
+            x = layer(x, memory, batch_mask=batch_mask)
         return self.norm(x)  # [batch_size, seq_len, d_model]
 
 
