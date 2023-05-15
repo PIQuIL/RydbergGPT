@@ -24,7 +24,12 @@ from rydberggpt.training.callbacks.stop_on_loss_threshold_callback import (
 from rydberggpt.training.trainer import RydbergGPTTrainer
 from rydberggpt.training.utils import set_example_input_array
 from rydberggpt.utils import create_config_from_yaml, load_yaml_file
-from rydberggpt.utils_ckpt import find_best_ckpt, find_latest_ckpt, get_model_from_ckpt
+from rydberggpt.utils_ckpt import (
+    find_best_ckpt,
+    find_latest_ckpt,
+    get_ckpt_path,
+    get_model_from_ckpt,
+)
 
 
 def main(config_path: str, config_name: str):
@@ -99,7 +104,8 @@ def main(config_path: str, config_name: str):
 
     # Find the latest checkpoint
     if config.from_checkpoint is not None:
-        checkpoint_path = find_latest_ckpt(from_checkpoint=config.from_checkpoint)
+        log_path = get_ckpt_path(from_ckpt=config.from_checkpoint)
+        checkpoint_path = find_latest_ckpt(log_path)
         trainer.fit(
             rydberg_gpt_trainer, train_loader, val_loader, ckpt_path=checkpoint_path
         )
