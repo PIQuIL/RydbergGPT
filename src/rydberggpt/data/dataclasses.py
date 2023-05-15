@@ -5,6 +5,7 @@ from typing import List
 import torch
 from torch_geometric.data import Batch as PyGBatch
 from torch_geometric.data import Data
+from torch_geometric.utils import to_dense_batch
 
 
 @dataclass
@@ -45,14 +46,21 @@ def custom_collate(batch: List[Batch]) -> Batch:
     Returns:
         Batch: A single Batch object containing the collated data.
     """
+
+    graph_batch = PyGBatch.from_data_list([b.graph for b in batch])
+
     batch = Batch(
-        graph=PyGBatch.from_data_list([b.graph for b in batch]),
+        graph=graph_batch,
         delta=torch.tensor([b.delta for b in batch], dtype=torch.float32),
         omega=torch.tensor([b.omega for b in batch], dtype=torch.float32),
         beta=torch.tensor([b.beta for b in batch], dtype=torch.float32),
-        m_onehot=torch.stack([b.m_onehot for b in batch]).to(torch.float32),
-        m_shifted_onehot=torch.stack([b.m_shifted_onehot for b in batch]).to(
-            torch.float32
-        ),
+        m_onehot=to_dense_batch(
+            torch.cat([b.m_onehot for b in batch], axis=-2),
+            batch=graph_batch.batch,
+        )[0].to(torch.float32),
+        m_shifted_onehot=to_dense_batch(
+            torch.cat([b.m_shifted_onehot for b in batch], axis=-2),
+            batch=graph_batch.batch,
+        )[0].to(torch.float32),
     )
     return batch
