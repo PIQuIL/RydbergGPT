@@ -25,6 +25,18 @@ The transformer decoder encodes a ground state wavefunction based on the encoded
 
 ## Documentation
 
+### Model details
+#### Expected training data
+We vary these 4 parameters independently:
+```
+sizes = [5, 6, 11, 12, 15, 16, 19, 20]
+delta = [-1.545, -0.545, 3.955, 4.455, 4.955, 5.455, 6.455, 7.455, 12.455, 13.455]
+Rb = [1.05, 1.15, 1.3]
+beta = [0.5, 1, 2, 4, 8, 16, 32, 48, 64]
+```
+`8*10*3*9=2160` configurations
+
+#### Generated training data
 
 ## Acknowledgements
 
