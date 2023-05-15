@@ -155,6 +155,9 @@ class RydbergEncoderDecoder(EncoderDecoder):
 
             m = torch.cat((m, next_outcome), dim=-2)
 
+        for i in range(m.shape[0]):
+            m[i, cond[i].num_nodes + 1 :, :] = 0
+
         if fmt_onehot:
             return m[:, 1:, :]
         else:
