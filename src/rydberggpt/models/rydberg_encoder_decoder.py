@@ -1,3 +1,5 @@
+import sys
+
 import copy
 from typing import Tuple
 
@@ -88,62 +90,34 @@ class RydbergEncoderDecoder(EncoderDecoder):
         super().__init__(encoder, decoder, src_embed, tgt_embed, generator)
         self.config = config
 
+    @torch.no_grad()
     def get_log_probs(self, x, cond):
         """
         Compute the log probabilities of a given input tensor.
 
         Parameters:
             x (torch.Tensor): The input tensor.
-            # TODO this is not a tensor but a graph 
+            # TODO this is not a tensor but a graph
             cond (torch.Tensor): The conditional tensor.
 
         Returns:
             torch.Tensor: The log probabilities.
         """
         assert x.shape[-1] == 2, "The input must be one hot encoded"
-        out = self.forward(x, cond)
+
+        m = torch.zeros((x.shape[0], 1, x.shape[-1]))
+        m = m.to(x)
+        m = torch.cat([m, x[:, :-1, :]], axis=-2)
+
+        out = self.forward(m, cond)
         cond_log_probs = self.generator(out)
+
         log_probs = torch.sum(torch.sum(cond_log_probs * x, axis=-1), axis=-1)
+
         return log_probs
 
-    # TODO add support for batchsize and number_batches
-    # the output should be a tensor concatenated along the batch dimension
     @torch.no_grad()
-    def get_samples_one_hot(
-        self, batch_size: int, cond: Tensor, num_atoms: int
-    ) -> Tuple[Tensor, Tensor]:
-        """
-        Generate samples in one-hot encoding and their log probabilities using the forward pass
-        and sampling from the conditional probabilities.
-
-        Args:
-            batch_size (int): The number of samples to generate.
-            cond (torch.Tensor): A tensor containing the input condition.
-            num_atoms (int): The number of atoms to sample.
-            device (str, optional): The device on which to allocate the tensors. Defaults to "cpu".
-
-        Returns:
-            Tuple[torch.Tensor, torch.Tensor]: A tuple containing two tensors:
-                - The first tensor contains the generated samples in one-hot encoding.
-                - The second tensor contains the log probabilities of the samples.
-        """
-        self.eval()
-        m_onehot = torch.zeros(batch_size, 1, 2, device=self.device)
-        cond_log_probs = torch.zeros(batch_size, num_atoms, device=self.device)
-        for i in range(num_atoms):
-            print(f"Generating atom {i+1}/{num_atoms}", end="\r")
-            out = self.forward(m_onehot, cond)  # [batch_size, i, d_model]
-            cond_log_probs = self.generator(out)  # [batch_size, i, 2]
-            cond_probs = torch.exp(cond_log_probs[:, i, :])  # [batch_size, 2]
-            next_outcome = torch.multinomial(cond_probs, 1)  # [batch_size, 1]
-            next_outcome_onehot = to_one_hot(next_outcome, 2)
-            m_onehot = torch.cat((m_onehot, next_outcome_onehot), dim=1)
-        return m_onehot[:, 1:, :]
-
-    @torch.no_grad()
-    def get_samples_one_hot(
-        self, batch_size: int, cond: Tensor, num_atoms: int
-    ) -> Tensor:
+    def get_samples(self, batch_size, cond, num_atoms, fmt_onehot=True):
         """
         Generate samples in one-hot encoding using the forward pass
         and sampling from the conditional probabilities.
@@ -157,93 +131,31 @@ class RydbergEncoderDecoder(EncoderDecoder):
         Returns:
             torch.Tensor: A tensor containing the generated samples in one-hot encoding.
         """
-        self.eval()
-        m_onehot = torch.zeros(batch_size, 1, 2, device=self.device)
+        m = torch.zeros(batch_size, 1, 2, device=self.device)
 
         for i in range(num_atoms):
-            print(f"Generating atom {i+1}/{num_atoms}", end="\r")
-            out = self.forward(m_onehot, cond)  # [batch_size, i, d_model]
-            cond_log_probs = self.generator(out)  # [batch_size, i, 2]
-            cond_probs = torch.exp(cond_log_probs[:, i, :])  # [batch_size, 2]
-            next_outcome = torch.multinomial(cond_probs, 1)  # [batch_size, 1]
-            next_outcome_onehot = to_one_hot(next_outcome, 2)
-            m_onehot = torch.cat((m_onehot, next_outcome_onehot), dim=1)
+            print("{:<80}".format(f"\rGenerating atom {i+1}/{num_atoms}"), end="")
+            sys.stdout.flush()
 
-        return m_onehot[:, 1:, :]
+            out = self.forward(m, cond)
 
-    @torch.no_grad()
-    def get_samples_one_hot_batched(
-        self, batch_size: int, number_batches: int, cond: Tensor, num_atoms: int
-    ) -> Tensor:
-        """
-        Generate samples in one-hot encoding for the specified number of batches.
+            cond_log_probs = self.generator(out)
 
-        Args:
-            batch_size (int): The number of samples to generate per batch.
-            number_batches (int): The number of batches to generate.
-            cond (torch.Tensor): A tensor containing the input condition.
-            num_atoms (int): The number of atoms to sample.
-            device (str, optional): The device on which to allocate the tensors. Defaults to "cpu".
+            next_cond_log_probs = cond_log_probs[:, -1, :]
 
-        Returns:
-            torch.Tensor: A tensor containing the generated samples in one-hot encoding.
-        """
-        samples_list = []
+            next_outcome = torch.distributions.Categorical(
+                logits=next_cond_log_probs
+            ).sample(
+                [
+                    1,
+                ]
+            )
+            next_outcome = next_outcome.reshape(next_outcome.shape[1], 1)
+            next_outcome = torch.nn.functional.one_hot(next_outcome.long(), 2)
 
-        for batch in range(number_batches):
-            print(f"Generating batch {batch + 1}/{number_batches}")
-            batch_samples = self.get_samples_one_hot(batch_size, cond, num_atoms)
-            samples_list.append(batch_samples)
+            m = torch.cat((m, next_outcome), dim=-2)
 
-        # Concatenate the generated samples along the batch dimension
-        all_samples = torch.cat(samples_list, dim=0)
-
-        return all_samples
-
-    # TODO add support for batchsize and number_batches,
-    # the output should be a tensor concatenated along the batch dimension
-    @torch.no_grad()
-    def get_samples(
-        self, batch_size: int, cond: Tensor, num_atoms: int
-    ) -> Tuple[Tensor, Tensor]:
-        """
-        Generate samples and their log probabilities using the forward pass and sampling
-        from the conditional probabilities. Sampling takes place using the snake convention.
-
-        Args:
-            batch_size (int): The number of samples to generate.
-            cond (torch.Tensor): A tensor containing the input condition.
-            num_atoms (int): The number of atoms to sample.
-
-        Returns:
-            torch.Tensor: the generated samples.
-        """
-        samples_one_hot = self.get_samples_one_hot(batch_size, cond, num_atoms)
-        samples = torch.argmax(samples_one_hot, dim=-1)
-        return samples
-
-    # samples, _ = self.get_samples_and_log_probs(batch_size, cond, num_atoms)
-    # @torch.no_grad()
-    # def get_samples_and_log_probs(
-    #     self, batch_size: int, cond: Tensor, num_atoms: int
-    # ) -> Tuple[Tensor, Tensor]:
-    #     """
-    #     Generate samples and their log probabilities using the forward pass and sampling
-    #     from the conditional probabilities. Sampling takes place using the snake convention.
-
-    #     Args:
-    #         batch_size (int): The number of samples to generate.
-    #         cond (torch.Tensor): A tensor containing the input condition.
-    #         num_atoms (int): The number of atoms to sample or sequence length.
-
-    #     Returns:
-    #         Tuple[torch.Tensor, torch.Tensor]: A tuple containing two tensors:
-    #             - The first tensor contains the generated samples.
-    #             - The second tensor contains the log probabilities of the samples.
-    #     """
-    #     samples_one_hot, cond_log_probs = self.get_samples_one_hot(
-    #         batch_size, cond, num_atoms
-    #     )
-    #     samples = torch.argmax(samples_one_hot, dim=-1)
-    #     log_probs = torch.sum(cond_log_probs, dim=-1)  # [batch_size, seq_len]
-    #     return samples, log_probs
+        if fmt_onehot:
+            return m[:, 1:, :]
+        else:
+            return m[:, 1:, -1]
