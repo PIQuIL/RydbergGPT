@@ -68,6 +68,6 @@ class GraphEmbedding(torch.nn.Module):
         x = self.final_norm(self.layers[-1](x, edge_index, edge_attr))
 
         # Reshape the tensor here
-        x = to_dense_batch(x, data.batch)[0]
+        x, batch_mask = to_dense_batch(x, data.batch)
 
-        return x
+        return x, batch_mask
