@@ -7,6 +7,7 @@ import torch
 from pytorch_lightning import LightningModule
 from torch import Tensor, nn
 from torch_geometric.nn import GATConv, GCNConv
+from torch_geometric.data import Batch
 
 from rydberggpt.models.graph_embedding.models import GraphEmbedding
 from rydberggpt.models.transformer.layers import DecoderLayer, EncoderLayer
@@ -103,7 +104,9 @@ class RydbergEncoderDecoder(EncoderDecoder):
         Returns:
             torch.Tensor: The log probabilities.
         """
-        assert x.shape[-1] == 2, "The input must be one hot encoded"
+        assert (
+            len(x.shape) == 3 and x.shape[-1] == 2
+        ), "The input must be one hot encoded"
 
         m = torch.zeros((x.shape[0], 1, x.shape[-1]))
         m = m.to(x)
@@ -125,12 +128,16 @@ class RydbergEncoderDecoder(EncoderDecoder):
         Args:
             batch_size (int): The number of samples to generate.
             cond (torch.Tensor): A tensor containing the input condition.
-            num_atoms (int): The number of atoms to sample.
+            num_atoms (int): The number of atoms to sample. For num_atoms > num_nodes in cond, it pads the extra atoms with zeros (onehot) or nan (label).
             device (str, optional): The device on which to allocate the tensors. Defaults to "cpu".
 
         Returns:
             torch.Tensor: A tensor containing the generated samples in one-hot encoding.
         """
+
+        if cond.num_graphs == 1:
+            cond = Batch([cond.clone() for _ in range(batch_size)])
+
         m = torch.zeros(batch_size, 1, 2, device=self.device)
 
         for i in range(num_atoms):
@@ -155,10 +162,15 @@ class RydbergEncoderDecoder(EncoderDecoder):
 
             m = torch.cat((m, next_outcome), dim=-2)
 
-        for i in range(m.shape[0]):
-            m[i, cond[i].num_nodes + 1 :, :] = 0
-
         if fmt_onehot:
+            for i in range(m.shape[0]):
+                m[i, cond[i].num_nodes + 1 :, :] = 0
+
             return m[:, 1:, :]
         else:
-            return m[:, 1:, -1]
+            m = m[:, 1:, -1]
+
+            for i in range(m.shape[0]):
+                m[i, cond[i].num_nodes + 1 :] = torch.nan
+
+            return m[:, 1:]
