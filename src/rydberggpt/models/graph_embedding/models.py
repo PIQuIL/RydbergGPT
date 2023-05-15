@@ -4,6 +4,7 @@ import torch
 from torch import Tensor
 from torch.nn import LayerNorm, ModuleList
 from torch_geometric.data import Data
+from torch_geometric.utils import to_dense_batch
 
 from rydberggpt.models.graph_embedding.layers import GraphLayer
 
@@ -67,6 +68,6 @@ class GraphEmbedding(torch.nn.Module):
         x = self.final_norm(self.layers[-1](x, edge_index, edge_attr))
 
         # Reshape the tensor here
-        x = x.view(data.num_graphs, -1, x.size(-1))
+        x = to_dense_batch(x, data.batch)[0]
 
         return x
