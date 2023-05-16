@@ -19,7 +19,7 @@
 			<td>13.455</td>
 		</tr>
 		<tr>
-			<td rowspan="3">beta=0.5</td>
+			<td rowspan="3" align="center">beta=0.5</td>
 			<td rowspan="3">Rb</td>
 			<td>1.05</td>
 			<td></td>
@@ -60,22 +60,9 @@
 			<td></td>
 		</tr>
 		<tr>
-			<td rowspan="3"></td>
-			<td rowspan="3"></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-		</tr>
-		<tr>
-			<td></td>
+			<td rowspan="3" align="center">beta=1</td>
+			<td rowspan="3">Rb</td>
+			<td>1.05</td>
 			<td></td>
 			<td></td>
 			<td></td>
@@ -88,7 +75,20 @@
 			<td></td>
 		</tr>
 		<tr>
+			<td>1.15</td>
 			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>1.3</td>
 			<td></td>
 			<td></td>
 			<td></td>
