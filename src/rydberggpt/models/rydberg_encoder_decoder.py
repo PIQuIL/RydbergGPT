@@ -104,6 +104,10 @@ class RydbergEncoderDecoder(EncoderDecoder):
         Returns:
             torch.Tensor: The log probabilities.
         """
+
+        if not hasattr(cond, "num_graphs"):
+            cond = Batch.from_data_list([cond.clone() for _ in range(len(x))])
+
         assert (
             len(x.shape) == 3 and x.shape[-1] == 2
         ), "The input must be one hot encoded"
@@ -135,8 +139,8 @@ class RydbergEncoderDecoder(EncoderDecoder):
             torch.Tensor: A tensor containing the generated samples in one-hot encoding.
         """
 
-        if cond.num_graphs == 1:
-            cond = Batch([cond.clone() for _ in range(batch_size)])
+        if not hasattr(cond, "num_graphs"):
+            cond = Batch.from_data_list([cond.clone() for _ in range(batch_size)])
 
         assert (
             cond.num_graphs == batch_size
