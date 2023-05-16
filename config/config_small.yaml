@@ -20,6 +20,10 @@ training:
   learning_rate: 0.001
   criterion: "NLLLoss" #KLLoss
   from_checkpoint: null
+  accumulate_grad_batches: 1
+
+logger:
+  log_every: 30
 
 optimizer: 
   optimizer: "AdamW"
@@ -41,5 +45,5 @@ profiler:
   profiler: "PyTorchProfiler"
 
 misc:
-  seed: 42
+  seed: 104
   prog_bar: True

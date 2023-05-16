@@ -20,8 +20,12 @@ training:
   learning_rate: 0.0005
   criterion: "NLLLoss" 
   from_checkpoint: null
+  accumulate_grad_batches: 1
 
-optimizer: 
+logger:
+  log_every: 30
+
+optimizer:
   optimizer: "AdamW"
   t_initial: 1
   t_mult: 2
@@ -37,8 +41,8 @@ rydberg:
   num_states: 2
   num_encoder_embedding_dims: 3
 
-profiler: 
-  profiler: "PyTorchProfiler" # https://pytorch-lightning.readthedocs.io/en/1.6.5/advanced/profiler.html 
+profiler:
+  profiler: "PyTorchProfiler" # https://pytorch-lightning.readthedocs.io/en/1.6.5/advanced/profiler.html
 
 misc:
   seed: 42
