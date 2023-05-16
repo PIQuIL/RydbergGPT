@@ -31,7 +31,7 @@ def get_rydberg_energy(
 
     samples = samples.to(V)  # Convert samples tensor to float64
 
-    interaction = torch.einsum("ij,bi,bj->b", V, samples, samples)  # [batch_size]
+    interaction = 0.5 * torch.einsum("ij,bi,bj->b", V, samples, samples)  # [batch_size]
     detuning = (delta * samples).sum(1)  # sum over sequence length
 
     # Estimate sigma_x
