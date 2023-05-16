@@ -60,20 +60,15 @@ class DecoderLayer(nn.Module):
         causal_attn_mask = causal_attn_mask[0] >= causal_attn_mask[1]
         causal_attn_mask = torch.logical_not(causal_attn_mask)
 
-        batch_attn_mask = batch_mask[:, None, None, :]
-        batch_attn_mask = batch_attn_mask.expand(
-            -1, self.src_attn.num_heads, x.shape[-2], -1
-        )
-        batch_attn_mask = batch_attn_mask.reshape(-1, *batch_attn_mask.shape[-2:])
-        batch_attn_mask = batch_attn_mask.to(torch.bool)
-        batch_attn_mask = torch.logical_not(batch_attn_mask)
+        batch_key_mask = batch_mask
+        batch_key_mask = torch.logical_not(batch_key_mask)
 
         m = memory
         x = self.sublayer[0](
             x, lambda x: self.self_attn(x, x, x, attn_mask=causal_attn_mask)[0]
         )
         x = self.sublayer[1](
-            x, lambda x: self.src_attn(x, m, m, attn_mask=batch_attn_mask)[0]
+            x, lambda x: self.src_attn(x, m, m, key_padding_mask=batch_key_mask)[0]
         )
         return self.sublayer[2](x, self.feed_forward)
 
@@ -114,18 +109,13 @@ class EncoderLayer(nn.Module):
             torch.Tensor: The output tensor.
         """
 
-        batch_attn_mask = batch_mask[..., None] * batch_mask[:, None, :]
-        batch_attn_mask = batch_attn_mask[:, None, ...].expand(
-            -1, self.self_attn.num_heads, -1, -1
-        )
-        batch_attn_mask = batch_attn_mask.reshape(-1, *batch_attn_mask.shape[-2:])
-        batch_attn_mask = batch_attn_mask.to(torch.bool)
-        batch_attn_mask = torch.logical_not(batch_attn_mask)
+        batch_key_mask = batch_mask
+        batch_key_mask = torch.logical_not(batch_key_mask)
 
         x = self.sublayer[0](
             x,
             lambda x: torch.nan_to_num(
-                self.self_attn(x, x, x, attn_mask=batch_attn_mask)[0]
+                self.self_attn(x, x, x, key_padding_mask=batch_key_mask)[0]
             ),
         )
         return self.sublayer[1](x, self.feed_forward)
