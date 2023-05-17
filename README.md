@@ -36,6 +36,8 @@ beta = [0.5, 1, 2, 4, 8, 16, 32, 48, 64]
 ```
 `8*10*3*9=2160` configurations
 
+(`delta`: need to divide by `Omega = 4.24`; `Rb`, `beta` already non-dimensionalized)(for `beta`: `Omega = 1`)
+
 #### Generated training data
 See https://github.com/PIQuIL/RydbergGPT/blob/main/resources/Generated_training_data.md.
 
