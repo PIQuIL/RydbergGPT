@@ -102,8 +102,9 @@ def main(config_path: str, config_name: str):
         profiler=profiler,
         enable_progress_bar=config.prog_bar,
         log_every_n_steps=config.log_every,
-        # overfit_batches=1,s
+        # overfit_batches=1,
         accumulate_grad_batches=config.accumulate_grad_batches,
+        detect_anomaly=config.detect_anomaly,
     )
 
     # Find the latest checkpoint
