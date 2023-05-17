@@ -21,6 +21,7 @@ training:
   criterion: "NLLLoss" 
   from_checkpoint: null
   accumulate_grad_batches: 1
+  detect_anomaly: True
 
 logger:
   log_every: 30
