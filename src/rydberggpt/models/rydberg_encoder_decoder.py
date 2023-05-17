@@ -112,16 +112,16 @@ class RydbergEncoderDecoder(EncoderDecoder):
             len(x.shape) == 3 and x.shape[-1] == 2
         ), "The input must be one hot encoded"
 
-        m = torch.zeros((x.shape[0], 1, x.shape[-1]))
-        m = m.to(x)
-        m = torch.cat([m, x[:, :-1, :]], axis=-2)
+        y = torch.zeros((x.shape[0], 1, x.shape[-1]))  # Initial token
+        y = y.to(x)  # Match dtype and device
+        y = torch.cat([y, x[:, :-1, :]], axis=-2)  # Append initial token to x
 
-        out = self.forward(m, cond)
-        cond_log_probs = self.generator(out)
+        y = self.forward(y, cond)  # EncoderDecoder forward pass
+        y = self.generator(y)  # Conditional log probs
 
-        log_probs = torch.sum(torch.sum(cond_log_probs * x, axis=-1), axis=-1)
+        y = torch.sum(torch.sum(y * x, axis=-1), axis=-1)  # Log prob of full x
 
-        return log_probs
+        return y
 
     @torch.no_grad()
     def get_samples(self, batch_size, cond, num_atoms, fmt_onehot=True):
@@ -154,33 +154,30 @@ class RydbergEncoderDecoder(EncoderDecoder):
             print("{:<80}".format(f"\rGenerating atom {i+1}/{num_atoms}"), end="")
             sys.stdout.flush()
 
-            out = self.forward(m, cond)
-
-            cond_log_probs = self.generator(out)
-
-            next_cond_log_probs = cond_log_probs[:, -1, :]
-
-            next_outcome = torch.distributions.Categorical(
-                logits=next_cond_log_probs
-            ).sample(
+            y = self.forward(m, cond)  # EncoderDecoder forward pass
+            y = self.generator(y)  # Conditional log probs
+            y = y[:, -1, :]  # Next conditional log probs
+            y = torch.distributions.Categorical(logits=y).sample(
                 [
                     1,
                 ]
-            )
-            next_outcome = next_outcome.reshape(next_outcome.shape[1], 1)
-            next_outcome = to_one_hot(next_outcome, 2)
+            )  # Sample from next conditional log probs
+            y = y.reshape(y.shape[1], 1)  # Reshape
+            y = to_one_hot(y, 2)  # Convert from label to one hot encoding
 
-            m = torch.cat((m, next_outcome), dim=-2)
+            m = torch.cat((m, y), dim=-2)  # Append next sample to tensor
 
         if fmt_onehot:
             for i in range(m.shape[0]):
+                # Depending on num_nodes/num_atoms in graph pad samples with [0,0]
                 m[i, cond[i].num_nodes + 1 :, :] = 0
 
-            return m[:, 1:, :]
+            return m[:, 1:, :]  # Remove initial token
         else:
             m = m[:, 1:, -1]
 
             for i in range(m.shape[0]):
+                # Depending on num_nodes/num_atoms in graph pad samples with nan
                 m[i, cond[i].num_nodes + 1 :] = torch.nan
 
-            return m[:, 1:]
+            return m[:, 1:]  # Remove initial token
