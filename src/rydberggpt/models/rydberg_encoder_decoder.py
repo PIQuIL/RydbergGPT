@@ -1,13 +1,12 @@
-import sys
-
 import copy
+import sys
 from typing import Tuple
 
 import torch
 from pytorch_lightning import LightningModule
 from torch import Tensor, nn
-from torch_geometric.nn import GATConv, GCNConv
 from torch_geometric.data import Batch
+from torch_geometric.nn import GATConv, GCNConv
 
 from rydberggpt.models.graph_embedding.models import GraphEmbedding
 from rydberggpt.models.transformer.layers import DecoderLayer, EncoderLayer
@@ -98,8 +97,7 @@ class RydbergEncoderDecoder(EncoderDecoder):
 
         Parameters:
             x (torch.Tensor): The input tensor.
-            # TODO this is not a tensor but a graph
-            cond (torch.Tensor): The conditional tensor.
+            cond (Batch): The conditional graph structure.
 
         Returns:
             torch.Tensor: The log probabilities.
@@ -126,17 +124,21 @@ class RydbergEncoderDecoder(EncoderDecoder):
     @torch.no_grad()
     def get_samples(self, batch_size, cond, num_atoms, fmt_onehot=True):
         """
-        Generate samples in one-hot encoding using the forward pass
-        and sampling from the conditional probabilities.
+        Generate samples using the forward pass and sampling from the conditional probabilities.
+        The samples can be returned either in one-hot encoding format or in label format,
+        according to the `fmt_onehot` argument.
 
         Args:
             batch_size (int): The number of samples to generate.
-            cond (torch.Tensor): A tensor containing the input condition.
-            num_atoms (int): The number of atoms to sample. For num_atoms > num_nodes in cond, it pads the extra atoms with zeros (onehot) or nan (label).
-            device (str, optional): The device on which to allocate the tensors. Defaults to "cpu".
+            cond (torch_geometric.data.Batch): The batch of conditional graph structures.
+            num_atoms (int): The number of atoms to sample. For num_atoms > num_nodes
+              in each graph within `cond`, the extra atoms are padded with zeros (onehot) or nan (label).
+            fmt_onehot (bool, optional): A flag to indicate whether to return the samples
+              in one-hot encoding format. If False, the samples are returned in label format.
+              Defaults to True.
 
         Returns:
-            torch.Tensor: A tensor containing the generated samples in one-hot encoding.
+            torch.Tensor: A tensor containing the generated samples. The shape of the tensor is (batch_size, num_atoms, 2) for one-hot encoding format, and (batch_size, num_atoms) for label format. The samples are padded according to the number of nodes in each graph within `cond`.
         """
 
         if not hasattr(cond, "num_graphs"):
