@@ -67,4 +67,4 @@ def get_rydberg_energy(
 
     energy = diag_energy + offdiag_energy  # Energy estimate
 
-    return energy
+    return torch.cat([energy, interaction, detuning, offdiag_energy], axis=0)
