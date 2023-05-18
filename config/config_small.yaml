@@ -14,12 +14,17 @@ graph_embedding:
 
 training:
   strategy: "auto"
-  precision: 16-mixed # half precision saves lots of memory! 32 is default
+  precision: 32 # half precision saves lots of memory! 32 is default
   max_epochs: 1000
   batch_size: 32
   learning_rate: 0.001
   criterion: "NLLLoss" #KLLoss
   from_checkpoint: null
+  accumulate_grad_batches: 1
+  detect_anomaly: True
+
+logger:
+  log_every: 30
 
 optimizer: 
   optimizer: "AdamW"
@@ -41,5 +46,5 @@ profiler:
   profiler: "PyTorchProfiler"
 
 misc:
-  seed: 42
+  seed: 104
   prog_bar: True

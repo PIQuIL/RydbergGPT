@@ -2,6 +2,7 @@ from typing import Callable
 
 import torch
 
+from rydberggpt.models.rydberg_encoder_decoder import RydbergEncoderDecoder
 from rydberggpt.utils import to_one_hot
 
 
@@ -11,79 +12,59 @@ from rydberggpt.utils import to_one_hot
 # TODO do we need to worry about the sampling path? (i.e. snake path)
 @torch.no_grad()
 def get_rydberg_energy(
-    get_log_probs: Callable,
+    model: RydbergEncoderDecoder,
     V: torch.Tensor,  # dtype=torch.float64
-    omega: torch.Tensor,  # dtype=torch.float32
-    delta: torch.Tensor,  # dtype=torch.float32
     samples: torch.Tensor,  # dtype=torch.int64
     cond: torch.Tensor,  # dtype=torch.float32
     # log_probs: torch.Tensor,  # dtype=torch.float32
-    num_atoms: int,
     device: torch.device,
 ) -> torch.Tensor:
+    """
+    Calculates energy of the model based on the Hamiltonian defined by cond (graph).
+
+    Args:
+        model (RydbergEncoderDecoder): Model to estimate energy on
+        V (torch.Tensor): Interaction matrix, ensure the interaction matrix is defined in terms of the sampling path permutation.
+        samples (torch.Tensor): Samples drawn from model based on cond.
+        cond (torch.Tensor): A tensor containing the input condition.
+        device (str, optional): The device on which to allocate the tensors. Defaults to "cpu".
+
+    Returns:
+        torch.Tensor: A tensor containing the generated samples in one-hot encoding.
+    """
+
     assert (
         V.shape[1] == samples.shape[1]
     ), "Interaction matrix and number of atoms do not match."
     # remove batch dim of V
     V = V.to(device)
-    samples = samples.to(V)  # Convert samples tensor to float64
 
-    interaction = torch.einsum("ij,bi,bj->b", V, samples, samples)  # [batch_size]
-    detuning = delta * (samples.sum(1))  # sum over sequence length
+    samples = samples.to(V)  # Match dtype and device
+    cond = cond.to(V.device)  # Match dtype and device
+    delta = cond.x[:, 0]  # Detuning coeff
+    omega = cond.x[:, 1]  # Rabi frequency
 
-    samples = samples.to(torch.int64)
-    # sigma x
-    offdiagonal_lp = torch.zeros(
-        samples.shape[0], samples.shape[1], dtype=torch.double
-    )  # [batch_size, seq_len]
+    # Estimate sigma_x
+    flipped = (samples[:, None, :] + torch.eye(samples.shape[-1])[None, ...]) % 2
+    flipped = flipped.reshape(-1, samples.shape[-1])
 
-    # get sigma x
-    for i in range(num_atoms):
-        samples[:, i].bitwise_xor_(True)  # [batch_size, seq_len]
-        log_probs = get_log_probs(to_one_hot(samples, 2), cond)  # [batch_size]
-        offdiagonal_lp[:, i] = log_probs  # [batch_size, seq_len]
-        samples[:, i].bitwise_xor_(True)  # [batch_size, seq_len]
+    sample_log_probs = model.get_log_probs(to_one_hot(samples, 2), cond)
+    flipped_log_probs = model.get_log_probs(to_one_hot(flipped, 2), cond)
+    flipped_log_probs = flipped_log_probs.reshape(-1, samples.shape[-1])
 
-    temp = torch.logsumexp(offdiagonal_lp / 2, dim=1)  # [batch_size]
-    offdiagonal_lp = temp - log_probs / 2
-    # end
+    log_psi_ratio = 0.5 * (flipped_log_probs - sample_log_probs[:, None])
 
-    energy = interaction - (omega / 2) * (offdiagonal_lp.t().exp()) - detuning
+    psi_ratio = torch.exp(log_psi_ratio)
+
+    offdiag_energy = -(omega * 0.5 * psi_ratio).sum(-1)
+
+    # Diagonal part of energy
+
+    interaction = 0.5 * torch.einsum("ij,bi,bj->b", V, samples, samples)  # [batch_size]
+    detuning = (delta * samples).sum(1)  # sum over sequence length
+
+    diag_energy = interaction - detuning
+
+    energy = diag_energy + offdiag_energy  # Energy estimate
+
     return energy
-
-    # def Rydberg_Energy_Vectorized(
-    #     self,
-    #     O,
-    #     d,
-    #     V0,
-    #     O_mat,  # what is this?
-    #     V_mat,  # what is this?
-    #     coeffs,
-    #     samples,  # [batch_size, seq_len]
-    #     sample_log_probs,  # [batch_size, seq_len, 2]
-    # ):
-    #     # samples are in binary
-    #     # samples [batch_size, seq_len]
-    #     numsamples = samples.shape[0]
-    #     N = samples.shape[1]
-    #     samples = samples.float()
-    #     energies_delta = torch.sum(samples, axis=1)
-
-    #     ni_plus_nj = V_mat @ samples.t()
-    #     ni_nj = torch.floor(ni_plus_nj / 2)
-    #     c_ni_nj = coeffs * ni_nj
-    #     energies_V = torch.sum(c_ni_nj, axis=0)
-
-    #     samples_tiled_not_flipped = samples.unsqueeze(2).repeat(1, 1, N)
-    #     samples_tiled_flipped = (samples_tiled_not_flipped + O_mat.t()[None, :, :]) % 2
-    #     samples_tiled_flipped = samples_tiled_flipped.transpose(1, 2)
-    #     samples_tiled_flipped = samples_tiled_flipped.reshape(numsamples * N, N)
-    #     samples_tiled_flipped = samples_tiled_flipped.long()
-
-    #     log_probs_flipped = self.get_log_probs(samples_tiled_flipped)
-    #     log_probs_flipped = log_probs_flipped.reshape(numsamples, N)
-    #     log_prob_ratio = torch.exp(log_probs_flipped - sample_log_probs[:, None])
-    #     energies_O = torch.sum(log_prob_ratio, axis=1)
-
-    #     Energies = -1 * d * energies_delta + V0 * energies_V - (1 / 2) * O * energies_O
-    #     return Energies

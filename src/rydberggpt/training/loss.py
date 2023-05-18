@@ -37,46 +37,12 @@ class NLLLoss(pl.LightningModule):
         # TODO Given the target we look for the index where we reach a [0,0] token
         # if reached mask all the cond_log_probs after that index to zero.
         # Then compute the loss.
-        log_probs = torch.einsum("bnd,bnd->b", cond_log_probs, tgt)
-        loss = -torch.mean(log_probs)
+
+        num_atoms = tgt.shape[-2] - (tgt == 0.0).all(-1).sum(-1)
+
+        log_probs = (cond_log_probs * tgt).sum(dim=(-2, -1))
+
+        loss = -torch.mean(log_probs / num_atoms)
+
         return loss
 
-
-# TODO not sure why this should be a good idea.
-class LabelSmoothing(pl.LightningModule):
-    """Implement label smoothing for a classification task. Label smoothing is a regularization
-    technique that smooths the probability distribution of the target labels by replacing the
-    hard 0s and 1s in the one-hot target vectors with small positive values.
-
-    https://arxiv.org/abs/1906.02629
-
-    Args:
-        smoothing (float, optional): Smoothing factor to apply. Defaults to 0.0.
-    """
-
-    def __init__(self, smoothing=0.0):
-        super(LabelSmoothing, self).__init__()
-        self.smoothing = smoothing
-
-    def forward(self, cond_log_probs: Tensor, tgt: Tensor) -> Tensor:
-        """Compute the KLDiv loss with label smoothing.
-
-        Args:
-            cond_probs (torch.Tensor): Tensor of shape (batch_size, num_atoms, dim) containing the
-                predicted conditional probabilities for each class.
-            tgt (torch.Tensor): Tensor of shape (batch_size, num_atoms, 2) containing the target labels.
-                possible measurement outcomes one-hot encoded [0, 1] or [1, 0].
-
-        Returns:
-            torch.Tensor: Scalar tensor representing the loss with label smoothing.
-        """
-        assert 0 <= self.smoothing < 1
-        num_classes = tgt.shape[-1]
-
-        # Compute smoothed target labels
-        with torch.no_grad():
-            smoothed_tgt = tgt * (1.0 - self.smoothing) + self.smoothing / num_classes
-
-        log_probs = torch.einsum("bnd,bnd->b", cond_log_probs, smoothed_tgt)
-        loss = -torch.mean(log_probs)
-        return loss
