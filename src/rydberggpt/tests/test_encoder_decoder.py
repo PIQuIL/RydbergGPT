@@ -1,3 +1,5 @@
+from rydberggpt.training.loss import NLLLoss
+
 # import copy
 # from dataclasses import dataclass
 
@@ -18,7 +20,6 @@
 #     Generator,
 # )
 # from rydberggpt.models.transformer.modules import PositionwiseFeedForward
-# from rydberggpt.training.loss import KLLoss, LabelSmoothing
 
 # # seed everything
 # torch.manual_seed(0)
