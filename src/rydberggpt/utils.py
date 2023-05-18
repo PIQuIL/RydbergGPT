@@ -26,7 +26,7 @@ def to_one_hot(
     elif not isinstance(data, torch.Tensor):
         raise TypeError("Input data must be a tensor, list or tuple of integers.")
 
-    data = nn.functional.one_hot(data, num_classes)
+    data = nn.functional.one_hot(data.long(), num_classes)
 
     return data.to(torch.float)
 

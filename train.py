@@ -31,6 +31,8 @@ from rydberggpt.utils_ckpt import (
     get_model_from_ckpt,
 )
 
+torch.set_float32_matmul_precision("medium")
+
 
 def main(config_path: str, config_name: str):
     yaml_dict = load_yaml_file(config_path, config_name)
@@ -99,7 +101,10 @@ def main(config_path: str, config_name: str):
         logger=logger,
         profiler=profiler,
         enable_progress_bar=config.prog_bar,
+        log_every_n_steps=config.log_every,
         # overfit_batches=1,
+        accumulate_grad_batches=config.accumulate_grad_batches,
+        detect_anomaly=config.detect_anomaly,
     )
 
     # Find the latest checkpoint
