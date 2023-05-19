@@ -161,7 +161,7 @@ _bin/
 
 examples/_not_in_use/
 
-_temp_data/
+_data/
 comparison/
 _logs/
 _scripts/
