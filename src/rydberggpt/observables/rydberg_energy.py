@@ -10,10 +10,8 @@ from rydberggpt.utils import to_one_hot
 @torch.no_grad()
 def get_rydberg_energy(
     model: RydbergEncoderDecoder,
-    V: torch.Tensor,  # dtype=torch.float64
     samples: torch.Tensor,  # dtype=torch.int64
     cond: torch.Tensor,  # dtype=torch.float32
-    # log_probs: torch.Tensor,  # dtype=torch.float32
     device: torch.device,
 ) -> torch.Tensor:
     """
@@ -30,16 +28,28 @@ def get_rydberg_energy(
         torch.Tensor: A tensor containing the generated samples in one-hot encoding.
     """
 
-    assert (
-        V.shape[1] == samples.shape[1]
-    ), "Interaction matrix and number of atoms do not match."
-    # remove batch dim of V
-    V = V.to(device)
+    model = model.to(device)
+    samples = samples.to(device)
+    cond = cond.to(device)
 
-    samples = samples.to(V)  # Match dtype and device
-    cond = cond.to(V.device)  # Match dtype and device
-    delta = cond.x[:, 0]  # Detuning coeff
-    omega = cond.x[:, 1]  # Rabi frequency
+    delta = cond.x[:, 0]  # Detuning coeffs
+    omega = cond.x[0, 1]  # Rabi frequency
+    beta = cond.x[0, 2]
+    Rb = cond.x[0, 3]  # blockade radius
+
+    ########################################################################################
+
+    # Interaction/Rydberg blockade term
+    interaction = (
+        (samples[..., cond.edge_index].prod(dim=-2) * cond.edge_attr[None, ...]).sum(
+            dim=-1
+        )
+        * Rb**6
+        * omega
+    )
+
+
+    detuning = (delta * samples).sum(1)  # sum over sequence length
 
     # Estimate sigma_x
     flipped = (samples[:, None, :] + torch.eye(samples.shape[-1])[None, ...]) % 2
@@ -56,12 +66,8 @@ def get_rydberg_energy(
     offdiag_energy = -(omega * 0.5 * psi_ratio).sum(-1)
 
     # Diagonal part of energy
-
-    interaction = 0.5 * torch.einsum("ij,bi,bj->b", V, samples, samples)  # [batch_size]
-    detuning = (delta * samples).sum(1)  # sum over sequence length
-
     diag_energy = interaction - detuning
 
     energy = diag_energy + offdiag_energy  # Energy estimate
 
-    return torch.cat([energy, interaction, detuning, offdiag_energy], axis=0)
+    return torch.stack([energy, interaction, detuning, offdiag_energy]).T
