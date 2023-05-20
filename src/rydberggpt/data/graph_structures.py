@@ -4,6 +4,7 @@ import numpy as np
 from rydberggpt.data.dataclasses import BaseGraph
 
 
+# TODO add more graph structures
 def get_graph(config: BaseGraph) -> nx.Graph:
     """
     Generates a graph based on the given configuration.
@@ -18,25 +19,26 @@ def get_graph(config: BaseGraph) -> nx.Graph:
         NotImplementedError: If the graph name provided in the configuration is not implemented.
     """
     if config.graph_name == "grid_graph":
-        graph = generate_grid_graph(config.n_rows, config.n_cols, config.V_0)
+        graph = generate_grid_graph(config.n_rows, config.n_cols)
+
     else:
         raise NotImplementedError(f"Graph name {config.graph_name} not implemented.")
-    # TODO add more graph structures
+
     return graph
 
 
-def generate_grid_graph(n_rows: int, n_cols: int, V_0: float) -> nx.Graph:
+def generate_grid_graph(n_rows: int, n_cols: int) -> nx.Graph:
     """
-    Generates a fully connected grid graph with weights based on the reciprocal of Euclidean distance.
+    Generates a fully connected grid graph with weights based on the reciprocal of Euclidean distance. Coordinates is in units of lattice constant a.
 
     Args:
         n_rows (int): The number of rows in the grid.
         n_cols (int): The number of columns in the grid.
-        V_0 (float): A scaling factor for the interaction strength between nodes.
 
     Returns:
         nx.Graph: The generated grid graph with node positions and edge weights.
     """
+
     # Create an empty graph
     graph = nx.Graph()
 
@@ -52,7 +54,7 @@ def generate_grid_graph(n_rows: int, n_cols: int, V_0: float) -> nx.Graph:
         for node2 in graph.nodes:
             if node1 != node2:
                 pos2 = np.array(graph.nodes[node2]["pos"])
-                interaction_strength = V_0 / (np.linalg.norm(pos1 - pos2) ** 6)
+                interaction_strength = np.linalg.norm(pos1 - pos2) ** (-6)
                 graph.add_edge(node1, node2, weight=interaction_strength)
 
     return graph
