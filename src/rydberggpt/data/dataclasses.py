@@ -14,7 +14,7 @@ class BaseGraph(ABC):
 
     num_atoms: int
     graph_name: str
-    V_0: float
+    Rb: float
     delta: float
     omega: float
     beta: float  # we cannot know the temperature of the system. Maybe remove?
@@ -29,9 +29,6 @@ class GridGraph(BaseGraph):
 @dataclass
 class Batch:
     graph: Data
-    delta: torch.float
-    omega: torch.float
-    beta: torch.float
     m_onehot: torch.Tensor
     m_shifted_onehot: torch.Tensor
 
@@ -51,9 +48,6 @@ def custom_collate(batch: List[Batch]) -> Batch:
 
     batch = Batch(
         graph=graph_batch,
-        delta=torch.tensor([b.delta for b in batch], dtype=torch.float32),
-        omega=torch.tensor([b.omega for b in batch], dtype=torch.float32),
-        beta=torch.tensor([b.beta for b in batch], dtype=torch.float32),
         m_onehot=to_dense_batch(
             torch.cat([b.m_onehot for b in batch], axis=-2),
             batch=graph_batch.batch,
