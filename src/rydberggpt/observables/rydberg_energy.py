@@ -13,16 +13,17 @@ def get_rydberg_energy(
     samples: torch.Tensor,  # dtype=torch.int64
     cond: torch.Tensor,  # dtype=torch.float32
     device: torch.device,
+    undo_sample_path: None,
 ) -> torch.Tensor:
     """
     Calculates energy of the model based on the Hamiltonian defined by cond (graph).
 
     Args:
         model (RydbergEncoderDecoder): Model to estimate energy on
-        V (torch.Tensor): Interaction matrix, ensure the interaction matrix is defined in terms of the sampling path permutation.
         samples (torch.Tensor): Samples drawn from model based on cond.
         cond (torch.Tensor): A tensor containing the input condition.
         device (str, optional): The device on which to allocate the tensors. Defaults to "cpu".
+       undo_sample_path (torch.Tensor): Map that undoes the sample path of the model to match the labelling of in the graph.
 
     Returns:
         torch.Tensor: A tensor containing the generated samples in one-hot encoding.
@@ -37,6 +38,9 @@ def get_rydberg_energy(
     beta = cond.x[0, 2]
     Rb = cond.x[0, 3]  # blockade radius
 
+    if undo_sample_path is not None:
+        samples = undo_sample_path(samples)
+
     ########################################################################################
 
     # Interaction/Rydberg blockade term
@@ -47,7 +51,6 @@ def get_rydberg_energy(
         * Rb**6
         * omega
     )
-
 
     detuning = (delta * samples).sum(1)  # sum over sequence length
 
