@@ -87,7 +87,7 @@ class RydbergDataset(Dataset):
         graph_nx = nx.node_link_graph(graph_dict)
 
         node_features = torch.tensor(
-            [row["delta"], row["omega"], row["beta"], row["blockade_radius"]],
+            [row["delta"], row["omega"], row["beta"]],
             dtype=torch.float32,
         )
         pyg_graph = networkx_to_pyg_data(graph_nx, node_features)
@@ -99,9 +99,6 @@ class RydbergDataset(Dataset):
         m_shifted_onehot = torch.cat((torch.zeros(1, dim), m_onehot[:-1]), dim=0)
         return Batch(
             graph=pyg_graph,
-            delta=row["delta"],
-            omega=row["omega"],
-            beta=row["beta"],
             m_onehot=m_onehot,
             m_shifted_onehot=m_shifted_onehot,
         )
