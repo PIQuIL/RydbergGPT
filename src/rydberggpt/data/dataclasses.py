@@ -14,7 +14,7 @@ class BaseGraph(ABC):
 
     num_atoms: int
     graph_name: str
-    V_0: float
+    Rb: float
     delta: float
     omega: float
     beta: float  # we cannot know the temperature of the system. Maybe remove?

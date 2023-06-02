@@ -87,7 +87,7 @@ class RydbergDataset(Dataset):
         graph_nx = nx.node_link_graph(graph_dict)
 
         node_features = torch.tensor(
-            [row["delta"], row["omega"], row["beta"]],
+            [row["delta"], row["omega"], row["beta"], row["Rb"]],
             dtype=torch.float32,
         )
         pyg_graph = networkx_to_pyg_data(graph_nx, node_features)
