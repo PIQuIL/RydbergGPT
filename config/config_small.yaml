@@ -10,7 +10,7 @@ transformer:
 graph_embedding:
   graph_num_layers: 2
   graph_hidden_dim: 64 
-  in_node_dim: 3 # omega delta beta
+  in_node_dim: 4 # omega delta beta Rb
 
 training:
   strategy: "auto"
@@ -19,7 +19,7 @@ training:
   batch_size: 256
   learning_rate: 0.001
   criterion: "NLLLoss" #KLLoss
-  from_checkpoint: 7
+  from_checkpoint: null
   accumulate_grad_batches: 1
   detect_anomaly: True
 
