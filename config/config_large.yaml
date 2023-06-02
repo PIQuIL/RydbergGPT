@@ -10,7 +10,7 @@ transformer:
 graph_embedding:
   graph_num_layers: 3
   graph_hidden_dim: 128
-  in_node_dim: 4 # omega delta beta, blockade_radius
+  in_node_dim: 3 # omega delta beta
 
 training:
   strategy: "auto"
