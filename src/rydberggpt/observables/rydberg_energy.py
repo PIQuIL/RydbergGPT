@@ -13,7 +13,7 @@ def get_rydberg_energy(
     samples: torch.Tensor,  # dtype=torch.int64
     cond: torch.Tensor,  # dtype=torch.float32
     device: torch.device,
-    undo_sample_path: None,
+    undo_sample_path=None,
 ) -> torch.Tensor:
     """
     Calculates energy of the model based on the Hamiltonian defined by cond (graph).
