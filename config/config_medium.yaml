@@ -1,23 +1,23 @@
-# 828 K params
+# 201 K params
 transformer:
-  num_heads: 12
-  d_model: 72
+  num_heads: 10
+  d_model: 40
   num_blocks_encoder: 2
-  num_blocks_decoder: 8
-  d_ff: 288 # usually 4 * d_model
+  num_blocks_decoder: 6
+  d_ff: 160 # usually 4 * d_model
   dropout: 0.1
   compile: False
 
 graph_embedding:
-  graph_num_layers: 3
-  graph_hidden_dim: 128
-  in_node_dim: 4 # omega delta beta Rb
+  graph_num_layers: 2
+  graph_hidden_dim: 64 
+  in_node_dim: 4 # omega delta beta, blockade_radius
 
 training:
   strategy: "auto"
-  precision: 16 # half precision saves lots of memory! 32 is default
-  max_epochs: 10
-  batch_size: 128
+  precision: 32 # half precision saves lots of memory! 32 is default
+  max_epochs: 1000
+  batch_size: 32
   learning_rate: 0.001
   criterion: "NLLLoss" #KLLoss
   from_checkpoint: null
@@ -37,7 +37,7 @@ dataset:
   num_atoms: null
   num_samples: null
   delta: null
-  num_workers: 4
+  num_workers: 0
 
 rydberg:
   num_states: 2
@@ -47,5 +47,5 @@ profiler:
   profiler: "PyTorchProfiler"
 
 misc:
-  seed: 8596
+  seed: 104
   prog_bar: True
