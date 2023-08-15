@@ -1,6 +1,8 @@
 import json
 import os
 
+from typing import Tuple
+
 import h5py
 import networkx as nx
 import pandas as pd
@@ -19,7 +21,7 @@ def get_rydberg_dataloader(
     test_size: float = 0.2,
     num_workers: int = 0,
     data_path: str = "data",
-) -> tuple[DataLoader, DataLoader]:
+) -> Tuple[DataLoader, DataLoader]:
     df, graph_data = read_subfolder_data(data_path=data_path)
     # check that df is not empty
     assert not df.empty, "Dataframe is empty. Check that the data_path is correct."
