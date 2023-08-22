@@ -34,7 +34,7 @@ from rydberggpt.utils_ckpt import (
 torch.set_float32_matmul_precision("medium")
 
 
-def main(config_path: str, config_name: str):
+def main(config_path: str, config_name: str, dataset_path:str):
     yaml_dict = load_yaml_file(config_path, config_name)
     config = create_config_from_yaml(yaml_dict)
     torch.manual_seed(config.seed)
@@ -44,7 +44,10 @@ def main(config_path: str, config_name: str):
 
     # https://lightning.ai/docs/pytorch/stable/data/datamodule.html
     train_loader, val_loader = get_rydberg_dataloader(
-        config.batch_size, test_size=0.2, num_workers=config.num_workers
+        config.batch_size, 
+        test_size=0.2, 
+        num_workers=config.num_workers, 
+        data_path=dataset_path,
     )
     input_array = set_example_input_array(train_loader)
 
@@ -62,7 +65,7 @@ def main(config_path: str, config_name: str):
     logger = TensorBoardLogger(save_dir="logs")
     log_path = f"logs/lightning_logs/version_{logger.version}"
     rydberg_gpt_trainer = RydbergGPTTrainer(
-        model, config, logger=logger, example_input_array=input_array
+        model, config, logger=logger#, example_input_array=input_array
     )
 
     callbacks = [
@@ -80,11 +83,22 @@ def main(config_path: str, config_name: str):
     ]
 
     # https://lightning.ai/docs/pytorch/stable/common/trainer.html
-    profiler_class = getattr(pl_profilers, config.profiler)
-    profiler = profiler_class(
+    profiler = getattr(pl_profilers, config.profiler)(
+        schedule=torch.profiler.schedule(skip_first=1,wait=1, warmup=1, active=3, repeat=1000), # everything is happening in steps
+        on_trace_ready=torch.profiler.tensorboard_trace_handler(log_path),
+        with_stack=True,
+        with_modules=True,
+        profile_memory=True,
+        with_flops=True,
+        record_shapes=True,
         dirpath=log_path,
         filename="performance_logs",
+        activities=[
+            torch.profiler.ProfilerActivity.CPU,
+            torch.profiler.ProfilerActivity.CUDA,
+        ],  # records both CPU and CUDA activities
     )
+
 
     if config.strategy == "ddp":
         strategy = DDPStrategy(find_unused_parameters=True)
@@ -99,7 +113,7 @@ def main(config_path: str, config_name: str):
         max_epochs=config.max_epochs,
         callbacks=callbacks,
         logger=logger,
-        profiler=profiler,
+        profiler=None,
         enable_progress_bar=config.prog_bar,
         log_every_n_steps=config.log_every,
         # overfit_batches=1,
@@ -115,7 +129,7 @@ def main(config_path: str, config_name: str):
             rydberg_gpt_trainer, train_loader, val_loader, ckpt_path=checkpoint_path
         )
     else:
-        trainer.fit(rydberg_gpt_trainer, train_loader, val_loader)
+        trainer.fit(rydberg_gpt_trainer, train_loader)
 
 
 if __name__ == "__main__":
@@ -125,6 +139,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config_name",
         default="config_small",
+        help="Name of the configuration file without the .yaml extension. (default: small)",
+    )
+    parser.add_argument(
+        "--dataset_path",
+        default="data",
         help="Name of the configuration file without the .yaml extension. (default: small)",
     )
     parser.add_argument(
@@ -139,4 +158,6 @@ if __name__ == "__main__":
     config_name = args.config_name
     yaml_path = f"config/"
 
-    main(config_path=yaml_path, config_name=config_name)
+    print(args.dataset_path)
+
+    main(config_path=yaml_path, config_name=config_name, dataset_path=args.dataset_path)
