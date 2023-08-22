@@ -183,8 +183,14 @@ class ChunkedDatasetPandasRandomAccess(Dataset):
         Returns:
             Data: A PyG Data object representing the graph.
         """
+
         node_features = torch.tensor(
-            [config_data["delta"], config_data["omega"], config_data["beta"]],
+            [
+                config_data["delta"],
+                config_data["omega"],
+                config_data["beta"],
+                config_data["Rb"],
+            ],
             dtype=torch.float32,
         )
         graph_nx = nx.node_link_graph(graph_data)
