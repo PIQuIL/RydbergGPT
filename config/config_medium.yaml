@@ -34,18 +34,15 @@ optimizer:
   eta_min: 0.00001
 
 dataset:
-  num_atoms: null
-  num_samples: null
-  delta: null
-  num_workers: 0
+  num_workers: 8
 
 rydberg:
   num_states: 2
-  num_encoder_embedding_dims: 3
 
 profiler: 
   profiler: "PyTorchProfiler"
+  advanced_monitoring: False
 
 misc:
   seed: 104
-  prog_bar: True
+  prog_bar: False
