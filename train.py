@@ -45,7 +45,7 @@ def main(config_path: str, config_name: str):
     # https://lightning.ai/docs/pytorch/stable/data/datamodule.html
     train_loader, val_loader = get_rydberg_dataloader(
         config.batch_size, test_size=0.2, num_workers=config.num_workers
-    )
+    )  # test_size currently not used.
     input_array = set_example_input_array(train_loader)
 
     model = get_rydberg_graph_encoder_decoder(config)
