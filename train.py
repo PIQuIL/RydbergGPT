@@ -16,6 +16,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.strategies import DDPStrategy
 
 from rydberggpt.data.loading.rydberg_dataset import get_rydberg_dataloader
+from rydberggpt.data.loading.rydberg_dataset_chunked import get_chunked_dataloader
 from rydberggpt.models.rydberg_encoder_decoder import get_rydberg_graph_encoder_decoder
 from rydberggpt.training.callbacks.module_info_callback import ModelInfoCallback
 from rydberggpt.training.callbacks.stop_on_loss_threshold_callback import (
@@ -43,7 +44,7 @@ def main(config_path: str, config_name: str, dataset_path: str):
     config.device = device
 
     # https://lightning.ai/docs/pytorch/stable/data/datamodule.html
-    train_loader, val_loader = get_rydberg_dataloader(
+    train_loader, val_loader = get_chunked_dataloader(
         config.batch_size,
         test_size=0.2,
         num_workers=config.num_workers,
