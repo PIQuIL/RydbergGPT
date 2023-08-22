@@ -7,6 +7,43 @@ from torch_geometric.data import Batch as PyGBatch
 from torch_geometric.data import Data
 
 
+def gen_pyg_data(
+    graph: nx.Graph, node_features: torch.Tensor, global_features: torch.Tensor
+) -> Data:
+    """
+    Generates PyTorch Geometric Data object from edge features (defined by NetworkX graph), node features and global features.
+
+    Args:
+        graph: NetworkX graph object with the edge features of the graph.
+        node_features: Features of the nodes of the graph
+        global_features: Global features of the graph.
+
+    Returns:
+        A PyTorch Geometric Data object representing the input graph.
+    """
+
+    N = len(graph_nodes())
+
+    assert x_node.shape[0] == N
+
+    x_node = node_features
+    x_global = global_features.repeat(N, 1)  # Map global feat. to node feat.
+    x = torch.cat([x_node, x_global], dim=(-1))  # Combine global and node feat.
+
+    # Convert the edge list to a PyTorch Geometric edge_index tensor
+    edge_index = torch.tensor(list(graph.edges), dtype=torch.long).t().contiguous()
+
+    # Get edge weights from the graph
+    edge_weight = torch.tensor(
+        list(nx.get_edge_attributes(graph, "weight").values()), dtype=torch.float
+    )
+
+    # Create a Data object
+    data = Data(x=x, edge_index=edge_index, edge_attr=edge_weight)
+
+    return data
+
+
 def networkx_to_pyg_data(graph: nx.Graph, node_features: torch.Tensor) -> Data:
     """
     Convert a NetworkX graph to a PyTorch Geometric Data object.
@@ -17,6 +54,7 @@ def networkx_to_pyg_data(graph: nx.Graph, node_features: torch.Tensor) -> Data:
     Returns:
         A PyTorch Geometric Data object representing the input graph.
     """
+
     x = node_features.repeat(len(graph.nodes()), 1)
 
     # Convert the edge list to a PyTorch Geometric edge_index tensor
@@ -29,6 +67,7 @@ def networkx_to_pyg_data(graph: nx.Graph, node_features: torch.Tensor) -> Data:
 
     # Create a Data object
     data = Data(x=x, edge_index=edge_index, edge_attr=edge_weight)
+
     return data
 
 

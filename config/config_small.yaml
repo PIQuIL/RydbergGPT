@@ -1,16 +1,17 @@
+# 66.6 K params 
 transformer:
   num_heads: 8
   d_model: 32
   num_blocks_encoder: 1
   num_blocks_decoder: 3
   d_ff: 128 # usually 4 * d_model
-  dropout: 0.0
+  dropout: 0.1
   compile: False
 
 graph_embedding:
   graph_num_layers: 2
   graph_hidden_dim: 64 
-  in_node_dim: 3 # omega delta beta
+  in_node_dim: 4 # omega delta beta, blockade_radius
 
 training:
   strategy: "auto"
