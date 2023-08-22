@@ -165,8 +165,8 @@ _data/
 comparison/
 _logs/
 
-data/
 data_old/
 data_subset/
 dataset_test/
 _scripts/
+dataset/
