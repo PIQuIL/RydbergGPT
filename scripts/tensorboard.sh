@@ -1,3 +1,3 @@
-ml TensorFlow
-ml tensorboard
-tensorboard --logdir="logs/"
+module purge
+
+apptainer exec ~/RydbergGPT/images/pytorch.sif tensorboard --logdir="logs/" --port=6007

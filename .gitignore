@@ -161,7 +161,7 @@ _bin/
 
 examples/_not_in_use/
 
-_temp_data/
+_data/
 comparison/
 _logs/
 
@@ -169,3 +169,6 @@ data/
 data_old/
 data_subset/
 dataset_test/
+_scripts/
+data/
+data_old/
