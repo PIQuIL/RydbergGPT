@@ -34,7 +34,7 @@ from rydberggpt.utils_ckpt import (
 torch.set_float32_matmul_precision("medium")
 
 
-def main(config_path: str, config_name: str, dataset_path:str):
+def main(config_path: str, config_name: str, dataset_path: str):
     yaml_dict = load_yaml_file(config_path, config_name)
     config = create_config_from_yaml(yaml_dict)
     torch.manual_seed(config.seed)
@@ -44,15 +44,16 @@ def main(config_path: str, config_name: str, dataset_path:str):
 
     # https://lightning.ai/docs/pytorch/stable/data/datamodule.html
     train_loader, val_loader = get_rydberg_dataloader(
-        config.batch_size, 
-        test_size=0.2, 
-        num_workers=config.num_workers, 
+        config.batch_size,
+        test_size=0.2,
+        num_workers=config.num_workers,
         data_path=dataset_path,
     )
     input_array = set_example_input_array(train_loader)
 
     model = get_rydberg_graph_encoder_decoder(config)
 
+    # Compile model
     if config.compile:
         # check that device is cuda
         if device != "cuda":
@@ -62,12 +63,14 @@ def main(config_path: str, config_name: str, dataset_path:str):
             )
         model = torch.compile(model)
 
+    # Setup tensorboard logger
     logger = TensorBoardLogger(save_dir="logs")
     log_path = f"logs/lightning_logs/version_{logger.version}"
     rydberg_gpt_trainer = RydbergGPTTrainer(
-        model, config, logger=logger#, example_input_array=input_array
+        model, config, logger=logger  # , example_input_array=input_array
     )
 
+    # Callbacks
     callbacks = [
         ModelCheckpoint(
             monitor="train_loss",
@@ -82,29 +85,41 @@ def main(config_path: str, config_name: str, dataset_path:str):
         # StopOnLossThreshold(loss_threshold=150.0),
     ]
 
-    # https://lightning.ai/docs/pytorch/stable/common/trainer.html
-    profiler = getattr(pl_profilers, config.profiler)(
-        schedule=torch.profiler.schedule(skip_first=1,wait=1, warmup=1, active=3, repeat=1000), # everything is happening in steps
-        on_trace_ready=torch.profiler.tensorboard_trace_handler(log_path),
-        with_stack=True,
-        with_modules=True,
-        profile_memory=True,
-        with_flops=True,
-        record_shapes=True,
-        dirpath=log_path,
-        filename="performance_logs",
-        activities=[
-            torch.profiler.ProfilerActivity.CPU,
-            torch.profiler.ProfilerActivity.CUDA,
-        ],  # records both CPU and CUDA activities
-    )
+    # Monitoring
+    if config.advanced_monitoring:
+        # https://lightning.ai/docs/pytorch/stable/common/trainer.html
+        profiler = getattr(pl_profilers, config.profiler)(
+            schedule=torch.profiler.schedule(
+                skip_first=1, wait=1, warmup=1, active=3, repeat=1000
+            ),  # everything is happening in steps
+            on_trace_ready=torch.profiler.tensorboard_trace_handler(log_path),
+            with_stack=True,
+            with_modules=True,
+            profile_memory=True,
+            with_flops=True,
+            record_shapes=True,
+            dirpath=log_path,
+            filename="performance_logs",
+            activities=[
+                torch.profiler.ProfilerActivity.CPU,
+                torch.profiler.ProfilerActivity.CUDA,
+            ],  # records both CPU and CUDA activities
+        )
+    else:
+        # https://lightning.ai/docs/pytorch/stable/common/trainer.html
+        profiler_class = getattr(pl_profilers, config.profiler)
+        profiler = profiler_class(
+            dirpath=log_path,
+            filename="performance_logs",
+        )
 
-
+    # Distributed training
     if config.strategy == "ddp":
         strategy = DDPStrategy(find_unused_parameters=True)
     else:
         strategy = config.strategy
 
+    # Init trainer class
     trainer = pl.Trainer(
         devices=-1,
         strategy=strategy,
@@ -113,7 +128,7 @@ def main(config_path: str, config_name: str, dataset_path:str):
         max_epochs=config.max_epochs,
         callbacks=callbacks,
         logger=logger,
-        profiler=None,
+        profiler=profiler,
         enable_progress_bar=config.prog_bar,
         log_every_n_steps=config.log_every,
         # overfit_batches=1,
