@@ -22,6 +22,9 @@ def get_chunked_dataloader(
 ) -> Tuple[DataLoader, DataLoader]:
     # Initialize the dataset
     full_dataset = ChunkedDatasetPandasRandomAccess(data_path)
+    assert (
+        len(full_dataset) > 0
+    ), "Dataset is empty. Check that the data_path is correct."
 
     # Compute the lengths of training and validation datasets
     # total_samples = len(full_dataset)
