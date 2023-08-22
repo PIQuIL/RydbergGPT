@@ -1,6 +1,5 @@
 import json
 import os
-
 from typing import Tuple
 
 import h5py
@@ -20,7 +19,7 @@ def get_rydberg_dataloader(
     batch_size: int = 32,
     test_size: float = 0.2,
     num_workers: int = 0,
-    data_path: str = "data",
+    data_path: str = "dataset",
 ) -> Tuple[DataLoader, DataLoader]:
     df, graph_data = read_subfolder_data(data_path=data_path)
     # check that df is not empty

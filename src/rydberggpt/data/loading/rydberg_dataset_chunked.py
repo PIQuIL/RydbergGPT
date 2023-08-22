@@ -18,7 +18,7 @@ def get_chunked_dataloader(
     batch_size: int = 32,
     test_size: float = 0.2,
     num_workers: int = 0,
-    data_path: str = "data",
+    data_path: str = "dataset",
 ) -> Tuple[DataLoader, DataLoader]:
     # Initialize the dataset
     full_dataset = ChunkedDatasetPandasRandomAccess(data_path)
