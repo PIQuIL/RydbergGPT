@@ -10,16 +10,10 @@ from torch_geometric.nn import GATConv, GCNConv
 
 from rydberggpt.models.graph_embedding.models import GraphEmbedding
 from rydberggpt.models.transformer.layers import DecoderLayer, EncoderLayer
-from rydberggpt.models.transformer.models import (
-    Decoder,
-    Encoder,
-    EncoderDecoder,
-    Generator,
-)
-from rydberggpt.models.transformer.modules import (
-    PositionalEncoding,
-    PositionwiseFeedForward,
-)
+from rydberggpt.models.transformer.models import (Decoder, Encoder,
+                                                  EncoderDecoder, Generator)
+from rydberggpt.models.transformer.modules import (PositionalEncoding,
+                                                   PositionwiseFeedForward)
 from rydberggpt.utils import to_one_hot
 
 

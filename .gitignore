@@ -164,6 +164,9 @@ examples/_not_in_use/
 _data/
 comparison/
 _logs/
-_scripts/
-data/
+
 data_old/
+data_subset/
+dataset_test/
+_scripts/
+dataset/
