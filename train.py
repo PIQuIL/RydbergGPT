@@ -44,7 +44,8 @@ def main(config_path: str, config_name: str, dataset_path: str):
     config.device = device
 
     # https://lightning.ai/docs/pytorch/stable/data/datamodule.html
-    train_loader, val_loader = get_chunked_dataloader(
+    # train_loader, val_loader = get_chunked_dataloader(
+    train_loader, val_loader = get_rydberg_dataloader(
         config.batch_size,
         test_size=0.2,
         num_workers=config.num_workers,
@@ -159,7 +160,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--dataset_path",
-        default="data",
+        default="data_old_chunked/",
         help="Name of the configuration file without the .yaml extension. (default: small)",
     )
     parser.add_argument(
