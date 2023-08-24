@@ -9,7 +9,7 @@ from rydberggpt.training.trainer import RydbergGPTTrainer
 from rydberggpt.utils import create_config_from_yaml, load_yaml_file
 
 
-def get_ckpt_path(from_ckpt: int, log_dir: str = "logs\\lightning_logs") -> str:
+def get_ckpt_path(from_ckpt: int, log_dir: str = "logs/lightning_logs") -> str:
     """
     Get the checkpoint path from a specified checkpoint version number.
 
