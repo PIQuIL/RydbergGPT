@@ -56,7 +56,8 @@ def get_streaming_dataloader(
     return train_loader, val_loader
 
 
-# Implementing the StreamingDataLoader class
+# TODO streaming dataloader and chunked dataloader share some functions. Make
+# a base class for them to inherit from
 class StreamingDataLoader(Dataset):
     def __init__(self, base_dir: str):
         self.base_dir = base_dir
