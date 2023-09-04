@@ -35,6 +35,7 @@ optimizer:
 
 dataset:
   num_workers: 8
+  chunks_in_memory: 250 # how many chunks of data to load into memory at once, each chunk contains 100,000 samples
 
 rydberg:
   num_states: 2
