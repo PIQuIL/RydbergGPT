@@ -17,10 +17,10 @@ training:
   strategy: "auto"
   precision: 32 # half precision saves lots of memory! 32 is default
   max_epochs: 1000
-  batch_size: 4096
+  batch_size: 12
   learning_rate: 0.001
   criterion: "NLLLoss" #KLLoss
-  from_checkpoint: Null
+  from_checkpoint: 8
   accumulate_grad_batches: 1
   detect_anomaly: True
 
@@ -35,6 +35,7 @@ optimizer:
 
 dataset:
   num_workers: 8
+  chunks_in_memory: 250 # how many chunks of data to load into memory at once, each chunk contains 100,000 samples
 
 rydberg:
   num_states: 2
@@ -45,4 +46,4 @@ profiler:
 
 misc:
   seed: 104
-  prog_bar: False
+  prog_bar: True
