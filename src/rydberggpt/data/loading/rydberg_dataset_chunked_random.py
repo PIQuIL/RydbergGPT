@@ -11,7 +11,7 @@ from rydberggpt.data.loading.base_dataset import BaseDataset
 from rydberggpt.utils import to_one_hot
 
 
-def get_chunked_randomized_dataloader(
+def get_chunked_random_dataloader(
     batch_size: int = 10,
     num_workers: int = 0,
     data_path: str = "dataset",
