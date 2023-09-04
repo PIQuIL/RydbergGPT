@@ -15,6 +15,7 @@ from rydberggpt.data.utils_graph import networkx_to_pyg_data
 from rydberggpt.utils import to_one_hot
 
 
+# NOTE not in use
 def get_rydberg_dataloader(
     batch_size: int = 32,
     test_size: float = 0.2,
