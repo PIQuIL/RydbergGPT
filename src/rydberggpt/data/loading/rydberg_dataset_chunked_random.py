@@ -13,6 +13,7 @@ from rydberggpt.utils import to_one_hot
 
 def get_chunked_random_dataloader(
     batch_size: int = 10,
+    test_size: float = 0.2,
     num_workers: int = 0,
     data_path: str = "dataset",
     chunks_in_memory: int = 4,
