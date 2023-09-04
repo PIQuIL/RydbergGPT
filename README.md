@@ -1,7 +1,27 @@
-[![Python package](https://github.com/PIQuIL/RydbergGPT/actions/workflows/python-package.yml/badge.svg)](https://github.com/PIQuIL/RydbergGPT/actions/workflows/python-package.yml)
+<!-- [![Python package](https://github.com/PIQuIL/RydbergGPT/actions/workflows/python-package.yml/badge.svg)](https://github.com/PIQuIL/RydbergGPT/actions/workflows/python-package.yml) -->
 
 # RydbergGPT
 A large language model (LLM) for Rydberg atom array physics.
+
+
+## Quick Start
+
+To run the training on a local machine, execute the `train.py` script. For cluster execution, you can use the `train.sh` script.
+
+```bash
+python train.py --config_name=config_small.yaml
+```
+```
+
+Or for cluster:
+
+```bash
+.scripts/train.sh
+```
+
+## Configuration File
+
+The `config.yaml` file contains all the hyperparameters needed for training. You can specify the model architecture, training settings, data loading, and other configurations here.
 
 ## Architecture
 
