@@ -10,6 +10,7 @@ from torch_geometric.data import Batch as PyGBatch
 from torch_geometric.data import Data
 
 from rydberggpt.data.dataclasses import Batch, custom_collate
+from rydberggpt.data.loading.base_dataset import BaseDataset
 from rydberggpt.data.utils_graph import networkx_to_pyg_data
 from rydberggpt.utils import to_one_hot
 
@@ -54,64 +55,9 @@ def get_chunked_dataloader(
     return train_loader, val_loader
 
 
-class ChunkedDatasetPandasRandomAccess(Dataset):
-    """
-    A dataset class that reads data from chunked datasets stored in an HDF5 format.
-    Each chunk is a combination of measurement data, graph data, and configuration data.
-    """
-
+class ChunkedDatasetPandasRandomAccess(BaseDataset):  # Inherit from BaseDataset
     def __init__(self, base_dir: str):
-        """
-        Initialize the dataset with the base directory containing the chunked datasets.
-
-        Args:
-            base_dir (str): The directory containing the chunked datasets.
-        """
-        self.base_dir = base_dir
-        self.chunk_paths = []
-        self.graph_paths = []
-        self.config_paths = []
-        self.lengths = []
-        self.total_length = 0
-        self._read_folder_structure()
-
-    def _read_folder_structure(self) -> None:
-        """
-        Read the folder structure of the base directory to identify paths to individual chunks,
-        their associated graph and configuration data.
-        """
-        # List all directories with chunked datasets
-        l_dirs = [
-            d
-            for d in os.listdir(self.base_dir)
-            if os.path.isdir(os.path.join(self.base_dir, d))
-        ]
-
-        for l_dir in l_dirs:
-            chunked_dataset_dirs = [
-                d
-                for d in os.listdir(os.path.join(self.base_dir, l_dir))
-                if os.path.isdir(os.path.join(self.base_dir, l_dir, d))
-            ]
-            for chunked_dataset_dir in chunked_dataset_dirs:
-                chunk_dir = os.path.join(self.base_dir, l_dir, chunked_dataset_dir)
-                df_shape = pd.read_hdf(
-                    os.path.join(chunk_dir, "dataset.h5"), key="data"
-                ).shape
-                self.chunk_paths.append(os.path.join(chunk_dir, "dataset.h5"))
-                self.graph_paths.append(os.path.join(chunk_dir, "graph.json"))
-                self.config_paths.append(os.path.join(chunk_dir, "config.json"))
-                self.lengths.append(df_shape[0])
-                self.total_length += df_shape[0]
-
-    def __len__(self) -> int:
-        """
-        Return the total number of samples in the dataset.
-
-        Returns:
-            int: Total number of samples.
-        """
-        return self.total_length
+        super().__init__(base_dir)  # Call the constructor of the base class
 
     def __getitem__(self, idx: int) -> Batch:
         """
@@ -174,28 +120,3 @@ class ChunkedDatasetPandasRandomAccess(Dataset):
             graph_data = json.load(graph_file)
 
         return measurement, config_data, graph_data
-
-    def _get_pyg_graph(self, graph_data: Dict, config_data: Dict) -> Data:
-        """
-        Convert the graph data to a PyG Data object.
-
-        Args:
-            graph_data (Dict): Graph data loaded from the graph.json file.
-            config_data (Dict): Configuration data loaded from the config.json file.
-
-        Returns:
-            Data: A PyG Data object representing the graph.
-        """
-
-        node_features = torch.tensor(
-            [
-                config_data["delta"],
-                config_data["omega"],
-                config_data["beta"],
-                config_data["Rb"],
-            ],
-            dtype=torch.float32,
-        )
-        graph_nx = nx.node_link_graph(graph_data)
-        pyg_graph = networkx_to_pyg_data(graph_nx, node_features)
-        return pyg_graph

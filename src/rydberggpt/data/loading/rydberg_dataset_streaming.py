@@ -12,6 +12,7 @@ from torch_geometric.data import Batch as PyGBatch
 from torch_geometric.data import Data
 
 from rydberggpt.data.dataclasses import Batch, custom_collate
+from rydberggpt.data.loading.base_dataset import BaseDataset
 from rydberggpt.data.utils_graph import networkx_to_pyg_data
 from rydberggpt.utils import to_one_hot
 
@@ -56,47 +57,15 @@ def get_streaming_dataloader(
     return train_loader, val_loader
 
 
-# TODO streaming dataloader and chunked dataloader share some functions. Make
-# a base class for them to inherit from
-class StreamingDataLoader(Dataset):
+class StreamingDataLoader(BaseDataset):
     def __init__(self, base_dir: str):
-        self.base_dir = base_dir
-        self.chunk_paths = []
-        self.graph_paths = []
-        self.config_paths = []
-        self.lengths = []
-        self.total_length = 0
-        self.current_chunk_idx = (
-            -1
-        )  # Initialize to -1 to indicate no chunk is currently loaded
+        super().__init__(base_dir)
+        # Initialize to -1 to indicate no chunk is currently loaded
+        self.current_chunk_idx = -1
         self.current_df = None
         self.current_graph_data = None
         self.current_config_data = None
         self.current_sample_idx = 0  # Initialize to 0
-        self._read_folder_structure()
-
-    def _read_folder_structure(self) -> None:
-        l_dirs = [
-            d
-            for d in os.listdir(self.base_dir)
-            if os.path.isdir(os.path.join(self.base_dir, d))
-        ]
-        for l_dir in l_dirs:
-            chunked_dataset_dirs = [
-                d
-                for d in os.listdir(os.path.join(self.base_dir, l_dir))
-                if os.path.isdir(os.path.join(self.base_dir, l_dir, d))
-            ]
-            for chunked_dataset_dir in chunked_dataset_dirs:
-                chunk_dir = os.path.join(self.base_dir, l_dir, chunked_dataset_dir)
-                df_shape = pd.read_hdf(
-                    os.path.join(chunk_dir, "dataset.h5"), key="data"
-                ).shape
-                self.chunk_paths.append(os.path.join(chunk_dir, "dataset.h5"))
-                self.graph_paths.append(os.path.join(chunk_dir, "graph.json"))
-                self.config_paths.append(os.path.join(chunk_dir, "config.json"))
-                self.lengths.append(df_shape[0])
-                self.total_length += df_shape[0]
 
     def _load_next_chunk(self) -> None:
         self.current_chunk_idx = (self.current_chunk_idx + 1) % len(
@@ -112,9 +81,6 @@ class StreamingDataLoader(Dataset):
             self.current_graph_data = json.load(graph_file)
         with open(self.config_paths[self.current_chunk_idx], "r") as config_file:
             self.current_config_data = json.load(config_file)
-
-    def __len__(self):
-        return self.total_length
 
     def __getitem__(self, idx: int) -> Batch:
         if self.current_df is None or self.current_sample_idx >= len(self.current_df):
@@ -139,17 +105,3 @@ class StreamingDataLoader(Dataset):
         df_row = self.current_df.iloc[self.current_sample_idx]
         measurement = torch.tensor(df_row["measurement"], dtype=torch.int64)
         return measurement, self.current_config_data, self.current_graph_data
-
-    def _get_pyg_graph(self, graph_data: Dict, config_data: Dict):
-        node_features = torch.tensor(
-            [
-                config_data["delta"],
-                config_data["omega"],
-                config_data["beta"],
-                config_data["Rb"],
-            ],
-            dtype=torch.float32,
-        )
-        graph_nx = nx.node_link_graph(graph_data)
-        pyg_graph = networkx_to_pyg_data(graph_nx, node_features)
-        return pyg_graph
