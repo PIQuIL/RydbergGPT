@@ -29,7 +29,7 @@ class RydbergGPTTrainer(pl.LightningModule):
         self,
         model: nn.Module,
         config: dataclass,
-        logger: TensorBoardLogger,
+        logger: TensorBoardLogger = None,
         example_input_array: torch.tensor = None,
     ) -> None:
         super().__init__()
