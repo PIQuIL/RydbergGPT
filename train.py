@@ -194,7 +194,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--dataset_path",
-        default="data_old_chunked/",
+        default="dataset/",
         help="Name of the configuration file without the .yaml extension. (default: small)",
     )
     parser.add_argument(
