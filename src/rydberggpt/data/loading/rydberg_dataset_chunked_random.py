@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 
 from rydberggpt.data.dataclasses import Batch, custom_collate
 from rydberggpt.data.loading.base_dataset import BaseDataset
-from rydberggpt.utils import to_one_hot
+from rydberggpt.utils import to_one_hot  # , track_memory_usage
 
 
 def get_chunked_random_dataloader(
@@ -50,8 +50,15 @@ class ChunkedDatasetRandom(BaseDataset):
 
     # TODO is it properly randomized for multi GPU training?
     # TODO dirty fix with uuid for now
+    # @track_memory_usage
     def _load_random_chunks(self, seed=None):
         random.seed(uuid.uuid4().int & (1 << 32) - 1)
+
+        if self.num_chunks_in_memory > len(self.chunk_paths):
+            self.num_chunks_in_memory = len(self.chunk_paths)
+            print(
+                f"Loading full dataset. num_chunks_in_memory set to {self.num_chunks_in_memory}"
+            )
 
         # Randomly choose chunk indices
         random_chunk_indices = random.sample(
@@ -89,9 +96,7 @@ class ChunkedDatasetRandom(BaseDataset):
         config_data = self.current_configs[chunk_idx]
         graph_data = self.current_graphs[chunk_idx]
 
-        measurement = torch.tensor(
-            df.iloc[sample_idx]["measurement"], dtype=torch.int64
-        )
+        measurement = torch.tensor(df.iloc[sample_idx]["measurement"], dtype=torch.bool)
         pyg_graph = self._get_pyg_graph(graph_data, config_data)
 
         # Prepare one-hot encoded input and target
