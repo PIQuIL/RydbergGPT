@@ -1,0 +1,49 @@
+# 66.6 K params 
+transformer:
+  num_heads: 8
+  d_model: 32
+  num_blocks_encoder: 1
+  num_blocks_decoder: 3
+  d_ff: 128 # usually 4 * d_model
+  dropout: 0.1
+  compile: False
+
+graph_embedding:
+  graph_num_layers: 2
+  graph_hidden_dim: 64 
+  in_node_dim: 4 # omega delta beta, Rb
+
+training:
+  strategy: "auto"
+  precision: 16 # half precision saves lots of memory! 32 is default
+  max_epochs: 1000
+  batch_size: 16
+  learning_rate: 0.001
+  criterion: "NLLLoss" #KLLoss
+  from_checkpoint: 8
+  accumulate_grad_batches: 1
+  detect_anomaly: True
+
+logger:
+  log_every: 30
+
+optimizer: 
+  optimizer: "AdamW"
+  t_initial: 1
+  t_mult: 2
+  eta_min: 0.00001
+
+dataset:
+  num_workers: 8
+  chunks_in_memory: 1 # how many chunks of data to load into memory at once, each chunk contains 100,000 samples
+
+rydberg:
+  num_states: 2
+
+profiler: 
+  profiler: "PyTorchProfiler"
+  advanced_monitoring: True # Only for debugging
+
+misc:
+  seed: 104
+  prog_bar: True
