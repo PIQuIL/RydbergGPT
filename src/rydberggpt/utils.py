@@ -7,6 +7,21 @@ import yaml
 from torch import nn
 
 
+def save_to_yaml(data: Dict[str, Any], filename: str) -> None:
+    """
+    Save a dictionary to a file in YAML format.
+
+    Args:
+        data (Dict[str, Any]): The dictionary to be saved.
+        filename (str): The path to the file where the dictionary will be saved.
+
+    Returns:
+        None
+    """
+    with open(filename, "w") as file:
+        yaml.dump(data, file)
+
+
 def to_one_hot(
     data: Union[torch.Tensor, List[int], Tuple[int]], num_classes: int
 ) -> torch.Tensor:
@@ -14,11 +29,11 @@ def to_one_hot(
     Converts the input data into one-hot representation.
 
     Args:
-    - data: Input data to be converted into one-hot. It can be a 1D tensor, list or tuple of integers.
-    - num_classes: Number of classes in the one-hot representation.
+        data: Input data to be converted into one-hot. It can be a 1D tensor, list or tuple of integers.
+        num_classes: Number of classes in the one-hot representation.
 
     Returns:
-    - data: The one-hot representation of the input data.
+        data: The one-hot representation of the input data.
     """
 
     if isinstance(data, (list, tuple)):
