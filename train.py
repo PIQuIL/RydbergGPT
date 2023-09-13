@@ -1,4 +1,5 @@
 import argparse
+import os
 from typing import Optional
 
 import numpy as np
@@ -28,7 +29,7 @@ from rydberggpt.training.callbacks.stop_on_loss_threshold_callback import (
 )
 from rydberggpt.training.trainer import RydbergGPTTrainer
 from rydberggpt.training.utils import set_example_input_array
-from rydberggpt.utils import create_config_from_yaml, load_yaml_file
+from rydberggpt.utils import create_config_from_yaml, load_yaml_file, save_to_yaml
 from rydberggpt.utils_ckpt import (
     find_best_ckpt,
     find_latest_ckpt,
@@ -128,16 +129,16 @@ def main(config_path: str, config_name: str, dataset_path: str):
     # Setup Environment
     setup_environment(config)
 
-    # Load data
-    train_loader, val_loader = load_data(config, dataset_path)
-    input_array = set_example_input_array(train_loader)
-
     # Create Model
     model = create_model(config)
 
     # Setup tensorboard logger
     logger = TensorBoardLogger(save_dir="logs")
     log_path = f"logs/lightning_logs/version_{logger.version}"
+    print(f"Log path: {log_path}")
+
+    # save hyperparams
+    logger.log_hyperparams(vars(config))
 
     rydberg_gpt_trainer = RydbergGPTTrainer(
         model, config, logger=logger  # , example_input_array=input_array
@@ -171,6 +172,21 @@ def main(config_path: str, config_name: str, dataset_path: str):
         accumulate_grad_batches=config.accumulate_grad_batches,
         detect_anomaly=config.detect_anomaly,
     )
+
+    # store list of datasets used
+    datasets_used = [
+        name
+        for name in os.listdir(dataset_path)
+        if os.path.isdir(os.path.join(dataset_path, name))
+    ]
+
+    save_to_yaml(
+        {"datasets": datasets_used}, os.path.join(log_path, "datasets_used.yaml")
+    )
+
+    # Load data
+    train_loader, val_loader = load_data(config, dataset_path)
+    input_array = set_example_input_array(train_loader)
 
     # Find the latest checkpoint
     if config.from_checkpoint is not None:
