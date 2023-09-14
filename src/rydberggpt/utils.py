@@ -1,10 +1,54 @@
+import functools
+import logging
 import os
+import resource
+import sys
 from dataclasses import dataclass, make_dataclass
 from typing import Any, Dict, List, Tuple, Type, Union
 
 import torch
 import yaml
 from torch import nn
+
+logger = logging.getLogger(__name__)
+
+
+def track_memory_usage(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+
+        # Measure memory used by the function's result
+        memory_used = sys.getsizeof(result)
+
+        # Convert bytes into GB, MB, and KB components
+        gb, remainder = divmod(memory_used, 1_073_741_824)
+        mb, kb = divmod(remainder, 1_048_576)
+        usage = f"Memory used by {func.__name__}: {gb} GB, {mb} MB, and {kb} KB"
+
+        logger.info(usage)
+        return result
+
+    return wrapper
+
+
+# def track_memory_usage(func):
+#     @functools.wraps(func)
+#     def wrapper(*args, **kwargs):
+#         initial_memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+#         result = func(*args, **kwargs)
+#         final_memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+#         memory_difference = final_memory_usage - initial_memory_usage
+
+#         # Convert total KB into GB, MB, and KB components
+#         gb, remainder = divmod(memory_difference, 1_048_576)
+#         mb, kb = divmod(remainder, 1_024)
+#         usage = f"Memory used by {func.__name__}: {gb} GB, {mb} MB, and {kb} KB"
+
+#         logger.info(usage)  # Use memory_logger instead of logger
+#         return result
+
+#     return wrapper
 
 
 def save_to_yaml(data: Dict[str, Any], filename: str) -> None:
