@@ -1,4 +1,5 @@
 import json
+import logging
 import random
 import uuid
 
@@ -8,7 +9,10 @@ from torch.utils.data import DataLoader
 
 from rydberggpt.data.dataclasses import Batch, custom_collate
 from rydberggpt.data.loading.base_dataset import BaseDataset
-from rydberggpt.utils import to_one_hot  # , track_memory_usage
+from rydberggpt.data.loading.utils import contains_invalid_numbers
+from rydberggpt.utils import to_one_hot, track_memory_usage
+
+logger = logging.getLogger(__name__)
 
 
 def get_chunked_random_dataloader(
@@ -50,7 +54,7 @@ class ChunkedDatasetRandom(BaseDataset):
 
     # TODO is it properly randomized for multi GPU training?
     # TODO dirty fix with uuid for now
-    # @track_memory_usage
+    @track_memory_usage
     def _load_random_chunks(self, seed=None):
         random.seed(uuid.uuid4().int & (1 << 32) - 1)
 
@@ -104,9 +108,22 @@ class ChunkedDatasetRandom(BaseDataset):
         _, dim = m_onehot.shape
         m_shifted_onehot = torch.cat((torch.zeros(1, dim), m_onehot[:-1]), dim=0)
 
+        # Check for NaN/Inf values
+        if contains_invalid_numbers(m_onehot) or contains_invalid_numbers(
+            m_shifted_onehot
+        ):
+            dataset_path = self.chunk_paths[chunk_idx]
+            logger.info(
+                f"Invalid numbers found in dataset: {dataset_path}, sample: {sample_idx}"
+            )
+            print(
+                f"Invalid numbers found in dataset: {dataset_path}, sample: {sample_idx}"
+            )
+
         # Check if all samples have been used once
         self.samples_used += 1
         if self.samples_used >= len(self.current_indices):
+            logger.info("All samples used once. Loading new random chunks.")
             self.samples_used = 0  # Reset counter
             self._load_random_chunks()  # Load new random chunks
 
