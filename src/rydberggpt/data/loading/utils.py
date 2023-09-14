@@ -3,6 +3,11 @@ import os
 from typing import Dict, List, Tuple
 
 import pandas as pd
+import torch
+
+
+def contains_invalid_numbers(tensor):
+    return torch.isnan(tensor).any() or torch.isinf(tensor).any()
 
 
 def read_subfolder_data(data_path: str = "data") -> Tuple[pd.DataFrame, List[Dict]]:

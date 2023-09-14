@@ -1,10 +1,10 @@
 import argparse
+import logging
 import os
 from typing import Optional
 
 import numpy as np
 import pytorch_lightning as pl
-import pytorch_lightning.profilers as pl_profilers
 import torch
 import torch.profiler
 from pytorch_lightning.callbacks import (
@@ -27,6 +27,8 @@ from rydberggpt.training.callbacks.module_info_callback import ModelInfoCallback
 from rydberggpt.training.callbacks.stop_on_loss_threshold_callback import (
     StopOnLossThreshold,
 )
+from rydberggpt.training.logger import setup_logger
+from rydberggpt.training.monitoring import setup_profiler
 from rydberggpt.training.trainer import RydbergGPTTrainer
 from rydberggpt.training.utils import set_example_input_array
 from rydberggpt.utils import create_config_from_yaml, load_yaml_file, save_to_yaml
@@ -39,6 +41,8 @@ from rydberggpt.utils_ckpt import (
 
 torch.set_float32_matmul_precision("medium")
 
+# logger = logging.getLogger(__name__)
+
 
 def setup_environment(config):
     torch.manual_seed(config.seed)
@@ -48,11 +52,11 @@ def setup_environment(config):
 
 
 def load_data(config, dataset_path):
+    logging.info(f"Loading data from {dataset_path}...")
     # https://lightning.ai/docs/pytorch/stable/data/datamodule.html
     # train_loader, val_loader = get_chunked_dataloader(
     # train_loader, val_loader = get_rydberg_dataloader(
     # train_loader, val_loader = get_streaming_dataloader(
-
     train_loader, val_loader = get_chunked_random_dataloader(
         config.batch_size,
         test_size=0.2,
@@ -76,6 +80,7 @@ def create_model(config):
 
 
 def setup_callbacks(config, log_path):
+    logging.info("Setting up callbacks...")
     callbacks = [
         ModelCheckpoint(
             monitor="train_loss",
@@ -91,37 +96,6 @@ def setup_callbacks(config, log_path):
     return callbacks
 
 
-def setup_profiler(config, log_path):
-    # Monitoring
-    if config.advanced_monitoring:
-        # https://lightning.ai/docs/pytorch/stable/common/trainer.html
-        profiler = getattr(pl_profilers, config.profiler)(
-            schedule=torch.profiler.schedule(
-                skip_first=1, wait=1, warmup=1, active=3, repeat=1000
-            ),  # everything is happening in steps
-            on_trace_ready=torch.profiler.tensorboard_trace_handler(log_path),
-            with_stack=True,
-            with_modules=True,
-            profile_memory=True,
-            with_flops=True,
-            record_shapes=True,
-            dirpath=log_path,
-            filename="performance_logs",
-            activities=[
-                torch.profiler.ProfilerActivity.CPU,
-                torch.profiler.ProfilerActivity.CUDA,
-            ],  # records both CPU and CUDA activities
-        )
-    else:
-        # https://lightning.ai/docs/pytorch/stable/common/trainer.html
-        profiler_class = getattr(pl_profilers, config.profiler)
-        profiler = profiler_class(
-            dirpath=log_path,
-            filename="performance_logs",
-        )
-    return profiler
-
-
 def main(config_path: str, config_name: str, dataset_path: str):
     yaml_dict = load_yaml_file(config_path, config_name)
     config = create_config_from_yaml(yaml_dict)
@@ -133,15 +107,18 @@ def main(config_path: str, config_name: str, dataset_path: str):
     model = create_model(config)
 
     # Setup tensorboard logger
-    logger = TensorBoardLogger(save_dir="logs")
-    log_path = f"logs/lightning_logs/version_{logger.version}"
+    tensorboard_logger = TensorBoardLogger(save_dir="logs")
+    log_path = f"logs/lightning_logs/version_{tensorboard_logger.version}"
     print(f"Log path: {log_path}")
 
-    # save hyperparams
-    logger.log_hyperparams(vars(config))
+    # Setup custom logger
+    logger = setup_logger(log_path)
+
+    # Save hyperparams
+    tensorboard_logger.log_hyperparams(vars(config))
 
     rydberg_gpt_trainer = RydbergGPTTrainer(
-        model, config, logger=logger  # , example_input_array=input_array
+        model, config, logger=tensorboard_logger  # , example_input_array=input_array
     )
 
     # Callbacks
@@ -164,7 +141,7 @@ def main(config_path: str, config_name: str, dataset_path: str):
         precision=config.precision,
         max_epochs=config.max_epochs,
         callbacks=callbacks,
-        logger=logger,
+        logger=tensorboard_logger,
         profiler=profiler,
         enable_progress_bar=config.prog_bar,
         log_every_n_steps=config.log_every,
@@ -173,7 +150,7 @@ def main(config_path: str, config_name: str, dataset_path: str):
         detect_anomaly=config.detect_anomaly,
     )
 
-    # store list of datasets used
+    # Store list of datasets used
     datasets_used = [
         name
         for name in os.listdir(dataset_path)
@@ -186,7 +163,7 @@ def main(config_path: str, config_name: str, dataset_path: str):
 
     # Load data
     train_loader, val_loader = load_data(config, dataset_path)
-    input_array = set_example_input_array(train_loader)
+    # input_array = set_example_input_array(train_loader)
 
     # Find the latest checkpoint
     if config.from_checkpoint is not None:
