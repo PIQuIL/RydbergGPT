@@ -7,6 +7,7 @@ import torch
 from torch.utils.data import Dataset
 
 from rydberggpt.data.utils_graph import networkx_to_pyg_data
+from rydberggpt.utils import track_memory_usage
 
 
 class BaseDataset(Dataset):
@@ -25,6 +26,7 @@ class BaseDataset(Dataset):
         self.total_length = 0
         self._read_folder_structure()
 
+    @track_memory_usage
     def _read_folder_structure(self) -> None:
         """
         Read the folder structure of the base directory to identify paths to individual chunks,
@@ -53,6 +55,7 @@ class BaseDataset(Dataset):
                 self.config_paths.append(os.path.join(chunk_dir, "config.json"))
                 self.lengths.append(df_shape[0])
                 self.total_length += df_shape[0]
+                del df_shape
 
     def __len__(self) -> int:
         """
