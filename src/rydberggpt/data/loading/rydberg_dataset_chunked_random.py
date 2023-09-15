@@ -53,6 +53,13 @@ class ChunkedDatasetRandom(BaseDataset):
         self._load_sub_dataset()
 
     def _load_sub_dataset(self, seed: int = None):
+        """
+        Load a random subset of the dataset into memory.
+
+        Args:
+            seed (int, optional): The seed to use for the random number generator. Defaults to None.
+
+        """
         if self.num_chunks_in_memory > len(self.chunk_paths):
             self.num_chunks_in_memory = len(self.chunk_paths)
             print(
@@ -116,6 +123,16 @@ class ChunkedDatasetRandom(BaseDataset):
         random.shuffle(self.current_indices)
 
     def __getitem__(self, idx: int) -> Batch:
+        """
+        Fetches a single sample from the dataset.
+
+        Args:
+            idx (int): The index of the sample to fetch.
+
+        Returns:
+            Batch: A dataclass containing the graph, the one-hot encoded input and target.
+
+        """
         chunk_idx, sample_idx = self.current_indices[idx]
 
         # Fetch data sample from the current chunk
@@ -153,6 +170,10 @@ class ChunkedDatasetRandom(BaseDataset):
         )
 
     def _free_memory(self):
+        """
+        Free memory by clearing the current buffers.
+
+        """
         self.current_dfs.clear()
         self.current_configs.clear()
         self.current_graphs.clear()

@@ -138,6 +138,17 @@ class BaseDataset(Dataset):
     # NOTE this function is really slow. Run it once and save the results.
     # @track_memory_usage
     def _get_pyg_graph(self, graph_data: Dict, config_data: Dict):
+        """
+        Convert a graph in node-link format to a PyG Data object.
+
+        Args:
+            graph_data (Dict): The graph in node-link format.
+            config_data (Dict): The configuration data for the graph.
+
+        Returns:
+            PyG Data: The graph as a PyG Data object.
+
+        """
         node_features = torch.tensor(
             [
                 config_data["delta"],
