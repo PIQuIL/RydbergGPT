@@ -41,8 +41,6 @@ from rydberggpt.utils_ckpt import (
 
 torch.set_float32_matmul_precision("medium")
 
-# logger = logging.getLogger(__name__)
-
 
 def setup_environment(config):
     torch.manual_seed(config.seed)
@@ -79,7 +77,7 @@ def create_model(config):
     return model
 
 
-def setup_callbacks(config, log_path):
+def setup_callbacks(config):
     logging.info("Setting up callbacks...")
     callbacks = [
         ModelCheckpoint(
@@ -96,38 +94,25 @@ def setup_callbacks(config, log_path):
     return callbacks
 
 
-def main(config_path: str, config_name: str, dataset_path: str):
+def load_configuration(config_path: str, config_name: str):
     yaml_dict = load_yaml_file(config_path, config_name)
-    config = create_config_from_yaml(yaml_dict)
+    return create_config_from_yaml(yaml_dict)
 
-    # Setup Environment
+
+def main(config_path: str, config_name: str, dataset_path: str):
+    config = load_configuration(config_path, config_name)
     setup_environment(config)
-
-    # Create Model
     model = create_model(config)
 
-    # Setup tensorboard logger
     tensorboard_logger = TensorBoardLogger(save_dir="logs")
     log_path = f"logs/lightning_logs/version_{tensorboard_logger.version}"
-    print(f"Log path: {log_path}")
-
-    # Setup custom logger
-    logger = setup_logger(log_path)
-
-    # Save hyperparams
+    logging.info(f"Log path: {log_path}")
+    setup_logger(log_path)
     tensorboard_logger.log_hyperparams(vars(config))
 
-    rydberg_gpt_trainer = RydbergGPTTrainer(
-        model, config, logger=tensorboard_logger  # , example_input_array=input_array
-    )
-
-    # Callbacks
-    callbacks = setup_callbacks(config, log_path)
-
-    # Profiler
+    rydberg_gpt_trainer = RydbergGPTTrainer(model, config, logger=tensorboard_logger)
+    callbacks = setup_callbacks(config)
     profiler = setup_profiler(config, log_path)
-
-    # Distributed training
     strategy = (
         DDPStrategy(find_unused_parameters=True)
         if config.strategy == "ddp"
@@ -135,7 +120,7 @@ def main(config_path: str, config_name: str, dataset_path: str):
     )
     # Init trainer class
     trainer = pl.Trainer(
-        devices=-1,
+        devices="auto",  # check if "auto" works
         strategy=strategy,
         accelerator="auto",
         precision=config.precision,
@@ -150,23 +135,13 @@ def main(config_path: str, config_name: str, dataset_path: str):
         detect_anomaly=config.detect_anomaly,
     )
 
-    # Store list of datasets used
-    datasets_used = [
-        name
-        for name in os.listdir(dataset_path)
-        if os.path.isdir(os.path.join(dataset_path, name))
-    ]
-
-    save_to_yaml(
-        {"datasets": datasets_used}, os.path.join(log_path, "datasets_used.yaml")
-    )
-
     # Load data
     train_loader, val_loader = load_data(config, dataset_path)
-    # input_array = set_example_input_array(train_loader)
+    input_array = set_example_input_array(train_loader)
 
     # Find the latest checkpoint
     if config.from_checkpoint is not None:
+        logging.info(f"Loading model from checkpoint {config.from_checkpoint}...")
         log_path = get_ckpt_path(from_ckpt=config.from_checkpoint)
         checkpoint_path = find_latest_ckpt(log_path)
         trainer.fit(
@@ -201,7 +176,5 @@ if __name__ == "__main__":
 
     config_name = args.config_name
     yaml_path = f"config/"
-
-    print(args.dataset_path)
 
     main(config_path=yaml_path, config_name=config_name, dataset_path=args.dataset_path)
