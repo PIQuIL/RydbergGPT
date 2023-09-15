@@ -105,6 +105,7 @@ class BaseDataset(Dataset):
         their associated graph and configuration data.
         """
         l_dirs = self._scan_directories()
+        logging.info(f"Using the following folders: {l_dirs}")
         logging.info("Found %d folders containing datasets.", len(l_dirs))
         for l_dir in l_dirs:
             chunked_dataset_dirs = self._scan_chunked_dataset_dirs(l_dir)
