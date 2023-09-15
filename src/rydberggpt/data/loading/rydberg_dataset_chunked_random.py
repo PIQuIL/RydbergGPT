@@ -52,6 +52,33 @@ class ChunkedDatasetRandom(BaseDataset):
         self.samples_used = 0  # Counter for samples used
         self._load_sub_dataset()
 
+    def _load_sub_dataset(self, seed: int = None):
+        if self.num_chunks_in_memory > len(self.chunk_paths):
+            self.num_chunks_in_memory = len(self.chunk_paths)
+            print(
+                f"Loading full dataset. num_chunks_in_memory set to {self.num_chunks_in_memory}"
+            )
+
+        # Determine the start and end indices for the chunks to load based on the counter
+        start_idx = self.current_chunk_counter
+        end_idx = start_idx + self.num_chunks_in_memory
+
+        # Select chunk indices based on the shuffled chunk_indices and num_chunks_in_memory
+        selected_chunk_indices = self.chunk_indices[start_idx:end_idx]
+        logging.info(f"Loading {selected_chunk_indices} random chunks into memory.")
+
+        self._reload_buffer(selected_chunk_indices)
+
+        # Update the current_chunk_counter
+        self.current_chunk_counter += self.num_chunks_in_memory
+
+        # Reset counter if we have loaded all chunks (optional, based on your needs)
+        if self.current_chunk_counter >= len(self.chunk_paths):
+            self.current_chunk_counter = 0
+            random.shuffle(
+                self.chunk_indices
+            )  # Reshuffle the chunk indices for the next iteration
+
     def _reload_buffer(self, selected_chunk_indices: List[int]):
         """
         Load data from the selected chunks into memory.
@@ -88,33 +115,6 @@ class ChunkedDatasetRandom(BaseDataset):
         # Shuffle the indices for randomness
         random.shuffle(self.current_indices)
 
-    def _load_sub_dataset(self, seed: int = None):
-        if self.num_chunks_in_memory > len(self.chunk_paths):
-            self.num_chunks_in_memory = len(self.chunk_paths)
-            print(
-                f"Loading full dataset. num_chunks_in_memory set to {self.num_chunks_in_memory}"
-            )
-
-        # Determine the start and end indices for the chunks to load based on the counter
-        start_idx = self.current_chunk_counter
-        end_idx = start_idx + self.num_chunks_in_memory
-
-        # Select chunk indices based on the shuffled chunk_indices and num_chunks_in_memory
-        selected_chunk_indices = self.chunk_indices[start_idx:end_idx]
-        logging.info(f"Loading {selected_chunk_indices} random chunks into memory.")
-
-        self._reload_buffer(selected_chunk_indices)
-
-        # Update the current_chunk_counter
-        self.current_chunk_counter += self.num_chunks_in_memory
-
-        # Reset counter if we have loaded all chunks (optional, based on your needs)
-        if self.current_chunk_counter >= len(self.chunk_paths):
-            self.current_chunk_counter = 0
-            random.shuffle(
-                self.chunk_indices
-            )  # Reshuffle the chunk indices for the next iteration
-
     def __getitem__(self, idx: int) -> Batch:
         chunk_idx, sample_idx = self.current_indices[idx]
 
@@ -143,12 +143,7 @@ class ChunkedDatasetRandom(BaseDataset):
         if self.samples_used >= len(self.current_indices):
             logging.info("Loading new chunks.")
             self.samples_used = 0  # Reset counter
-            # Clear the current data
-            self.current_dfs.clear()
-            self.current_configs.clear()
-            self.current_graphs.clear()
-            self.current_indices.clear()
-            self.current_py_graphs.clear()
+            self._free_memory()
             self._load_sub_dataset()  # Load new random chunks
 
         return Batch(
@@ -156,6 +151,13 @@ class ChunkedDatasetRandom(BaseDataset):
             m_onehot=m_onehot,
             m_shifted_onehot=m_shifted_onehot,
         )
+
+    def _free_memory(self):
+        self.current_dfs.clear()
+        self.current_configs.clear()
+        self.current_graphs.clear()
+        self.current_indices.clear()
+        self.current_py_graphs.clear()
 
     def __len__(self):
         return len(self.current_indices)
