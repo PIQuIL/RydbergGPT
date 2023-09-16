@@ -6,6 +6,7 @@ from typing import List
 
 import pandas as pd
 import torch
+import torch.distributed as dist
 from torch.utils.data import DataLoader
 
 from rydberggpt.data.dataclasses import Batch, custom_collate
@@ -21,7 +22,8 @@ def get_chunked_random_dataloader(
     data_path: str = "dataset",
     chunks_in_memory: int = 4,
 ) -> DataLoader:
-    dataset = ChunkedDatasetRandom(data_path, chunks_in_memory)
+    rank = dist.get_rank() if torch.distributed.is_initialized() else 0
+    dataset = ChunkedDatasetRandom(data_path, chunks_in_memory, rank)
     print(f"Length of dataset: {len(dataset)}")
 
     train_loader = DataLoader(
@@ -41,8 +43,8 @@ def get_chunked_random_dataloader(
 
 
 class ChunkedDatasetRandom(BaseDataset):
-    def __init__(self, base_dir: str, num_chunks_in_memory: int = 50):
-        super().__init__(base_dir)
+    def __init__(self, base_dir: str, num_chunks_in_memory: int = 50, rank: int = 0):
+        super().__init__(base_dir, rank)
         self.num_chunks_in_memory = num_chunks_in_memory
         self.current_dfs = []
         self.current_configs = []
@@ -85,6 +87,12 @@ class ChunkedDatasetRandom(BaseDataset):
             random.shuffle(
                 self.chunk_indices
             )  # Reshuffle the chunk indices for the next iteration
+            logging.info(
+                f"GPU {self.rank}: reshuffled chunk paths indices: {self.chunk_indices}"
+            )
+            # logging.info(
+            # f"GPU {self.rank}: Shuffled chunk paths: {self.shuffled_chunk_path}"
+            # )
 
     def _reload_buffer(self, selected_chunk_indices: List[int]):
         """
