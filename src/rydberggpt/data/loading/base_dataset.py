@@ -23,8 +23,9 @@ class BaseDataset(Dataset):
         """
         self.base_dir = base_dir
         self.rank = rank
+        # TODO check if seeding with self.rank works too.
         random.seed(self.rank)
-
+        random.seed(uuid.uuid4().int & (1 << 32) - 1)
         self.chunk_paths = []
         self.graph_paths = []
         self.config_paths = []
