@@ -1,6 +1,7 @@
 import logging
 import os
 import random
+import uuid
 from typing import Dict, List, Tuple
 
 import networkx as nx
@@ -13,7 +14,7 @@ from rydberggpt.utils import track_memory_usage
 
 
 class BaseDataset(Dataset):
-    def __init__(self, base_dir: str):
+    def __init__(self, base_dir: str, rank: int = 0):
         """
         Initialize the dataset with the base directory containing the chunked datasets.
 
@@ -21,21 +22,30 @@ class BaseDataset(Dataset):
             base_dir (str): The directory containing the chunked datasets.
         """
         self.base_dir = base_dir
+        self.rank = rank
+        random.seed(self.rank)
+
         self.chunk_paths = []
         self.graph_paths = []
         self.config_paths = []
         self.lengths = []
         self.total_length = 0
         self.len_sub_dataset = None
+
         self._read_folder_structure()
         self.current_chunk_counter = 0
         self.chunk_indices = list(range(len(self.chunk_paths)))
         random.shuffle(self.chunk_indices)
+
         # translate indices to the chunk path for storing in the log
         self.shuffled_chunk_path = [self.chunk_paths[i] for i in self.chunk_indices]
         self.current_chunk_counter = 0  # Initialize the chunk counter
-        logging.info(f"Shuffled chunk paths indices: {self.chunk_indices}")
-        logging.info(f"Shuffled chunk paths: {self.shuffled_chunk_path}")
+        logging.info(
+            f"GPU {self.rank}: Shuffled chunk paths indices: {self.chunk_indices}"
+        )
+        # logging.info(
+        #     f"GPU {self.rank}: Shuffled chunk paths: {self.shuffled_chunk_path}"
+        # )
 
     def _scan_directories(self) -> List[str]:
         """
