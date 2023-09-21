@@ -180,4 +180,7 @@ class Generator(nn.Module):
             torch.Tensor: The output tensor of shape (batch_size, seq_length, vocab_size),
                           with log-softmax applied along the last dimension.
         """
-        return F.log_softmax(self.proj(x), dim=-1)  # [batch_size, seq_len, vocab_size]
+
+        proj_offset = self.proj(x) + 1e-10
+        # taking the log prob from a almost zero prob is challenging we need to add
+        return F.log_softmax(proj_offset, dim=-1)  # [batch_size, seq_len, vocab_size]
