@@ -14,7 +14,7 @@ from torch_geometric.data import Data
 from rydberggpt.data.dataclasses import Batch, custom_collate
 from rydberggpt.data.loading.base_dataset import BaseDataset
 from rydberggpt.data.utils_graph import networkx_to_pyg_data
-from rydberggpt.utils import to_one_hot
+from rydberggpt.utils import to_one_hot, track_memory_usage
 
 
 # NOTE not in use
@@ -68,7 +68,13 @@ class StreamingDataLoader(BaseDataset):
         self.current_config_data = None
         self.current_sample_idx = 0  # Initialize to 0
 
-    def _load_next_chunk(self) -> None:
+    @track_memory_usage
+    def _reload_buffer(self) -> None:
+        # delete the previous chunk
+        del self.current_df
+        del self.current_graph_data
+        del self.current_config_data
+
         self.current_chunk_idx = (self.current_chunk_idx + 1) % len(
             self.chunk_paths
         )  # Loop back to the first chunk after the last
@@ -85,7 +91,7 @@ class StreamingDataLoader(BaseDataset):
 
     def __getitem__(self, idx: int) -> Batch:
         if self.current_df is None or self.current_sample_idx >= len(self.current_df):
-            self._load_next_chunk()
+            self._reload_buffer()
 
         measurement, config_data, graph_data = self._load_data_sample()
 
@@ -103,6 +109,9 @@ class StreamingDataLoader(BaseDataset):
         )
 
     def _load_data_sample(self) -> Tuple[torch.Tensor, Dict, Dict]:
+        # print(
+        # f"Loading sample {self.current_sample_idx} from chunk {self.current_chunk_idx}"
+        # )
         df_row = self.current_df.iloc[self.current_sample_idx]
         measurement = torch.tensor(df_row["measurement"], dtype=torch.int64)
         return measurement, self.current_config_data, self.current_graph_data
