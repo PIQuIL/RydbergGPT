@@ -229,7 +229,7 @@ staggered_magnetization = torch.abs((sigmas * checkerboard).mean((-1, -2)))
 staggered_magnetization_moments = np.stack(
     [
         staggered_magnetization.mean(-1).reshape(rows, cols),
-        staggered_magnetization.std(-1).rehape(rows, cols),
+        staggered_magnetization.std(-1).reshape(rows, cols),
     ]
 )
 
@@ -266,53 +266,53 @@ ax.legend(
 
 ########################################################################################
 
-# Calculate energy
+# # Calculate energy
 
-energy_density_moments = []
-for delta in deltas:
-    prompts = []
-    pyg_graph = generate_prompt(
-        n_rows=L, n_cols=L, delta=delta, omega=omega, beta=beta, Rb=Rb
-    )
-    [prompts.append(pyg_graph.clone()) for _ in range(B)]
+# energy_density_moments = []
+# for delta in deltas:
+#     prompts = []
+#     pyg_graph = generate_prompt(
+#         n_rows=L, n_cols=L, delta=delta, omega=omega, beta=beta, Rb=Rb
+#     )
+#     [prompts.append(pyg_graph.clone()) for _ in range(B)]
 
-    prompts = Batch.from_data_list(prompts)
+#     prompts = Batch.from_data_list(prompts)
 
-    _samples = model.get_samples(
-        batch_size=len(prompts), cond=prompts, num_atoms=L**2
-    )[..., -1]
+#     _samples = model.get_samples(
+#         batch_size=len(prompts), cond=prompts, num_atoms=L**2
+#     )[..., -1]
 
-    energy = get_rydberg_energy(
-        model=model,
-        samples=_samples,
-        cond=pyg_graph,
-        device=device,
-        undo_sample_path=snake_flip,
-    )
+#     energy = get_rydberg_energy(
+#         model=model,
+#         samples=_samples,
+#         cond=pyg_graph,
+#         device=device,
+#         undo_sample_path=snake_flip,
+#     )
 
-    energy_density_moments.append(
-        torch.cat(
-            [
-                energy[:, 0].mean(0, keepdim=True) / L**2,
-                energy[:, 0].std(0, keepdim=True) / L**2,
-            ]
-        )
-    )
+#     energy_density_moments.append(
+#         torch.cat(
+#             [
+#                 energy[:, 0].mean(0, keepdim=True) / L**2,
+#                 energy[:, 0].std(0, keepdim=True) / L**2,
+#             ]
+#         )
+#     )
 
-energy_density_moments = torch.stack(energy_density_moments).cpu().detach().numpy()
+# energy_density_moments = torch.stack(energy_density_moments).cpu().detach().numpy()
 
-########################################################################################
+# ########################################################################################
 
-fig = plt.figure()
-ax = fig.subplots(1, 1)
+# fig = plt.figure()
+# ax = fig.subplots(1, 1)
 
-ax.plot(deltas, energy_density_moments[:, 0])
-ax.fill_between(
-    deltas,
-    energy_density_moments[:, 0] + energy_density_moments[:, 1],
-    energy_density_moments[:, 0] - energy_density_moments[:, 1],
-    alpha=0.25,
-)
+# ax.plot(deltas, energy_density_moments[:, 0])
+# ax.fill_between(
+#     deltas,
+#     energy_density_moments[:, 0] + energy_density_moments[:, 1],
+#     energy_density_moments[:, 0] - energy_density_moments[:, 1],
+#     alpha=0.25,
+# )
 
-ax.set_xlabel(r"$\Delta / \Omega$")
-ax.set_ylabel(r"$E / N$")
+# ax.set_xlabel(r"$\Delta / \Omega$")
+# ax.set_ylabel(r"$E / N$")
