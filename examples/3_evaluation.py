@@ -62,6 +62,7 @@ if is_cuda:
 ########################################################################################
 
 from_ckpt = 1
+
 ##### LOADING FROM CKPT #####
 log_path = os.path.join(base_path, get_ckpt_path(from_ckpt=from_ckpt))
 
@@ -140,8 +141,8 @@ def snake_flip(x):
 
 # Default parameters
 
-L = 5
-B = 100
+L = 6
+B = 1
 
 delta = 2.0
 omega = 1.0
@@ -152,10 +153,10 @@ Rb = 1.15
 
 # Generate samples for model
 
-rows, cols = 8, 41
+rows, cols = 16, 21
 prompts = []
-deltas = np.linspace(-1, 3, cols)
-betas = 2.0 ** np.arange(-1, -1 + rows, 1)
+deltas = np.linspace(-2, 5, cols)
+betas = np.logspace(-2, 8, rows, base=2)
 for beta, delta in itr.product(betas, deltas):
     pyg_graph = generate_prompt(
         n_rows=L, n_cols=L, delta=delta, omega=omega, beta=beta, Rb=Rb
@@ -187,17 +188,28 @@ images = images.reshape(B, rows * L, cols * L)
 
 # Plot stitched samples
 
-fig = plt.figure()
+fig = plt.figure(figsize=np.array([cols, rows]) / np.array([cols, rows]).max() * 16)
 ax = fig.subplots(1, 1)
 
 ax.imshow(images[0])
 
-ax.set_xticks([])
-ax.set_yticks([])
-ax.set_xticklabels([])
-ax.set_yticklabels([])
+xticks = (
+    np.arange(0, images[0].shape[1], np.ceil(cols / 10).astype(int) * L) - 0.5 + L / 2
+)
+yticks = (
+    np.arange(0, images[0].shape[0], np.ceil(rows / 10).astype(int) * L) - 0.5 + L / 2
+)
+xticklabels = np.round(deltas[:: np.ceil(cols / 10).astype(int)], 3)
+yticklabels = np.round(betas[:: np.ceil(rows / 10).astype(int)], 3)
+
+ax.set_xticks(xticks)
+ax.set_yticks(yticks)
+ax.set_xticklabels(xticklabels, fontsize=12)
+ax.set_yticklabels(yticklabels, fontsize=12)
+
 ax.set_xticks(np.arange(-0.5, cols * L, L), minor=True)
 ax.set_yticks(np.arange(-0.5, rows * L, L), minor=True)
+
 ax.set_xlabel(r"$\Delta / \Omega$")
 ax.set_ylabel(r"$\beta\Omega$")
 
@@ -212,22 +224,13 @@ sigmas = samples - 0.5
 idcs = np.indices((L, L))
 checkerboard = 2 * (idcs.sum(0) % 2) - 1
 
-staggeredMagnetization = torch.abs((sigmas * checkerboard).mean((-1, -2)))
+staggered_magnetization = torch.abs((sigmas * checkerboard).mean((-1, -2)))
 
-staggeredMagnetizationMean = staggeredMagnetization.mean(-1)
-staggeredMagnetizationMean = staggeredMagnetizationMean.reshape(
-    rows,
-    cols,
-)
-staggeredMagnetizationStandardDeviation = staggeredMagnetization.std(-1)
-staggeredMagnetizationStandardDeviation = (
-    staggeredMagnetizationStandardDeviation.reshape(
-        rows,
-        cols,
-    )
-)
-staggeredMagnetizationStandardError = staggeredMagnetizationStandardDeviation / np.sqrt(
-    B
+staggered_magnetization_moments = np.stack(
+    [
+        staggered_magnetization.mean(-1).reshape(rows, cols),
+        staggered_magnetization.std(-1).rehape(rows, cols),
+    ]
 )
 
 ########################################################################################
@@ -241,15 +244,15 @@ c = cm(np.linspace(0, 1, rows))
 for i, beta in enumerate(betas):
     ax.plot(
         deltas,
-        staggeredMagnetizationMean[i, :],
+        staggered_magnetization_moments[0, i, :],
         color=c[i],
         alpha=0.75,
         label=r"$\beta={}$".format(beta),
     )
     ax.fill_between(
         deltas,
-        (staggeredMagnetizationMean + staggeredMagnetizationStandardError)[i, :],
-        (staggeredMagnetizationMean - staggeredMagnetizationStandardError)[i, :],
+        (staggered_magnetization_moments[0] + staggered_magnetization_moments[1])[i, :],
+        (staggered_magnetization_moments[0] - staggered_magnetization_moments[1])[i, :],
         color=c[i],
         alpha=0.1,
     )
@@ -265,8 +268,7 @@ ax.legend(
 
 # Calculate energy
 
-deltas = np.linspace(-1, 3, 11)
-energyDensities = []
+energy_density_moments = []
 for delta in deltas:
     prompts = []
     pyg_graph = generate_prompt(
@@ -288,27 +290,27 @@ for delta in deltas:
         undo_sample_path=snake_flip,
     )
 
-    energyDensities.append(
+    energy_density_moments.append(
         torch.cat(
             [
                 energy[:, 0].mean(0, keepdim=True) / L**2,
-                (energy[:, 0].std(0, keepdim=True) / L**2) / np.sqrt(B),
+                energy[:, 0].std(0, keepdim=True) / L**2,
             ]
         )
     )
 
-energyDensities = torch.stack(energyDensities).cpu().detach().numpy()
+energy_density_moments = torch.stack(energy_density_moments).cpu().detach().numpy()
 
 ########################################################################################
 
 fig = plt.figure()
 ax = fig.subplots(1, 1)
 
-ax.plot(deltas, energyDensities[:, 0])
+ax.plot(deltas, energy_density_moments[:, 0])
 ax.fill_between(
     deltas,
-    energyDensities[:, 0] + energyDensities[:, 1],
-    energyDensities[:, 0] - energyDensities[:, 1],
+    energy_density_moments[:, 0] + energy_density_moments[:, 1],
+    energy_density_moments[:, 0] - energy_density_moments[:, 1],
     alpha=0.25,
 )
 
