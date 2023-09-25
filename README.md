@@ -74,7 +74,7 @@ Vanilla transformer architecture taken from [Attention is All You Need](https://
 
 ```math
 \begin{align}
-H_i &= (\Omega_i, \Delta_i, R_b, \beta) = \text{Hamiltonian parameters of qubit $i$,} \\
+H_i &= \mathrm{GraphNN}(\mathrm{edges} = V_{ij}; \mathrm{nodes}=\Omega_i, \Delta_i, R_b, \beta) = \text{Hamiltonian parameters encoded in a sequence by a graph neural network,} \\
 \sigma_i &= \text{one-hot encoding of measured spin of qubit $i$,} \\
 P_i &= P(\sigma_i | \sigma_{< i}) = \text{conditional probability distribution of spin $i$} \\
 i &= \text{sequence index (either $T$ or $S$ axis shown in the architecture diagram).}
