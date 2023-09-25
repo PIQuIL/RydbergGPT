@@ -3,28 +3,31 @@
 # RydbergGPT
 A large language model (LLM) for Rydberg atom array physics.
 
-# Table of contents
-1. [Quick Start](#quickstart) <br/>
-    1.1 [Configuration](#configuration) <br/>
-    1.2 [Training](#training) <br/>
-2. [Installation](#installation) <br/>
-3. [Documentation](#documentation) <br/>
-4. [Architecture](#architecture) <br/>
-5. [Acknowledgements](#acknowledgements) <br/>
-6. [References](#references) <br/>
+## Table of contents
+- [Quick Start](#quickstart) <br/>
+    - [Configuration](#configuration) <br/>
+    - [Training](#training) <br/>
+- [Installation](#installation) <br/>
+- [Documentation](#documentation) <br/>
+- [Architecture](#architecture) <br/>
+    - [Rydberg System](#rydbergsystem) <br/>
+    - [Transformer](#transformer) <br/>
+    - [Data](#data) <br/>
+- [Acknowledgements](#acknowledgements) <br/>
+- [References](#references) <br/>
 
 
 ## Quick Start <a name="quickstart"></a>
 
 ### Configuration <a name="configuration"></a>
-The`config.yaml` is used to define the hyperparameters for:
+The`config.yaml` is used to define the hyperparameters for :
 1. Model architecture
 2. Training settings
 3. Data loading
 4. Others
 
-### Training <a name="training"></a>
-To train RydbergGPT locally, execute the `train.py` with:
+### Training <a name="training"></a> 
+To train RydbergGPT locally, execute the `train.py` with :
 ```bash
 python train.py --config_name=config_small.yaml
 ```
@@ -34,11 +37,11 @@ For the cluster:
 ```
 
 ## Installation <a name="installation"></a>
-Clone the repository using the following command:
+Clone the repository using the following command :
 ```bash
 git clone https://github.com/PIQuIL/RydbergGPT
 ```
-Install with pip:
+Install with pip :
 ```bash
 cd RydbergGPT
 pip install .
@@ -51,7 +54,21 @@ Currently unavaiable
 
 ## Architecture  <a name="architecture"></a>
 
-Vanilla transformer architecture taken from [Attention is All You Need](https://research.google/pubs/pub46201/).
+
+### Rydberg System <a name="rydbergsystem"></a>
+Consider the standard Rydberg Hamiltonian of the form :
+
+```math
+\begin{align}
+\hat{H}_{\mathrm{Rydberg}} =  \sum_{i < j} V(\lVert \mathbf{R}_i - \mathbf{R}_j \rVert ; R_b) \hat{n}_i \hat{n}_j - \sum_{i} \Delta_i \hat{n}_i - \sum_{i} \frac{\Omega}{2} \sigma_i^{(x)}
+\end{align}
+```
+
+Here, $V_{ij}$ = blockade interaction strength between atoms $i$ and $j$, $R_b$ = blockade radius, $\hat{n}_i$ = number operator at ion $i$, $\mathbf{R}_i$ = the position of atom $i$, $\Delta_i$ = detuning at atom $i$, $\Omega_i$ = Rabi frequency at atom $i$.
+
+### Transformer <a name="transformer"></a>
+
+Vanilla transformer architecture taken from [Attention is All You Need](https://arxiv.org/pdf/1706.03762.pdf).
 
 ![Architecture](https://github.com/PIQuIL/RydbergGPT/blob/main/resources/architecture%20diagram.jpg)
 
@@ -64,37 +81,22 @@ i &= \text{sequence index (either $T$ or $S$ axis shown in the architecture diag
 \end{align}
 ```
 
-The transformer encoder encodes the Rydberg Hamiltonian into a sequential latent space. \\
-The transformer decoder encodes a ground state wavefunction based on the encoded Rydberg Hamiltonian.
+The transformer encoder represents the Rydberg Hamiltonian with a sequence. <br/>
+The transformer decoder represents the corresponding ground state wavefunction.
 
-
-## Rydberg Hamiltonian <a name="rydberghamiltonian"></a>
-We consider the standard Rydberg Hamiltonian of the form:
-
+### Data <a name="data"></a>
+Consider setting $\Omega = 4.24$ and varying the other Hamiltonian parameters independently :
 ```math
 \begin{align}
-\hat{H}_{\mathrm{Rydberg}} =  \sum_{i < j} V(\lVert \mathbf{R}_i - \mathbf{R}_j \rVert ; R_b) \hat{n}_i \hat{n}_j - \sum_{i} \Delta_i \hat{n}_i - \sum_{i} \frac{\Omega}{2} \sigma_i^{(x)}
+L &= [5, 6, 11, 12, 15, 16, 19, 20] \\
+\Delta &= [-1.545, -0.545, 3.955, 4.455, 4.955, 5.455, 6.455, 7.455, 12.455, 13.455] \\
+R_b &= [1.05, 1.15, 1.3] \\
+\beta &= [0.5, 1, 2, 4, 8, 16, 32, 48, 64]
 \end{align}
 ```
+There are a total of `8 x 10 x 3 x 9 = 2160` configurations (see [table](https://github.com/PIQuIL/RydbergGPT/blob/main/resources/Generated_training_data.md)).
 
-Here, $V_{ij}$ = blockade interaction strength between ions $i$ and $j$, $R_b$ = blockade radius,
-### Model details
-#### Expected training data
-We vary these 4 parameters independently:
-```
-sizes = [5, 6, 11, 12, 15, 16, 19, 20]
-delta = [-1.545, -0.545, 3.955, 4.455, 4.955, 5.455, 6.455, 7.455, 12.455, 13.455]
-Rb = [1.05, 1.15, 1.3]
-beta = [0.5, 1, 2, 4, 8, 16, 32, 48, 64]
-```
-`8*10*3*9=2160` configurations
-
-(`delta`: need to divide by `Omega = 4.24`; `Rb`, `beta` already non-dimensionalized)(for `beta`: `Omega = 1`)
-
-#### Generated training data
-See https://github.com/PIQuIL/RydbergGPT/blob/main/resources/Generated_training_data.md.
-
-## Acknowledgements
+## Acknowledgements <a name="acknowledgements"></a>
 
 We found several very helpful codebases when building this repo, and we sincerely thank their authors:
 
@@ -106,13 +108,13 @@ We found several very helpful codebases when building this repo, and we sincerel
     + [Transformer Quantum State](https://github.com/yuanhangzhang98/transformer_quantum_state)
 
 
-## References
+## References <a name="references"></a>
 
 ```bib
 @inproceedings{46201,
-title   = {Attention is All You Need},
-author  = {Ashish Vaswani and Noam Shazeer and Niki Parmar and Jakob Uszkoreit and Llion Jones and Aidan N. Gomez and Lukasz Kaiser and Illia Polosukhin},
-year    = {2017},
-URL = {https://arxiv.org/pdf/1706.03762.pdf}
+title	= {Attention is All You Need},
+author	= {Ashish Vaswani and Noam Shazeer and Niki Parmar and Jakob Uszkoreit and Llion Jones and Aidan N. Gomez and Lukasz Kaiser and Illia Polosukhin},
+year	= {2017},
+URL	= {https://arxiv.org/pdf/1706.03762.pdf}
 }
 ```
