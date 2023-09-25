@@ -3,8 +3,17 @@
 # RydbergGPT
 A large language model (LLM) for Rydberg atom array physics.
 
+# Table of contents
+1. [Quick Start](#quickstart)
+2. [Installation](#installation)
+7. [Usage](#usage)
+4. [Documentation](#documentation)
+3. [Architecture](#architecture)
+6. [Acknowledgements](#acknowledgements)
+5. [References](#references)
 
-## Quick Start
+
+## Quick Start <a name="quickstart"></a>
 
 To run the training on a local machine, execute the `train.py` script. For cluster execution, you can use the `train.sh` script.
 
@@ -19,11 +28,25 @@ Or for cluster:
 .scripts/train.sh
 ```
 
-## Configuration File
+## Installation <a name="installation"></a>
+
+## Usage <a name="usage"></a>
 
 The `config.yaml` file contains all the hyperparameters needed for training. You can specify the model architecture, training settings, data loading, and other configurations here.
 
-## Architecture
+## Rydberg Hamiltonian <a name="rydberghamiltonian"></a>
+We consider the standard Rydberg Hamiltonian of the form:
+
+```math
+\begin{align}
+\hat{H}_{\mathrm{Rydberg}} =  \sum_{i < j} V(\lVert \mathbf{R}_i - \mathbf{R}_j \rVert ; R_b) \hat{n}_i \hat{n}_j - \sum_{i} \Delta_i \hat{n}_i - \sum_{i} \frac{\Omega}{2} \sigma_i^{(x)}
+\end{align}
+```
+Here, $V_{ij}$ = blockade interaction strength between ions $i$ and $j$, $R_b$ = blockade radius,
+
+## Documentation <a name="documentation"></a>
+
+## Architecture  <a name="architecture"></a>
 
 Vanilla transformer architecture taken from [Attention is All You Need](https://research.google/pubs/pub46201/).
 
@@ -31,7 +54,7 @@ Vanilla transformer architecture taken from [Attention is All You Need](https://
 
 ```math
 \begin{align}
-H_i &= (\Omega_i, \Delta_i, R^{x}_i, R^{y}_i) = \text{Hamiltonian parameters of qubit $i$,} \\
+H_i &= (\Omega_i, \Delta_i, R_b, \beta) = \text{Hamiltonian parameters of qubit $i$,} \\
 \sigma_i &= \text{one-hot encoding of measured spin of qubit $i$,} \\
 P_i &= P(\sigma_i | \sigma_{< i}) = \text{conditional probability distribution of spin $i$} \\
 i &= \text{sequence index (either $T$ or $S$ axis shown in the architecture diagram).}
@@ -40,10 +63,6 @@ i &= \text{sequence index (either $T$ or $S$ axis shown in the architecture diag
 
 The transformer encoder encodes the Rydberg Hamiltonian into a sequential latent space. \\
 The transformer decoder encodes a ground state wavefunction based on the encoded Rydberg Hamiltonian.
-
-## Installation
-
-## Documentation
 
 ### Model details
 #### Expected training data
