@@ -4,47 +4,50 @@
 A large language model (LLM) for Rydberg atom array physics.
 
 # Table of contents
-1. [Quick Start](#quickstart)
-2. [Installation](#installation)
-7. [Usage](#usage)
-4. [Documentation](#documentation)
-3. [Architecture](#architecture)
-6. [Acknowledgements](#acknowledgements)
-5. [References](#references)
+1. [Quick Start](#quickstart) <br/>
+    1.1 [Configuration](#configuration) <br/>
+    1.2 [Training](#training) <br/>
+2. [Installation](#installation) <br/>
+3. [Documentation](#documentation) <br/>
+4. [Architecture](#architecture) <br/>
+5. [Acknowledgements](#acknowledgements) <br/>
+6. [References](#references) <br/>
 
 
 ## Quick Start <a name="quickstart"></a>
 
-To run the training on a local machine, execute the `train.py` script. For cluster execution, you can use the `train.sh` script.
+### Configuration <a name="configuration"></a>
+The`config.yaml` is used to define the hyperparameters for:
+1. Model architecture
+2. Training settings
+3. Data loading
+4. Others
 
+### Training <a name="training"></a>
+To train RydbergGPT locally, execute the `train.py` with:
 ```bash
 python train.py --config_name=config_small.yaml
 ```
-```
-
-Or for cluster:
-
+For the cluster:
 ```bash
 .scripts/train.sh
 ```
 
 ## Installation <a name="installation"></a>
-
-## Usage <a name="usage"></a>
-
-The `config.yaml` file contains all the hyperparameters needed for training. You can specify the model architecture, training settings, data loading, and other configurations here.
-
-## Rydberg Hamiltonian <a name="rydberghamiltonian"></a>
-We consider the standard Rydberg Hamiltonian of the form:
-
-```math
-\begin{align}
-\hat{H}_{\mathrm{Rydberg}} =  \sum_{i < j} V(\lVert \mathbf{R}_i - \mathbf{R}_j \rVert ; R_b) \hat{n}_i \hat{n}_j - \sum_{i} \Delta_i \hat{n}_i - \sum_{i} \frac{\Omega}{2} \sigma_i^{(x)}
-\end{align}
+Clone the repository using the following command:
+```bash
+git clone https://github.com/PIQuIL/RydbergGPT
 ```
-Here, $V_{ij}$ = blockade interaction strength between ions $i$ and $j$, $R_b$ = blockade radius,
+Install with pip:
+```bash
+cd RydbergGPT
+pip install .
+```
+
 
 ## Documentation <a name="documentation"></a>
+
+Currently unavaiable
 
 ## Architecture  <a name="architecture"></a>
 
@@ -64,6 +67,17 @@ i &= \text{sequence index (either $T$ or $S$ axis shown in the architecture diag
 The transformer encoder encodes the Rydberg Hamiltonian into a sequential latent space. \\
 The transformer decoder encodes a ground state wavefunction based on the encoded Rydberg Hamiltonian.
 
+
+## Rydberg Hamiltonian <a name="rydberghamiltonian"></a>
+We consider the standard Rydberg Hamiltonian of the form:
+
+```math
+\begin{align}
+\hat{H}_{\mathrm{Rydberg}} =  \sum_{i < j} V(\lVert \mathbf{R}_i - \mathbf{R}_j \rVert ; R_b) \hat{n}_i \hat{n}_j - \sum_{i} \Delta_i \hat{n}_i - \sum_{i} \frac{\Omega}{2} \sigma_i^{(x)}
+\end{align}
+```
+
+Here, $V_{ij}$ = blockade interaction strength between ions $i$ and $j$, $R_b$ = blockade radius,
 ### Model details
 #### Expected training data
 We vary these 4 parameters independently:
