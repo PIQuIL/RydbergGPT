@@ -21,10 +21,10 @@ A large language model (LLM) for Rydberg atom array physics.
 
 ### Configuration <a name="configuration"></a>
 The`config.yaml` is used to define the hyperparameters for :
-1. Model architecture
-2. Training settings
-3. Data loading
-4. Others
+- Model architecture
+- Training settings
+- Data loading
+- Others
 
 ### Training <a name="training"></a> 
 To train RydbergGPT locally, execute the `train.py` with :
@@ -98,14 +98,14 @@ There are a total of `8 x 10 x 3 x 9 = 2160` configurations (see [table](https:/
 
 ## Acknowledgements <a name="acknowledgements"></a>
 
-We found several very helpful codebases when building this repo, and we sincerely thank their authors:
+We sincerely thank the authors of the following very helpful codebases we used when building this repository :
 
-+ Transformer Tutorials:
-    + [Annotated Transformer](https://github.com/harvardnlp/annotated-transformer/)
-    + [Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)
-+ Transformer quantum state:
-    + [Predicting Properties of Quantum Systems with Conditional Generative Models](https://github.com/PennyLaneAI/generative-quantum-states)
-    + [Transformer Quantum State](https://github.com/yuanhangzhang98/transformer_quantum_state)
+- Transformer tutorials:
+    - [Annotated Transformer](https://github.com/harvardnlp/annotated-transformer/)
+    - [Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)
+- Transformer quantum state:
+    - [Predicting Properties of Quantum Systems with Conditional Generative Models](https://github.com/PennyLaneAI/generative-quantum-states)
+    - [Transformer Quantum State](https://github.com/yuanhangzhang98/transformer_quantum_state)
 
 
 ## References <a name="references"></a>
