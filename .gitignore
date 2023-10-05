@@ -132,8 +132,6 @@ dmypy.json
 
 *.hdf5
 
-resources/
-
 logs/
 
 .vscode/
@@ -168,3 +166,6 @@ _logs/
 data_old/
 data_subset/
 _scripts/
+
+!resources/*.pdf
+!resources/*.tex
