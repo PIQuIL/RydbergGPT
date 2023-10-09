@@ -15,7 +15,7 @@ graph_embedding:
 
 training:
   strategy: "auto"
-  precision: 16 # half precision saves lots of memory! 32 is default
+  precision: 16-mixed # half precision saves lots of memory! 32 is default
   max_epochs: 10
   batch_size: 128
   learning_rate: 0.001
@@ -34,7 +34,7 @@ optimizer:
   eta_min: 0.00001
 
 dataset:
-  num_workers: 8
+  num_workers_per_gpu: 16
   chunks_in_memory: 250 # how many chunks of data to load into memory at once, each chunk contains 100,000 samples
 
 rydberg:
