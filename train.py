@@ -104,6 +104,11 @@ def main(config_path: str, config_name: str, dataset_path: str):
     setup_environment(config)
     model = create_model(config)
 
+    if torch.cuda.is_available():
+        num_gpus = torch.cuda.device_count()
+    
+    config.num_workers = num_gpus * config.num_workers_per_gpu
+
     tensorboard_logger = TensorBoardLogger(save_dir="logs")
     log_path = f"logs/lightning_logs/version_{tensorboard_logger.version}"
     logging.info(f"Log path: {log_path}")
