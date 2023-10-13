@@ -43,7 +43,7 @@ matplotlib.rcParams["text.usetex"] = True
 matplotlib.rcParams["mathtext.fontset"] = "stix"
 matplotlib.rcParams["font.family"] = "STIXGeneral"
 
-base_path = os.path.abspath("..\\..")
+base_path = os.path.abspath("..")
 
 cp = sns.color_palette("muted", 8)
 cm = sns.color_palette("winter", as_cmap=True)
