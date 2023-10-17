@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 from rydberggpt.data.dataclasses import Batch, custom_collate
 from rydberggpt.data.loading.base_dataset import BaseDataset
 from rydberggpt.data.loading.utils import contains_invalid_numbers
-from rydberggpt.utils import to_one_hot, track_memory_usage
+from rydberggpt.utils import time_and_log, to_one_hot, track_memory_usage
 
 
 def get_chunked_random_dataloader(
@@ -22,28 +22,44 @@ def get_chunked_random_dataloader(
     data_path: str = "dataset",
     chunks_in_memory: int = 4,
 ) -> DataLoader:
+    # NOTE num_workers doesn't work with chunked random dataloader
     rank = dist.get_rank() if torch.distributed.is_initialized() else 0
     dataset = ChunkedDatasetRandom(data_path, chunks_in_memory, rank)
-    print(f"Length of dataset: {len(dataset)}")
+    # print(f"Length of dataset: {len(dataset)}")
+    logging.info(f"Length of dataset: {len(dataset)}")
 
     train_loader = DataLoader(
         dataset,
         batch_size=batch_size,
-        num_workers=num_workers,
+        num_workers=1,
         collate_fn=custom_collate,
+        shuffle=True,
     )
 
     val_loader = DataLoader(
         dataset,
         batch_size=batch_size,
-        num_workers=num_workers,
+        num_workers=1,
         collate_fn=custom_collate,
+        shuffle=True,
     )
     return train_loader, val_loader
 
 
 class ChunkedDatasetRandom(BaseDataset):
     def __init__(self, base_dir: str, num_chunks_in_memory: int = 50, rank: int = 0):
+        """
+        Initialize a ChunkedDatasetRandom object. The dataset is split into chunks and a random subset of the chunks is loaded into memory.
+        The FullDataset is composed of all the files in the base_dir. The InMemoryDataset
+        is composed of a random subset of the chunks in the FullDataset.
+        The ChunkedDataset is a single chunk of the InMemoryDataset. Therefore all the ChunkedDatasets make up the FullDataset.
+
+
+        Args:
+            base_dir (str): Base directory where the dataset files are stored.
+            num_chunks_in_memory (int): Number of dataset chunks to keep in memory.
+            rank (int): The rank of the current process (useful in multi-process scenarios).
+        """
         super().__init__(base_dir, rank)
         self.num_chunks_in_memory = num_chunks_in_memory
         self.current_dfs = []
@@ -51,6 +67,8 @@ class ChunkedDatasetRandom(BaseDataset):
         self.current_graphs = []
         self.current_py_graphs = []
         self.current_indices = []
+        self.current_length = []
+        self.list_len_subdataset = []
         self.samples_used = 0  # Counter for samples used
         self._load_sub_dataset()
 
@@ -75,6 +93,7 @@ class ChunkedDatasetRandom(BaseDataset):
         # Select chunk indices based on the shuffled chunk_indices and num_chunks_in_memory
         selected_chunk_indices = self.chunk_indices[start_idx:end_idx]
         logging.info(f"Loading {selected_chunk_indices} random chunks into memory.")
+        print(f"Loading {selected_chunk_indices} random chunks into memory.")
 
         self._reload_buffer(selected_chunk_indices)
 
@@ -94,6 +113,7 @@ class ChunkedDatasetRandom(BaseDataset):
             # f"GPU {self.rank}: Shuffled chunk paths: {self.shuffled_chunk_path}"
             # )
 
+    @time_and_log
     def _reload_buffer(self, selected_chunk_indices: List[int]):
         """
         Load data from the selected chunks into memory.
@@ -116,6 +136,9 @@ class ChunkedDatasetRandom(BaseDataset):
 
             self.current_py_graphs.append(self._get_pyg_graph(graph_data, config_data))
             self.current_indices.extend([(i, j) for j in range(len(df))])
+            self.list_len_subdataset.append(self.list_len_all_subdataset[chunk_idx])
+
+        self.len_subdataset = sum(self.list_len_subdataset)
 
         assert len(self.current_py_graphs) == len(
             selected_chunk_indices
@@ -141,7 +164,9 @@ class ChunkedDatasetRandom(BaseDataset):
             Batch: A dataclass containing the graph, the one-hot encoded input and target.
 
         """
-        chunk_idx, sample_idx = self.current_indices[idx]
+
+        idx_new = idx % self.len_subdataset
+        chunk_idx, sample_idx = self.current_indices[idx_new]
 
         # Fetch data sample from the current chunk
         df = self.current_dfs[chunk_idx]
@@ -165,12 +190,14 @@ class ChunkedDatasetRandom(BaseDataset):
 
         # Check if all samples have been used once
         self.samples_used += 1
-        if self.samples_used >= len(self.current_indices):
+        if self.samples_used == len(self.current_indices):
+            print("Loading new chunks.")
             logging.info("Loading new chunks.")
             self.samples_used = 0  # Reset counter
             self._free_memory()
             self._load_sub_dataset()  # Load new random chunks
 
+        # Return the sample as a Batch object
         return Batch(
             graph=pyg_graph,
             m_onehot=m_onehot,
@@ -182,11 +209,17 @@ class ChunkedDatasetRandom(BaseDataset):
         Free memory by clearing the current buffers.
 
         """
+        logging.info(f"GPU {self.rank}: Freeing memory.")
         self.current_dfs.clear()
         self.current_configs.clear()
         self.current_graphs.clear()
         self.current_indices.clear()
         self.current_py_graphs.clear()
+        self.list_len_subdataset.clear()
 
     def __len__(self):
-        return len(self.current_indices)
+        """
+        The full dataset containing all the chunks. Not only the chunks in memory.
+
+        """
+        return self.len_dataset
