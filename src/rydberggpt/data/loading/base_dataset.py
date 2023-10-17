@@ -7,13 +7,16 @@ from typing import Dict, List, Tuple
 import networkx as nx
 import pandas as pd
 import torch
+import torch.distributed as dist
+import yaml
+from pytorch_lightning import LightningDataModule
 from torch.utils.data import Dataset
 
 from rydberggpt.data.utils_graph import networkx_to_pyg_data
 from rydberggpt.utils import track_memory_usage
 
 
-class BaseDataset(Dataset):
+class BaseDataset(LightningDataModule):
     def __init__(self, base_dir: str, rank: int = 0):
         """
         Initialize the dataset with the base directory containing the chunked datasets.
@@ -23,14 +26,12 @@ class BaseDataset(Dataset):
         """
         self.base_dir = base_dir
         self.rank = rank
-        # TODO check if seeding with self.rank works too.
-        random.seed(self.rank)
         random.seed(uuid.uuid4().int & (1 << 32) - 1)
         self.chunk_paths = []
         self.graph_paths = []
         self.config_paths = []
-        self.lengths = []
-        self.total_length = 0
+        self.list_len_all_subdataset = []
+        self.len_dataset = 0
         self.len_sub_dataset = None
 
         self._read_folder_structure()
@@ -40,7 +41,6 @@ class BaseDataset(Dataset):
 
         # translate indices to the chunk path for storing in the log
         self.shuffled_chunk_path = [self.chunk_paths[i] for i in self.chunk_indices]
-        self.current_chunk_counter = 0  # Initialize the chunk counter
         logging.info(
             f"GPU {self.rank}: Shuffled chunk paths indices: {self.chunk_indices}"
         )
@@ -63,7 +63,7 @@ class BaseDataset(Dataset):
         ]
         return l_dirs
 
-    def _scan_chunked_dataset_dirs(self, l_dir: str) -> List[str]:
+    def _scan_subset_dataset_dirs(self, l_dir: str) -> List[str]:
         """
         Scan a given directory for subdirectories and return a list of their names.
 
@@ -73,12 +73,12 @@ class BaseDataset(Dataset):
         Returns:
             List[str]: A list containing the names of all subdirectories in the given directory.
         """
-        chunked_dataset_dirs = [
+        subset_dataset_dirs = [
             d
             for d in os.listdir(os.path.join(self.base_dir, l_dir))
             if os.path.isdir(os.path.join(self.base_dir, l_dir, d))
         ]
-        return chunked_dataset_dirs
+        return subset_dataset_dirs
 
     def _get_len_sub_dataset(self, chunk_dir: str) -> None:
         """
@@ -98,7 +98,7 @@ class BaseDataset(Dataset):
         """
         Append paths of the chunked dataset, graph, and config files
         from the given directory to the respective class attributes.
-        Also updates the total length and lengths attributes.
+        Also updates the total length and list_len_all_subdataset attributes.
 
         Args:
             chunk_dir (str): Directory path containing the chunked dataset.
@@ -106,10 +106,10 @@ class BaseDataset(Dataset):
         self.chunk_paths.append(os.path.join(chunk_dir, "dataset.h5"))
         self.graph_paths.append(os.path.join(chunk_dir, "graph.json"))
         self.config_paths.append(os.path.join(chunk_dir, "config.json"))
-        self.lengths.append(self.len_sub_dataset)
-        self.total_length += self.len_sub_dataset
+        self.list_len_all_subdataset.append(self.len_sub_dataset)
+        self.len_dataset += self.len_sub_dataset
 
-    @track_memory_usage
+    # @track_memory_usage
     def _read_folder_structure(self) -> None:
         """
         Read the folder structure of the base directory to identify paths to individual chunks,
@@ -119,9 +119,9 @@ class BaseDataset(Dataset):
         logging.info(f"Using the following folders: {l_dirs}")
         logging.info("Found %d folders containing datasets.", len(l_dirs))
         for l_dir in l_dirs:
-            chunked_dataset_dirs = self._scan_chunked_dataset_dirs(l_dir)
-            logging.info(f"Found {len(chunked_dataset_dirs)} chunked datasets.")
-            for chunked_dataset_dir in chunked_dataset_dirs:
+            subset_dataset_dirs = self._scan_subset_dataset_dirs(l_dir)
+            logging.info(f"Found {len(subset_dataset_dirs)} chunked datasets.")
+            for chunked_dataset_dir in subset_dataset_dirs:
                 chunk_dir = os.path.join(self.base_dir, l_dir, chunked_dataset_dir)
                 # NOTE scanning every dataset for its size is slow thus we just take the first one
                 if self.len_sub_dataset is None:
@@ -131,7 +131,7 @@ class BaseDataset(Dataset):
                     )
                 self._append_files_from_chunked_dir(chunk_dir)
         logging.info(
-            f"Found {len(self.chunk_paths)} chunks. Total length: {self.total_length}"
+            f"Found {len(self.chunk_paths)} chunks. Total length: {self.len_dataset}"
         )
 
     def __len__(self) -> int:
@@ -141,7 +141,7 @@ class BaseDataset(Dataset):
         Returns:
             int: Total number of samples.
         """
-        return self.total_length
+        return self.len_dataset
 
     def __getitem__(self, idx):
         raise NotImplementedError
