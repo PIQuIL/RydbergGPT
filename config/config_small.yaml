@@ -1,4 +1,5 @@
 # 66.6 K params 
+# NOTE NO SUPPORT FOR MULTI-GPU TRAINING!
 transformer:
   num_heads: 8
   d_model: 32
@@ -15,9 +16,9 @@ graph_embedding:
 
 training:
   strategy: "auto"
-  precision: 32 #16-mixed # half precision saves lots of memory! 32 is default
+  precision: 16-mixed # half precision saves lots of memory! 32 is default
   max_epochs: 1000
-  batch_size: 500
+  batch_size: 100
   learning_rate: 0.001
   criterion: "NLLLoss" #KLLoss
   from_checkpoint: null
@@ -34,8 +35,8 @@ optimizer:
   eta_min: 0.00001
 
 dataset:
-  num_workers_per_gpu: 16
-  chunks_in_memory: 50 # how many chunks of data to load into memory at once, each chunk contains 100,000 samples
+  num_workers_per_gpu: null # chunked dataloader currently doesn't support multiple workers
+  chunks_in_memory: 2 # how many chunks of data to load into memory at once, each chunk contains 100,000 samples
 
 rydberg:
   num_states: 2
@@ -46,4 +47,4 @@ profiler:
 
 misc:
   seed: 42
-  prog_bar: False
+  prog_bar: True
