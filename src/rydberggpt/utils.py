@@ -1,10 +1,10 @@
 import functools
 import logging
 import os
-import resource
 import sys
+import time
 from dataclasses import dataclass, make_dataclass
-from typing import Any, Dict, List, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Tuple, Type, Union
 
 import torch
 import yaml
@@ -13,9 +13,50 @@ from torch import nn
 logger = logging.getLogger(__name__)
 
 
-def track_memory_usage(func):
+def time_and_log(fn: Callable[..., Any]) -> Callable[..., Any]:
+    """
+    Decorator function to measure the time taken by a function to execute and log it.
+
+    Args:
+        fn (Callable[..., Any]): The function to be wrapped.
+
+    Returns:
+        Callable[..., Any]: The wrapped function.
+
+    Usage:
+        @time_and_log
+        def my_function(arg1, arg2):
+            # function logic here
+    """
+
+    def wrapped(*args: Any, **kwargs: Any) -> Any:
+        start_time = time.time()
+        result = fn(*args, **kwargs)
+        elapsed_time = time.time() - start_time
+        logging.info(f"{fn.__name__} took {elapsed_time:.4f} seconds to run.")
+        return result
+
+    return wrapped
+
+
+def track_memory_usage(func: Callable[..., Any]) -> Callable[..., Any]:
+    """
+    Decorator function to measure the memory usage of a function's result and log it.
+
+    Args:
+        func (Callable[..., Any]): The function to be wrapped.
+
+    Returns:
+        Callable[..., Any]: The wrapped function.
+
+    Usage:
+        @track_memory_usage
+        def my_function(arg1, arg2):
+            # function logic here
+    """
+
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         result = func(*args, **kwargs)
 
         # Measure memory used by the function's result
@@ -26,29 +67,10 @@ def track_memory_usage(func):
         mb, kb = divmod(remainder, 1_048_576)
         usage = f"Memory used by {func.__name__}: {gb} GB, {mb} MB, and {kb} KB"
 
-        logger.info(usage)
+        logging.info(usage)
         return result
 
     return wrapper
-
-
-# def track_memory_usage(func):
-#     @functools.wraps(func)
-#     def wrapper(*args, **kwargs):
-#         initial_memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-#         result = func(*args, **kwargs)
-#         final_memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-#         memory_difference = final_memory_usage - initial_memory_usage
-
-#         # Convert total KB into GB, MB, and KB components
-#         gb, remainder = divmod(memory_difference, 1_048_576)
-#         mb, kb = divmod(remainder, 1_024)
-#         usage = f"Memory used by {func.__name__}: {gb} GB, {mb} MB, and {kb} KB"
-
-#         logger.info(usage)  # Use memory_logger instead of logger
-#         return result
-
-#     return wrapper
 
 
 def save_to_yaml(data: Dict[str, Any], filename: str) -> None:
