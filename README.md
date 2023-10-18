@@ -65,7 +65,7 @@ V(\lVert \mathbf{R}_i - \mathbf{R}_j \rVert \ ; R_b, \Omega) &= \frac{R_b^6 \Ome
 \end{align}
 ```
 
-Here, $V_{ij}$ = blockade interaction strength between atoms $i$ and $j$, $R_b$ = blockade radius, $\hat{n}_i$ = number operator at ion $i$, $\mathbf{R}_i$ = the position of atom $i$, $\Delta_i$ = detuning at atom $i$, $\Omega_i$ = Rabi frequency at atom $i$.
+Here, $V_{ij}$ = blockade interaction strength between atoms $i$ and $j$, $R_b$ = blockade radius in units of the lattice spacing, $\hat{n}_i$ = number operator at ion $i$, $\mathbf{R}_i$ = the position of atom $i$ in units of the lattice spacing, $\Delta_i$ = detuning at atom $i$, $\Omega_i$ = Rabi frequency at atom $i$.
 
 ### Transformer <a name="transformer"></a>
 
