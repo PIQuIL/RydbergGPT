@@ -29,13 +29,13 @@ def snake_flip(x: torch.Tensor) -> torch.Tensor:
     if not isinstance(x, torch.Tensor):
         raise TypeError("Function only supports torch.Tensor")
 
-    _x = copy.deepcopy(x)
+    y = x.clone()
 
-    for i in range(_x.shape[-2]):
+    for i in range(y.shape[-2]):
         if i % 2 == 1:
-            _x[..., i, :] = torch.flip(_x[..., i, :], dims=(-1,))
+            y[..., i, :] = torch.flip(y[..., i, :], dims=(-1,))
 
-    return _x
+    return y
 
 
 def flattened_snake_flip(x: torch.Tensor, Lx: int, Ly: int) -> torch.Tensor:
