@@ -235,7 +235,7 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
 
         # Estimate sigma_x
         x_magnetization = self.get_x_magnetization(samples)
-        offdiag_energy = -0.5 * omega * x_magnetization
+        offdiag_energy = 0.5 * omega * x_magnetization
 
         # Diagonal part of energy
         diag_energy = interaction - detuning
