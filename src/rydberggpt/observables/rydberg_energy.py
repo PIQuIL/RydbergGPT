@@ -99,7 +99,7 @@ def get_rydberg_energy(
 
     # Estimate sigma_x
     x_magnetization = get_x_magnetization(model, samples, cond, device)
-    offdiag_energy = -0.5 * omega * x_magnetization
+    offdiag_energy = 0.5 * omega * x_magnetization
 
     # Diagonal part of energy
     diag_energy = interaction - detuning
