@@ -151,14 +151,12 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
     def get_x_magnetization(
         self,
         samples: torch.Tensor,  # dtype=torch.int64
-        device: torch.device,
     ):
         """
         Calculates x magnetization of the model.
 
         Args:
             samples (torch.Tensor): Samples drawn from model based on cond.
-            device (str, optional): The device on which to allocate the tensors. Defaults to "cpu".
 
         Returns:
             torch.Tensor: A tensor containing the estimated x magnetization of each sample.
@@ -183,7 +181,6 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
     def get_rydberg_energy(
         self,
         samples: torch.Tensor,  # dtype=torch.int64
-        device: torch.device,
         undo_sample_path=None,
         undo_sample_path_args=None,
     ) -> torch.Tensor:
@@ -192,7 +189,6 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
 
         Args:
             samples (torch.Tensor): Samples drawn from model based on cond.
-            device (str, optional): The device on which to allocate the tensors. Defaults to "cpu".
            undo_sample_path (torch.Tensor): Map that undoes the sample path of the model to match the labelling of in the graph.
            undo_sample_path_args (tuple): Additional arguments for undo_sample_path.
 
@@ -200,9 +196,9 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
             torch.Tensor: A tensor containing the estimated energy of each sample alongside its decomposition into terms.
         """
 
-        model = self.to(device)
-        samples = samples.to(device)
-        cond = self.cond.to(device)
+        model = self
+        samples = samples
+        cond = self.cond
 
         delta = cond.x[:, 0]  # Detuning coeffs
         omega = cond.x[0, 1]  # Rabi frequency
@@ -231,7 +227,7 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
         detuning = (delta * unpathed_samples).sum(1)  # sum over sequence length
 
         # Estimate sigma_x
-        x_magnetization = self.get_x_magnetization(samples, device)
+        x_magnetization = self.get_x_magnetization(samples)
         offdiag_energy = -0.5 * omega * x_magnetization
 
         # Diagonal part of energy
@@ -247,3 +243,15 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
                 offdiag_energy,
             ]
         ).T
+
+    def variational_loss(self, batch_size, undo_sample_path, undo_sample_path_args):
+        samples = self.get_samples(
+            batch_size=batch_size, fmt_onehot=False, requires_grad=True
+        )
+        energy = self.get_rydberg_energy(
+            samples=samples,
+            undo_sample_path=undo_sample_path,
+            undo_sample_path_args=undo_sample_path_args,
+        )[..., 0].mean()
+
+        return energy
