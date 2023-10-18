@@ -13,6 +13,19 @@ def get_x_magnetization(
     cond: torch.Tensor,  # dtype=torch.float32
     device: torch.device,
 ):
+    """
+    Calculates x magnetization of the model.
+
+    Args:
+        model (RydbergEncoderDecoder): Model to estimate energy on.
+        samples (torch.Tensor): Samples drawn from model based on cond.
+        cond (torch.Tensor): A tensor containing the input condition.
+        device (str, optional): The device on which to allocate the tensors. Defaults to "cpu".
+
+    Returns:
+        torch.Tensor: A tensor containing the estimated x magnetization of each sample.
+    """
+
     # Create all possible states achievable by a single spin flip
     flipped = (samples[:, None, :] + torch.eye(samples.shape[-1])[None, ...]) % 2
     flipped = flipped.reshape(-1, samples.shape[-1])
@@ -43,14 +56,15 @@ def get_rydberg_energy(
     Calculates energy of the model based on the Hamiltonian defined by cond (graph).
 
     Args:
-        model (RydbergEncoderDecoder): Model to estimate energy on
+        model (RydbergEncoderDecoder): Model to estimate energy on.
         samples (torch.Tensor): Samples drawn from model based on cond.
         cond (torch.Tensor): A tensor containing the input condition.
         device (str, optional): The device on which to allocate the tensors. Defaults to "cpu".
        undo_sample_path (torch.Tensor): Map that undoes the sample path of the model to match the labelling of in the graph.
+        undo_sample_path_args (tuple): Additional arguments for undo_sample_path.
 
     Returns:
-        torch.Tensor: A tensor containing the generated samples in one-hot encoding.
+        torch.Tensor: A tensor containing the estimated energy of each sample alongside its decomposition into terms.
     """
 
     model = model.to(device)
