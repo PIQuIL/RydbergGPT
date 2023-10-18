@@ -1,7 +1,6 @@
 import functools
 import logging
 import os
-import resource
 import sys
 from dataclasses import dataclass, make_dataclass
 from typing import Any, Dict, List, Tuple, Type, Union
@@ -33,6 +32,7 @@ def track_memory_usage(func):
 
 
 # def track_memory_usage(func):
+#     import resource
 #     @functools.wraps(func)
 #     def wrapper(*args, **kwargs):
 #         initial_memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
