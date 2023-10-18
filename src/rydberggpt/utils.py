@@ -73,6 +73,26 @@ def track_memory_usage(func: Callable[..., Any]) -> Callable[..., Any]:
     return wrapper
 
 
+# def track_memory_usage(func):
+#     import resource
+#     @functools.wraps(func)
+#     def wrapper(*args, **kwargs):
+#         initial_memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+#         result = func(*args, **kwargs)
+#         final_memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+#         memory_difference = final_memory_usage - initial_memory_usage
+
+#         # Convert total KB into GB, MB, and KB components
+#         gb, remainder = divmod(memory_difference, 1_048_576)
+#         mb, kb = divmod(remainder, 1_024)
+#         usage = f"Memory used by {func.__name__}: {gb} GB, {mb} MB, and {kb} KB"
+
+#         logger.info(usage)  # Use memory_logger instead of logger
+#         return result
+
+#     return wrapper
+
+
 def save_to_yaml(data: Dict[str, Any], filename: str) -> None:
     """
     Save a dictionary to a file in YAML format.
