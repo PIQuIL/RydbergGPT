@@ -134,8 +134,7 @@ class RydbergEncoderDecoder(EncoderDecoder):
             num_atoms (int): The number of atoms to sample. For num_atoms > num_nodes
               in each graph within `cond`, the extra atoms are padded with zeros (onehot) or nan (label).
             fmt_onehot (bool, optional): A flag to indicate whether to return the samples
-              in one-hot encoding format. If False, the samples are returned in label format.
-              Defaults to True.
+              in one-hot encoding format. If False, the samples are returned in label format. Defaults to True.
 
         Returns:
             torch.Tensor: A tensor containing the generated samples. The shape of the tensor is (batch_size, num_atoms, 2) for one-hot encoding format, and (batch_size, num_atoms) for label format. The samples are padded according to the number of nodes in each graph within `cond`.
