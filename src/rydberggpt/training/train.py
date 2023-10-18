@@ -42,13 +42,6 @@ from rydberggpt.utils_ckpt import (
 torch.set_float32_matmul_precision("medium")
 
 
-def setup_environment(config):
-    torch.manual_seed(config.seed)
-    np.random.seed(config.seed)
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    config.device = device
-
-
 def load_data(config, dataset_path):
     logging.info(f"Loading data from {dataset_path}...")
     # https://lightning.ai/docs/pytorch/stable/data/datamodule.html
@@ -58,7 +51,7 @@ def load_data(config, dataset_path):
     train_loader, val_loader = get_chunked_random_dataloader(
         config.batch_size,
         test_size=0.2,
-        num_workers=config.num_workers,
+        num_workers=1,  # multiple workers currently not supported
         data_path=dataset_path,
         chunks_in_memory=config.chunks_in_memory,
     )
@@ -94,20 +87,13 @@ def setup_callbacks(config):
     return callbacks
 
 
-def load_configuration(config_path: str, config_name: str):
-    yaml_dict = load_yaml_file(config_path, config_name)
-    return create_config_from_yaml(yaml_dict)
-
-
-def main(config_path: str, config_name: str, dataset_path: str):
-    config = load_configuration(config_path, config_name)
-    setup_environment(config)
+def train(config: dict, dataset_path: str):
     model = create_model(config)
 
-    if torch.cuda.is_available():
-        num_gpus = torch.cuda.device_count()
-    
-    config.num_workers = num_gpus * config.num_workers_per_gpu
+    # if torch.cuda.is_available():
+    # num_gpus = torch.cuda.device_count()
+
+    # config.num_workers = num_gpus * config.num_workers_per_gpu
 
     tensorboard_logger = TensorBoardLogger(save_dir="logs")
     log_path = f"logs/lightning_logs/version_{tensorboard_logger.version}"
@@ -125,7 +111,7 @@ def main(config_path: str, config_name: str, dataset_path: str):
     )
     # Init trainer class
     trainer = pl.Trainer(
-        devices="auto",  # check if "auto" works
+        devices=1,  # "auto",  # check if "auto" works
         strategy=strategy,
         accelerator="auto",
         precision=config.precision,
@@ -154,32 +140,3 @@ def main(config_path: str, config_name: str, dataset_path: str):
         )
     else:
         trainer.fit(rydberg_gpt_trainer, train_loader)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Run deep learning model with specified config."
-    )
-    parser.add_argument(
-        "--config_name",
-        default="config_small",
-        help="Name of the configuration file without the .yaml extension. (default: small)",
-    )
-    parser.add_argument(
-        "--dataset_path",
-        default="data_old_chunked/",
-        help="Name of the configuration file without the .yaml extension. (default: small)",
-    )
-    parser.add_argument(
-        "--devices",
-        type=int,
-        default=0,
-        help="Number of devices (GPUs) to use. (default: 0)",
-    )
-
-    args = parser.parse_args()
-
-    config_name = args.config_name
-    yaml_path = f"config/"
-
-    main(config_path=yaml_path, config_name=config_name, dataset_path=args.dataset_path)
