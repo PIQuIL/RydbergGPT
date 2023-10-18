@@ -35,6 +35,9 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
             config,
         )
 
+        if hasattr(cond, "num_graphs") and cond.num_graphs > 1:
+            raise ValueError("cond should represent a single Hamiltonian/graph")
+
         self.N = cond.num_nodes
         self.cond = cond
 
