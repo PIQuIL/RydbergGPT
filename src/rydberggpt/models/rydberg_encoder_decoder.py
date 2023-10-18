@@ -10,10 +10,16 @@ from torch_geometric.nn import GATConv, GCNConv
 
 from rydberggpt.models.graph_embedding.models import GraphEmbedding
 from rydberggpt.models.transformer.layers import DecoderLayer, EncoderLayer
-from rydberggpt.models.transformer.models import (Decoder, Encoder,
-                                                  EncoderDecoder, Generator)
-from rydberggpt.models.transformer.modules import (PositionalEncoding,
-                                                   PositionwiseFeedForward)
+from rydberggpt.models.transformer.models import (
+    Decoder,
+    Encoder,
+    EncoderDecoder,
+    Generator,
+)
+from rydberggpt.models.transformer.modules import (
+    PositionalEncoding,
+    PositionwiseFeedForward,
+)
 from rydberggpt.utils import to_one_hot
 
 
@@ -168,14 +174,15 @@ class RydbergEncoderDecoder(EncoderDecoder):
                 # Depending on num_nodes/num_atoms in graph pad samples with [0,0]
                 m[i, cond[i].num_nodes + 1 :, :] = 0
 
-            print("")
-            return m[:, 1:, :]  # Remove initial token
+            m = m[:, 1:, :]  # Remove initial token
         else:
-            m = m[:, 1:, -1]
+            m = m[:, :, -1]
 
             for i in range(m.shape[0]):
                 # Depending on num_nodes/num_atoms in graph pad samples with nan
                 m[i, cond[i].num_nodes + 1 :] = torch.nan
 
-            print("")
-            return m[:, 1:]  # Remove initial token
+            m = m[:, 1:]
+
+        print("")
+        return m
