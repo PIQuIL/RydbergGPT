@@ -2,6 +2,7 @@ import sys
 
 import torch
 from torch import Tensor, nn
+from torch.nn import functional as F
 
 from rydberggpt.models.transformer.models import (
     Decoder,
@@ -41,6 +42,11 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
         self.N = cond.num_nodes
         self.cond = cond
 
+        for p in self.encoder.parameters():
+            p.requires_grad_(False)
+        for p in self.src_embed.parameters():
+            p.requires_grad_(False)
+
         memory, batch_mask = self.encode(cond)
         self.register_buffer("memory", memory)
         self.register_buffer("batch_mask", batch_mask)
@@ -66,7 +72,6 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
 
     pass
 
-    @torch.no_grad()
     def get_log_probs(self, x):
         """
         Compute the log probabilities of a given input tensor.
@@ -93,8 +98,7 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
 
         return y
 
-    @torch.no_grad()
-    def get_samples(self, batch_size, fmt_onehot=True):
+    def get_samples(self, batch_size, fmt_onehot=True, requires_grad=False):
         """
         Generate samples using the forward pass and sampling from the conditional probabilities.
         The samples can be returned either in one-hot encoding format or in label format,
@@ -103,8 +107,8 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
         Args:
             batch_size (int): The number of samples to generate.
             fmt_onehot (bool, optional): A flag to indicate whether to return the samples
-              in one-hot encoding format. If False, the samples are returned in label format.
-              Defaults to True.
+              in one-hot encoding format. If False, the samples are returned in label format. Defaults to True.
+            requires_grad (bool, optional): A flag to determine if grad is needed when sampling. Defaults to False,
 
         Returns:
             torch.Tensor: A tensor containing the generated samples. The shape of the tensor is (batch_size, num_atoms, 2) for one-hot encoding format, and (batch_size, num_atoms) for label format. The samples are padded according to the number of nodes in each graph within `cond`.
@@ -121,13 +125,18 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
             y = self.forward(m)  # EncoderDecoder forward pass
             y = self.generator(y)  # Conditional log probs
             y = y[:, -1, :]  # Next conditional log probs
-            y = torch.distributions.Categorical(logits=y).sample(
-                [
-                    1,
-                ]
-            )  # Sample from next conditional log probs
-            y = y.reshape(y.shape[1], 1)  # Reshape
-            y = to_one_hot(y, 2)  # Convert from label to one hot encoding
+
+            if requires_grad:
+                y = F.gumbel_softmax(logits=y, tau=1, hard=True)[..., None, :]
+
+            else:
+                y = torch.distributions.Categorical(logits=y).sample(
+                    [
+                        1,
+                    ]
+                )  # Sample from next conditional log probs
+                y = y.reshape(y.shape[1], 1)  # Reshape
+                y = to_one_hot(y, 2)  # Convert from label to one hot encoding
 
             m = torch.cat((m, y), dim=-2)  # Append next sample to tensor
 
@@ -139,7 +148,6 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
         print("")
         return m
 
-    @torch.no_grad()
     def get_x_magnetization(
         self,
         samples: torch.Tensor,  # dtype=torch.int64
@@ -172,7 +180,6 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
         x_magnetization = psi_ratio.sum(-1)
         return x_magnetization
 
-    @torch.no_grad()
     def get_rydberg_energy(
         self,
         samples: torch.Tensor,  # dtype=torch.int64
