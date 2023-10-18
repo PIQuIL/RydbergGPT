@@ -27,9 +27,9 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
         config=None,
     ):
         super().__init__(
-            encoder,
+            encoder.eval(),
             decoder,
-            src_embed,
+            src_embed.eval(),
             tgt_embed,
             generator,
             config,
@@ -47,7 +47,10 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
         pass
 
     def forward(self, tgt: Tensor) -> Tensor:
-        return self.decode(tgt, self.memory, self.batch_mask)
+        memory = self.memory.repeat([*tgt.shape[:-2], 1, 1])
+        batch_mask = self.batch_mask.repeat([*tgt.shape[:-2], 1])
+
+        return self.decode(tgt, memory, batch_mask)
 
     @classmethod
     def from_rydberg_encoder_decoder(cls, cond, model: RydbergEncoderDecoder):
@@ -79,7 +82,11 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
             len(x.shape) == 3 and x.shape[-1] == 2
         ), "The input must be one hot encoded"
 
-        y = self.forward(x)  # EncoderDecoder forward pass
+        y = torch.zeros((x.shape[0], 1, x.shape[-1]))  # Initial token
+        y = y.to(x)  # Match dtype and device
+        y = torch.cat([y, x[:, :-1, :]], axis=-2)  # Append initial token to x
+
+        y = self.forward(y)  # EncoderDecoder forward pass
         y = self.generator(y)  # Conditional log probs
 
         y = torch.sum(torch.sum(y * x, axis=-1), axis=-1)  # Log prob of full x
