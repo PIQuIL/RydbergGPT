@@ -98,7 +98,9 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
 
         return y
 
-    def get_samples(self, batch_size, fmt_onehot=True, requires_grad=False):
+    def get_samples(
+        self, batch_size, fmt_onehot=True, requires_grad=False, verbose=True
+    ):
         """
         Generate samples using the forward pass and sampling from the conditional probabilities.
         The samples can be returned either in one-hot encoding format or in label format,
@@ -109,18 +111,22 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
             fmt_onehot (bool, optional): A flag to indicate whether to return the samples
               in one-hot encoding format. If False, the samples are returned in label format. Defaults to True.
             requires_grad (bool, optional): A flag to determine if grad is needed when sampling. Defaults to False,
+            verbose (bool, optional): A flag indicating whether to print sampling progress. Defaults to True,
 
         Returns:
             torch.Tensor: A tensor containing the generated samples. The shape of the tensor is (batch_size, num_atoms, 2) for one-hot encoding format, and (batch_size, num_atoms) for label format. The samples are padded according to the number of nodes in each graph within `cond`.
         """
+        if verbose:
+            print("")
 
         num_atoms = self.N
 
         m = torch.zeros(batch_size, 1, 2, device=self.device)
 
         for i in range(num_atoms):
-            print("{:<80}".format(f"\rGenerating atom {i+1}/{num_atoms}"), end="")
-            sys.stdout.flush()
+            if verbose:
+                print("{:<80}".format(f"\rGenerating atom {i+1}/{num_atoms}"), end="")
+                sys.stdout.flush()
 
             y = self.forward(m)  # EncoderDecoder forward pass
             y = self.generator(y)  # Conditional log probs
@@ -145,7 +151,8 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
         else:
             m = m[:, 1:, -1]  # Remove initial token and put into label format
 
-        print("")
+        if verbose:
+            print("")
         return m
 
     def get_x_magnetization(
@@ -246,7 +253,7 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
 
     def variational_loss(self, batch_size, undo_sample_path, undo_sample_path_args):
         samples = self.get_samples(
-            batch_size=batch_size, fmt_onehot=False, requires_grad=True
+            batch_size=batch_size, fmt_onehot=False, requires_grad=True, verbose=False
         )
         energy = self.get_rydberg_energy(
             samples=samples,
