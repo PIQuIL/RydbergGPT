@@ -25,7 +25,8 @@ def snake_flip(x: torch.Tensor) -> torch.Tensor:
     Returns:
         torch.Tensor: The "snake" flipped tensor, dimensions will be [..., Ly, Lx].
     """
-    if isinstance(x, torch.Tensor):
+
+    if not isinstance(x, torch.Tensor):
         raise TypeError("Function only supports torch.Tensor")
 
     _x = copy.deepcopy(x)
