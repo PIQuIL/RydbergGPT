@@ -63,9 +63,7 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
         return self.decode(tgt, memory, batch_mask)
 
     @classmethod
-    def from_rydberg_encoder_decoder(
-        cls, cond:Batch, model: RydbergEncoderDecoder
-    ) -> RydbergDecoderWavefunction:
+    def from_rydberg_encoder_decoder(cls, cond: Batch, model: RydbergEncoderDecoder):
         """
         Create RydbergDecoderWavefunction from a RydbergEncodeDecoder model and a Hamiltonian/graph.
 
