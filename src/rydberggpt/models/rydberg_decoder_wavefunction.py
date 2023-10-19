@@ -4,6 +4,10 @@ import torch
 from torch import Tensor, nn
 from torch.nn import functional as F
 
+from torch_geometric.data import Batch
+
+########################################################################################
+
 from rydberggpt.models.transformer.models import (
     Decoder,
     Encoder,
@@ -19,7 +23,7 @@ from rydberggpt.utils import to_one_hot
 class RydbergDecoderWavefunction(RydbergEncoderDecoder):
     def __init__(
         self,
-        cond,
+        cond: Batch,
         encoder: Encoder,
         decoder: Decoder,
         src_embed: nn.Module,
@@ -59,7 +63,20 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
         return self.decode(tgt, memory, batch_mask)
 
     @classmethod
-    def from_rydberg_encoder_decoder(cls, cond, model: RydbergEncoderDecoder):
+    def from_rydberg_encoder_decoder(
+        cls, cond:Batch, model: RydbergEncoderDecoder
+    ) -> RydbergDecoderWavefunction:
+        """
+        Create RydbergDecoderWavefunction from a RydbergEncodeDecoder model and a Hamiltonian/graph.
+
+        Args:
+            cond (Batch): The Hamiltonian/graph.
+            model (RydbergEncoderDecoder): The model used to generate a RydbergDecoderWavefunction.
+
+        Returns:
+            RydbergDecoderWavefunction: The wavefunction taken from a trained RydergEncoderDecoder model for the groundstate of the Hamiltonian/graph specified by cond.
+
+        """
         return cls(
             cond,
             model.encoder,
@@ -76,7 +93,7 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
         """
         Compute the log probabilities of a given input tensor.
 
-        Parameters:
+        Args:
             x (torch.Tensor): The input tensor.
 
         Returns:
@@ -255,10 +272,14 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
         samples = self.get_samples(
             batch_size=batch_size, fmt_onehot=False, requires_grad=True, verbose=False
         )
+
+        N = self.N
+        omega = self.cond.x[0, 1]
+
         energy = self.get_rydberg_energy(
             samples=samples,
             undo_sample_path=undo_sample_path,
             undo_sample_path_args=undo_sample_path_args,
-        )[..., 0].mean()
+        )[..., 0].mean() / (N * omega)
 
         return energy
