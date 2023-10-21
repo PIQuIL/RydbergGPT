@@ -4,6 +4,7 @@ import os
 import sys
 import time
 from dataclasses import dataclass, make_dataclass
+from datetime import timedelta
 from typing import Any, Callable, Dict, List, Tuple, Type, Union
 
 import torch
@@ -33,7 +34,11 @@ def time_and_log(fn: Callable[..., Any]) -> Callable[..., Any]:
         start_time = time.time()
         result = fn(*args, **kwargs)
         elapsed_time = time.time() - start_time
-        logging.info(f"{fn.__name__} took {elapsed_time:.4f} seconds to run.")
+
+        # Convert elapsed time to HH:MM:SS format
+        formatted_time = str(timedelta(seconds=elapsed_time))
+
+        logging.info(f"{fn.__name__} took {formatted_time} to run.")
         return result
 
     return wrapped
