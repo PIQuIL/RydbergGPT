@@ -7,6 +7,7 @@ dependencies:
   - pytorch::pytorch
   - pytorch::torchvision
   - pytorch::torchaudio
+  - torchdata
   - numpy>=1.23
   - tensorboard>=2.12
   - matplotlib
@@ -25,7 +26,3 @@ dependencies:
     - torch-summary # try this one 
     - tables 
     - torch_geometric
-    # - pyg_lib
-    # - torch_scatter 
-    # - torch_sparse 
-    # - torch_cluster 
