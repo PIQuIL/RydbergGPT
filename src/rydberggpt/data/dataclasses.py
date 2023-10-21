@@ -33,6 +33,8 @@ class Batch:
     m_shifted_onehot: torch.Tensor
 
 
+# NOTE: Improvement, Removing the m_shofted_onehot from the Batch dataclass.
+# we can build it in the training pass instead. Saves lots of speed.
 def custom_collate(batch: List[Batch]) -> Batch:
     """
     Custom collate function to handle Batch objects when creating a DataLoader.
