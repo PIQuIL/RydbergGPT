@@ -7,6 +7,32 @@ from torch_geometric.data import Batch as PyGBatch
 from torch_geometric.data import Data
 
 
+def pyg_graph_data(config, graph_data):
+    """
+    Convert a graph in node-link format to a PyG Data object.
+
+    Args:
+        graph_data (Dict): The graph in node-link format.
+        config_data (Dict): The configuration data for the graph.
+
+    Returns:
+        PyG Data: The graph as a PyG Data object.
+
+    """
+    node_features = torch.tensor(
+        [
+            config["delta"],
+            config["omega"],
+            config["beta"],
+            config["Rb"],
+        ],
+        dtype=torch.float32,
+    )
+    graph_nx = nx.node_link_graph(graph_data)
+    pyg_graph = networkx_to_pyg_data(graph_nx, node_features)
+    return pyg_graph
+
+
 def networkx_to_pyg_data(graph: nx.Graph, node_features: torch.Tensor) -> Data:
     """
     Convert a NetworkX graph to a PyTorch Geometric Data object.
