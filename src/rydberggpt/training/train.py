@@ -41,9 +41,9 @@ torch.set_float32_matmul_precision("medium")
 def load_data(config, dataset_path):
     logging.info(f"Loading data from {dataset_path}...")
     train_loader, val_loader = get_rydberg_dataloader_2(
-        config.batch_size,
+        batch_size=config.batch_size,
         test_size=0.2,
-        num_workers=1,
+        num_workers=config.num_workers,
         data_path=dataset_path,
         buffer_size=config.chunks_in_memory,
     )
@@ -82,10 +82,10 @@ def setup_callbacks(config):
 def train(config: dict, dataset_path: str):
     model = create_model(config)
 
-    # if torch.cuda.is_available():
-    # num_gpus = torch.cuda.device_count()
+    if torch.cuda.is_available():
+        num_gpus = torch.cuda.device_count()
 
-    # config.num_workers = num_gpus * config.num_workers_per_gpu
+    config.num_workers = num_gpus * config.num_workers_per_gpu
 
     tensorboard_logger = TensorBoardLogger(save_dir="logs")
     log_path = f"logs/lightning_logs/version_{tensorboard_logger.version}"
@@ -103,7 +103,7 @@ def train(config: dict, dataset_path: str):
     )
     # Init trainer class
     trainer = pl.Trainer(
-        devices=1,  # "auto",  # check if "auto" works
+        devices="auto",  
         strategy=strategy,
         accelerator="auto",
         precision=config.precision,
