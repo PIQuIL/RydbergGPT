@@ -1,0 +1,28 @@
+name: rydberggpt
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - pytorch::pytorch
+  - pytorch::torchvision
+  - pytorch::torchaudio
+  - torchdata
+  - numpy>=1.23
+  - tensorboard>=2.12
+  - matplotlib
+  - tqdm
+  - black
+  - pandas
+  - joblib
+  - seaborn
+  - imageio
+  - pytorch-lightning
+  - h5py
+  - pytest
+  - pip
+  - pip:
+    - torch-tb-profiler
+    - torch-summary # try this one 
+    - tables 
+    - torch_geometric

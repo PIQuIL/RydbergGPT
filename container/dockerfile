@@ -1,0 +1,12 @@
+# Use the latest PyTorch image as the base image
+FROM pytorch/pytorch:latest
+
+# Copy the requirements.txt file into the container at /tmp
+COPY requirements.txt /tmp/
+
+# Set the working directory to /tmp
+WORKDIR /tmp
+
+# Upgrade pip and install required python packages
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
