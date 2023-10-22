@@ -1,14 +1,8 @@
 import argparse
-import logging
-import os
-from typing import Optional
 
 import numpy as np
-import pytorch_lightning as pl
 import torch
 import torch.profiler
-from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.strategies import DDPStrategy
 
 from rydberggpt.training.train import train
 from rydberggpt.utils import create_config_from_yaml, load_yaml_file
@@ -50,7 +44,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--dataset_path",
-        default="data_test/",
+        default="dataset_test/",
         help="Name of the configuration file without the .yaml extension. (default: small)",
     )
     parser.add_argument(
