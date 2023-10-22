@@ -169,7 +169,7 @@ class Buffer(IterDataPipe):
             loaded_data = []
             for j in range(i, min(i + self.buffer_size, len(folder_pairs))):
                 config_file, h5_file_path, graph_file = folder_pairs[j]
-                logging.info(f"Loading: {h5_file_path}")
+                # logging.info(f"Loading: {h5_file_path}")
 
                 pyg_graph = pyg_graph_data(config_file, graph_file)
 
