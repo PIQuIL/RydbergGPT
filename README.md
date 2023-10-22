@@ -47,6 +47,8 @@ cd RydbergGPT
 pip install .
 ```
 
+if you prefer to use a containerized version, see `container/README.md`.
+
 
 ## Documentation <a name="documentation"></a>
 
