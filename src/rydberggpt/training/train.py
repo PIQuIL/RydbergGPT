@@ -16,7 +16,8 @@ from pytorch_lightning.callbacks import (
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.strategies import DDPStrategy
 
-from rydberggpt.data.loading import get_rydberg_dataloader
+from rydberggpt.data.loading.rydberg_dataset import get_rydberg_dataloader
+from rydberggpt.data.loading.rydberg_dataset_2 import get_rydberg_dataloader_2
 from rydberggpt.models.rydberg_encoder_decoder import get_rydberg_graph_encoder_decoder
 from rydberggpt.training.callbacks.module_info_callback import ModelInfoCallback
 from rydberggpt.training.callbacks.stop_on_loss_threshold_callback import (
@@ -39,7 +40,7 @@ torch.set_float32_matmul_precision("medium")
 
 def load_data(config, dataset_path):
     logging.info(f"Loading data from {dataset_path}...")
-    train_loader, val_loader = get_rydberg_dataloader(
+    train_loader, val_loader = get_rydberg_dataloader_2(
         config.batch_size,
         test_size=0.2,
         num_workers=1,
