@@ -1,6 +1,7 @@
 matplotlib
 torchvision
 torchaudio
+torchdata
 numpy>=1.23
 tensorboard>=2.12
 matplotlib
