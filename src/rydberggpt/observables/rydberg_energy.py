@@ -73,8 +73,8 @@ def get_rydberg_energy(
 
     delta = cond.x[:, 0]  # Detuning coeffs
     omega = cond.x[0, 1]  # Rabi frequency
-    beta = cond.x[0, 2]
-    Rb = cond.x[0, 3]  # blockade radius
+    beta = cond.x[0, 2] # Inverse temperature
+    Rb = cond.x[0, 3]  # Rydberg Blockade radius
 
     ########################################################################################
 

@@ -224,8 +224,8 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
 
         delta = cond.x[:, 0]  # Detuning coeffs
         omega = cond.x[0, 1]  # Rabi frequency
-        beta = cond.x[0, 2]
-        Rb = cond.x[0, 3]  # blockade radius
+        beta = cond.x[0, 2] # Inverse Temperature
+        Rb = cond.x[0, 3]  # Rydberg Blockade radius
 
         ########################################################################################
 
@@ -246,7 +246,7 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
         )
 
         # Estimate detuning term
-        detuning = (delta * unpathed_samples).sum(1)  # sum over sequence length
+        detuning = (delta * unpathed_samples).sum(-1)  # sum over sequence length
 
         # Estimate sigma_x
         x_magnetization = self.get_x_magnetization(samples)
