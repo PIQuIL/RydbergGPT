@@ -62,8 +62,8 @@ Consider the standard Rydberg Hamiltonian of the form :
 
 ```math
 \begin{align}
-\hat{H}_{\mathrm{Rydberg}} &=  \sum_{i < j} V(\lVert \mathbf{R}_i - \mathbf{R}_j \rVert \ ; R_b, \Omega) \hat{n}_i \hat{n}_j - \sum_{i} \Delta_i \hat{n}_i + \sum_{i} \frac{\Omega}{2} \sigma_i^{(x)} \\
-V(\lVert \mathbf{R}_i - \mathbf{R}_j \rVert \ ; R_b, \Omega) &= \frac{R_b^6 \Omega}{\lVert \mathbf{R}_i - \mathbf{R}_j \rVert^6}
+& \hat{H}_{\mathrm{Rydberg}} =  \sum_{i < j} V(\lVert \mathbf{R}_i - \mathbf{R}_j \rVert \ ; R_b, \Omega) \hat{n}_i \hat{n}_j - \sum_{i} \Delta_i \hat{n}_i + \sum_{i} \frac{\Omega}{2} \sigma_i^{(x)} \\
+& V(\lVert \mathbf{R}_i - \mathbf{R}_j \rVert \ ; R_b, \Omega) = \frac{R_b^6 \Omega}{\lVert \mathbf{R}_i - \mathbf{R}_j \rVert^6}
 \end{align}
 ```
 
