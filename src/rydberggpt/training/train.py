@@ -68,7 +68,7 @@ def setup_callbacks(config):
         ),
         DeviceStatsMonitor(),
         StochasticWeightAveraging(config.learning_rate),
-        ModelInfoCallback(),
+        # ModelInfoCallback(),
         LearningRateMonitor(logging_interval="step"),
     ]
     return callbacks
@@ -109,7 +109,7 @@ def train(
 
     # Load data
     train_loader, val_loader = load_data(config, dataset_path)
-    input_array = set_example_input_array(train_loader)
+    # input_array = set_example_input_array(train_loader)
 
     # Find the latest checkpoint
     if config.from_checkpoint is not None:
