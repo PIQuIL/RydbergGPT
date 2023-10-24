@@ -59,6 +59,6 @@ If you prefer to run the code outside of a container, you can set up a Conda env
 2. **Build the Apptainer Image**
 
    ```bash
-   apptainer build my_container.sif my_recipe.def
+   apptainer build my_container.sif pytorch_recipe.def
    ```
 
