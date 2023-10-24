@@ -1,9 +1,12 @@
 import argparse
+import logging
 
 import numpy as np
 import torch
 import torch.profiler
+from pytorch_lightning.loggers import TensorBoardLogger
 
+from rydberggpt.training.logger import setup_logger
 from rydberggpt.training.train import train
 from rydberggpt.utils import create_config_from_yaml, load_yaml_file
 
@@ -25,7 +28,21 @@ def load_configuration(config_path: str, config_name: str):
 def main(config_path: str, config_name: str, dataset_path: str):
     config = load_configuration(config_path, config_name)
     setup_environment(config)
-    train(config, dataset_path)
+
+    tensorboard_logger = TensorBoardLogger(save_dir="logs")
+    tensorboard_logger.log_hyperparams(vars(config))
+
+    log_path = f"logs/lightning_logs/version_{tensorboard_logger.version}"
+    logging.info(f"Log path: {log_path}")
+
+    setup_logger(log_path)
+    if torch.cuda.is_available():
+        num_gpus = torch.cuda.device_count()
+        logging.info(f"Found {num_gpus} GPUs.")
+    else:
+        logging.info("No GPUs found.")
+
+    train(config, dataset_path, tensorboard_logger, log_path)
 
 
 if __name__ == "__main__":
