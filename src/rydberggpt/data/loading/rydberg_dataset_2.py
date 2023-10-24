@@ -80,7 +80,8 @@ def build_datapipes(root_dir: str, batch_size: int, buffer_size: int):
     datapipe = (
         datapipe.shuffle()
         .sharding_filter()
-        .buffer(buffer_size=buffer_size, batch_size=batch_size)
+        .buffer(buffer_size=buffer_size)
+        .batch(batch_size)
         .collate(custom_collate)
     )
 
@@ -103,10 +104,9 @@ def map_fn(x):
 
 @functional_datapipe("buffer")
 class Buffer(IterDataPipe):
-    def __init__(self, source_datapipe, buffer_size, batch_size):
+    def __init__(self, source_datapipe, buffer_size):
         self.source_datapipe = source_datapipe
         self.buffer_size = buffer_size
-        self.batch_size = batch_size
 
     def get_sample(self, df, idx):
         return torch.tensor(df.iloc[idx]["measurement"], dtype=torch.bool)
@@ -119,12 +119,11 @@ class Buffer(IterDataPipe):
             loaded_data = []
             for j in range(i, min(i + self.buffer_size, len(folder_pairs))):
                 config_file, h5_file_path, graph_file = folder_pairs[j]
-                # logging.info(f"Loading: {h5_file_path}")
 
                 pyg_graph = pyg_graph_data(config_file, graph_file)
 
                 df = pd.read_hdf(h5_file_path, key="data")
-                for index, row in df.iterrows():
+                for index, _ in df.iterrows():
                     measurement = self.get_sample(df, index)
                     m_onehot = to_one_hot(measurement, 2)
                     _, dim = m_onehot.shape
@@ -142,5 +141,5 @@ class Buffer(IterDataPipe):
             random.shuffle(loaded_data)
 
             # Yield batches of data
-            for k in range(0, len(loaded_data), self.batch_size):
-                yield loaded_data[k : k + self.batch_size]
+            for k in range(0, len(loaded_data)):
+                yield loaded_data[k]
