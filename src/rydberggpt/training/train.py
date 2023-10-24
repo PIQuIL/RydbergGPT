@@ -40,7 +40,7 @@ def load_data(config, dataset_path):
         test_size=0.2,
         num_workers=config.num_workers,
         data_path=dataset_path,
-        buffer_size=config.chunks_in_memory,
+        buffer_size=config.buffer_size,
     )
     return train_loader, val_loader
 
@@ -74,21 +74,13 @@ def setup_callbacks(config):
     return callbacks
 
 
-def train(config: dict, dataset_path: str):
+def train(
+    config: dict,
+    dataset_path: str,
+    tensorboard_logger: TensorBoardLogger,
+    log_path: str,
+):
     model = create_model(config)
-
-    if torch.cuda.is_available():
-        num_gpus = torch.cuda.device_count()
-    else:
-        num_gpus = 1
-
-    config.num_workers = num_gpus * config.num_workers_per_gpu
-
-    tensorboard_logger = TensorBoardLogger(save_dir="logs")
-    log_path = f"logs/lightning_logs/version_{tensorboard_logger.version}"
-    logging.info(f"Log path: {log_path}")
-    setup_logger(log_path)
-    tensorboard_logger.log_hyperparams(vars(config))
 
     rydberg_gpt_trainer = RydbergGPTTrainer(model, config, logger=tensorboard_logger)
     callbacks = setup_callbacks(config)
