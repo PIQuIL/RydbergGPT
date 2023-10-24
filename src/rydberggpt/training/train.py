@@ -1,9 +1,5 @@
-import argparse
 import logging
-import os
-from typing import Optional
 
-import numpy as np
 import pytorch_lightning as pl
 import torch
 import torch.profiler
@@ -27,7 +23,6 @@ from rydberggpt.training.logger import setup_logger
 from rydberggpt.training.monitoring import setup_profiler
 from rydberggpt.training.trainer import RydbergGPTTrainer
 from rydberggpt.training.utils import set_example_input_array
-from rydberggpt.utils import create_config_from_yaml, load_yaml_file, save_to_yaml
 from rydberggpt.utils_ckpt import (
     find_best_ckpt,
     find_latest_ckpt,
@@ -84,6 +79,8 @@ def train(config: dict, dataset_path: str):
 
     if torch.cuda.is_available():
         num_gpus = torch.cuda.device_count()
+    else:
+        num_gpus = 1
 
     config.num_workers = num_gpus * config.num_workers_per_gpu
 
@@ -103,7 +100,7 @@ def train(config: dict, dataset_path: str):
     )
     # Init trainer class
     trainer = pl.Trainer(
-        devices="auto",  
+        devices="auto",
         strategy=strategy,
         accelerator="auto",
         precision=config.precision,
