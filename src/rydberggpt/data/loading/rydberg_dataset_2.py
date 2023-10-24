@@ -8,6 +8,7 @@ import torch
 from torchdata.dataloader2 import (
     DataLoader2,
     DistributedReadingService,
+    SequentialReadingService,
     MultiProcessingReadingService,
     PrototypeMultiProcessingReadingService,
 )
@@ -33,15 +34,18 @@ def get_rydberg_dataloader_2(
     )
 
     # rs = DistributedReadingService()
-    rs = MultiProcessingReadingService(num_workers=num_workers)
+    # rs = MultiProcessingReadingService(num_workers=num_workers)
     # rs = PrototypeMultiProcessingReadingService(num_workers=num_workers)
     # rs = PrototypeMultiProcessingReadingService(num_workers=num_workers)
     # rs = InProcessReadingService()
 
+    mp_rs = MultiProcessingReadingService(num_workers=num_workers)
+    dist_rs = DistributedReadingService()
+    rs = SequentialReadingService(dist_rs, mp_rs)
+
     train_loader = DataLoader2(datapipe=datapipe, reading_service=rs)
 
-    return train_loader, None
-
+    return train_loader, train_loader
 
 def select_fn(x):
     return x[1]
@@ -79,10 +83,10 @@ def build_datapipes(root_dir: str, batch_size: int, buffer_size: int):
     datapipe = config_dp.zip(dataset_dp).zip(graph_dp).map(map_fn)
     datapipe = (
         datapipe.shuffle()
-        .sharding_filter()
         .buffer(buffer_size=buffer_size)
         .batch(batch_size)
         .collate(custom_collate)
+        .sharding_filter()
     )
 
     return datapipe
