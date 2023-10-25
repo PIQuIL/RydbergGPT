@@ -30,7 +30,6 @@ class GridGraph(BaseGraph):
 class Batch:
     graph: Data
     m_onehot: torch.Tensor
-    # m_shifted_onehot: torch.Tensor
 
 
 def custom_collate(batch: List[Batch]) -> Batch:
