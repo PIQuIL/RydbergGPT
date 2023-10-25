@@ -19,11 +19,12 @@ logging.basicConfig(level=logging.INFO)
 
 def get_rydberg_dataloader_2(
     batch_size: int = 10,
-    test_size: float = 0.2,
     num_workers: int = 0,
     data_path: str = "dataset",
     buffer_size: int = 4,
 ) -> Tuple[DataLoader, DataLoader]:
+    # Tutorial how to use datapipes with Dataloader
+    # https://pytorch.org/data/main/dp_tutorial.html
     datapipe = build_datapipes(
         root_dir=data_path, batch_size=batch_size, buffer_size=buffer_size
     )
@@ -31,10 +32,10 @@ def get_rydberg_dataloader_2(
     train_loader = DataLoader(
         datapipe,
         batch_size=None,
-        shuffle=False,
         num_workers=num_workers,
     )
 
+    # NOTE do we need a validation loader?
     return train_loader, train_loader
 
 
