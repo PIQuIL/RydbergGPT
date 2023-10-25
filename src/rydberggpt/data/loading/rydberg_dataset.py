@@ -380,7 +380,7 @@ class InMemoryDataset(object):
         # Prepare one-hot encoded input and target
         m_onehot = to_one_hot(measurement, 2)
         _, dim = m_onehot.shape
-        m_shifted_onehot = torch.cat((torch.zeros(1, dim), m_onehot[:-1]), dim=0)
+        # m_shifted_onehot = torch.cat((torch.zeros(1, dim), m_onehot[:-1]), dim=0)
 
         # Check for NaN/Inf values
         # if contains_invalid_numbers(m_onehot) or contains_invalid_numbers(
@@ -397,5 +397,5 @@ class InMemoryDataset(object):
         return Batch(
             graph=data.pyg_graph,
             m_onehot=m_onehot,
-            m_shifted_onehot=m_shifted_onehot,
+            # m_shifted_onehot=m_shifted_onehot,
         )
