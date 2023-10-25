@@ -5,15 +5,10 @@ from typing import Tuple
 import networkx as nx
 import pandas as pd
 import torch
-from torchdata.dataloader2 import (
-    DataLoader2,
-    DistributedReadingService,
-    SequentialReadingService,
-    MultiProcessingReadingService,
-    PrototypeMultiProcessingReadingService,
-)
+from torch.utils.data.dataloader import DataLoader
+from torch.utils.data.datapipes.datapipe import IterDataPipe
+from torch.utils.data.datapipes.iter import FileLister
 from torchdata.datapipes import functional_datapipe
-from torchdata.datapipes.iter import FileLister, IterDataPipe
 
 from rydberggpt.data.dataclasses import Batch, custom_collate
 from rydberggpt.data.utils_graph import pyg_graph_data
@@ -28,24 +23,20 @@ def get_rydberg_dataloader_2(
     num_workers: int = 0,
     data_path: str = "dataset",
     buffer_size: int = 4,
-) -> Tuple[DataLoader2, DataLoader2]:
+) -> Tuple[DataLoader, DataLoader]:
     datapipe = build_datapipes(
         root_dir=data_path, batch_size=batch_size, buffer_size=buffer_size
     )
 
-    # rs = DistributedReadingService()
-    # rs = MultiProcessingReadingService(num_workers=num_workers)
-    # rs = PrototypeMultiProcessingReadingService(num_workers=num_workers)
-    # rs = PrototypeMultiProcessingReadingService(num_workers=num_workers)
-    # rs = InProcessReadingService()
-
-    mp_rs = MultiProcessingReadingService(num_workers=num_workers)
-    dist_rs = DistributedReadingService()
-    rs = SequentialReadingService(dist_rs, mp_rs)
-
-    train_loader = DataLoader2(datapipe=datapipe, reading_service=rs)
+    train_loader = DataLoader(
+        datapipe,
+        batch_size=None,
+        shuffle=False,
+        num_workers=num_workers,
+    )
 
     return train_loader, train_loader
+
 
 def select_fn(x):
     return x[1]
@@ -80,14 +71,9 @@ def build_datapipes(root_dir: str, batch_size: int, buffer_size: int):
     )
     config_dp = config_dp.open_files().parse_json_files().map(select_fn)
     graph_dp = graph_dp.open_files().parse_json_files().map(select_fn)
-    datapipe = config_dp.zip(dataset_dp).zip(graph_dp).map(map_fn)
-    datapipe = (
-        datapipe.shuffle()
-        .buffer(buffer_size=buffer_size)
-        .batch(batch_size)
-        .collate(custom_collate)
-        .sharding_filter()
-    )
+    datapipe = config_dp.zip(dataset_dp).zip(graph_dp).map(map_fn).shuffle()
+    datapipe = Buffer(source_datapipe=datapipe, buffer_size=buffer_size)
+    datapipe = datapipe.batch(batch_size).collate(custom_collate).sharding_filter()
 
     return datapipe
 
@@ -106,7 +92,6 @@ def map_fn(x):
     return (x[0][0], x[0][1], x[1])
 
 
-@functional_datapipe("buffer")
 class Buffer(IterDataPipe):
     def __init__(self, source_datapipe, buffer_size):
         self.source_datapipe = source_datapipe
