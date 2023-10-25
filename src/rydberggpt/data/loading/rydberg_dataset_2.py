@@ -66,12 +66,12 @@ def build_datapipes(root_dir: str, batch_size: int, buffer_size: int):
         drop_none=True,
         buffer_size=-1,
     )
-    config_dp = config_dp.open_files().parse_json_files()  # .map(select_fn)
-    graph_dp = graph_dp.open_files().parse_json_files()  # .map(select_fn)
+    config_dp = config_dp.open_files().parse_json_files()
+    graph_dp = graph_dp.open_files().parse_json_files()
     datapipe = config_dp.zip(dataset_dp).zip(graph_dp).map(map_fn)
     datapipe = datapipe.shuffle()
     datapipe = Buffer(source_datapipe=datapipe, buffer_size=buffer_size)
-    datapipe = datapipe.batch(batch_size).collate(custom_collate)  # .sharding_filter()
+    datapipe = datapipe.batch(batch_size).collate(custom_collate).sharding_filter()
 
     return datapipe
 
