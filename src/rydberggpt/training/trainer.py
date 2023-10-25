@@ -11,6 +11,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torch import optim
 
 from rydberggpt.training import loss
+from rydberggpt.utils import shift_inputs
 
 
 class RydbergGPTTrainer(pl.LightningModule):
@@ -65,7 +66,9 @@ class RydbergGPTTrainer(pl.LightningModule):
         Returns:
             torch.Tensor: The training loss for the current batch.
         """
-        cond_log_probs = self.forward(batch.m_shifted_onehot, batch.graph)
+        m_shifted_onehot = shift_inputs(batch.m_onehot)
+
+        cond_log_probs = self.forward(m_shifted_onehot, batch.graph)
         loss = self.criterion(cond_log_probs, batch.m_onehot)
         self.log("train_loss", loss, sync_dist=True)
         return loss
@@ -99,28 +102,3 @@ class RydbergGPTTrainer(pl.LightningModule):
                 "monitor": "train_loss",
             },
         }
-
-    # def validation_step(self, batch, batch_idx):  # batch denotes the batch
-    #     self.model.eval()
-    #     # TODO add calculation of energy function as well
-    #     # we can track the energy of the dataset vs the energy of the model
-    #     batch_size, num_atoms, _ = batch.m_onehot.shape
-    #     m = torch.argmax(batch.m_onehot, dim=-1)
-    #     samples, log_probs = self.model.get_samples_and_log_probs(
-    #         batch_size, batch.cond, num_atoms, device=self.device
-    #     )
-    #     # log_probs = cond_log_probs.sum(dim=-1)
-    #     energy = self.model.get_energy(
-    #         V=batch.coupling_matrix,
-    #         omega=batch.omega,
-    #         delta=batch.delta,
-    #         samples=samples,
-    #         cond=batch.cond,
-    #         log_probs=log_probs,
-    #         num_atoms=num_atoms,
-    #         device=self.device,
-    #     )
-    #     # cond_log_probs = self.forward(batch.m_shifted_onehot, batch.cond)
-    #     # loss = self.criterion(cond_log_probs, batch.m_onehot)
-    #     self.log("energy", energy, sync_dist=True)
-    #     return energy
