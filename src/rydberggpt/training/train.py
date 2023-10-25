@@ -12,7 +12,6 @@ from pytorch_lightning.callbacks import (
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.strategies import DDPStrategy
 
-from rydberggpt.data.loading.rydberg_dataset import get_rydberg_dataloader
 from rydberggpt.data.loading.rydberg_dataset_2 import get_rydberg_dataloader_2
 from rydberggpt.models.rydberg_encoder_decoder import get_rydberg_graph_encoder_decoder
 from rydberggpt.training.callbacks.module_info_callback import ModelInfoCallback
@@ -37,7 +36,6 @@ def load_data(config, dataset_path):
     logging.info(f"Loading data from {dataset_path}...")
     train_loader, val_loader = get_rydberg_dataloader_2(
         batch_size=config.batch_size,
-        test_size=0.2,
         num_workers=config.num_workers,
         data_path=dataset_path,
         buffer_size=config.buffer_size,
@@ -90,7 +88,7 @@ def train(
         if config.strategy == "ddp"
         else config.strategy
     )
-    # Init trainer class
+
     trainer = pl.Trainer(
         devices="auto",
         strategy=strategy,
@@ -107,7 +105,6 @@ def train(
         detect_anomaly=config.detect_anomaly,
     )
 
-    # Load data
     train_loader, val_loader = load_data(config, dataset_path)
     # input_array = set_example_input_array(train_loader)
 
