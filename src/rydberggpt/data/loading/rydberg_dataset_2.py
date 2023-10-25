@@ -39,10 +39,6 @@ def get_rydberg_dataloader_2(
     return train_loader, train_loader
 
 
-def select_fn(x):
-    return x[1]
-
-
 def build_datapipes(root_dir: str, batch_size: int, buffer_size: int):
     """
     Builds a data pipeline for processing files from a specified directory.
@@ -70,11 +66,12 @@ def build_datapipes(root_dir: str, batch_size: int, buffer_size: int):
         drop_none=True,
         buffer_size=-1,
     )
-    config_dp = config_dp.open_files().parse_json_files().map(select_fn)
-    graph_dp = graph_dp.open_files().parse_json_files().map(select_fn)
-    datapipe = config_dp.zip(dataset_dp).zip(graph_dp).map(map_fn).shuffle()
+    config_dp = config_dp.open_files().parse_json_files()  # .map(select_fn)
+    graph_dp = graph_dp.open_files().parse_json_files()  # .map(select_fn)
+    datapipe = config_dp.zip(dataset_dp).zip(graph_dp).map(map_fn)
+    datapipe = datapipe.shuffle()
     datapipe = Buffer(source_datapipe=datapipe, buffer_size=buffer_size)
-    datapipe = datapipe.batch(batch_size).collate(custom_collate).sharding_filter()
+    datapipe = datapipe.batch(batch_size).collate(custom_collate)  # .sharding_filter()
 
     return datapipe
 
@@ -103,27 +100,23 @@ class Buffer(IterDataPipe):
 
     def __iter__(self):
         folder_pairs = list(self.source_datapipe)
-        random.shuffle(folder_pairs)  # Shuffle folder pairs for randomness
 
         for i in range(0, len(folder_pairs), self.buffer_size):
             loaded_data = []
             for j in range(i, min(i + self.buffer_size, len(folder_pairs))):
                 config_file, h5_file_path, graph_file = folder_pairs[j]
+                # logging.info(f"Loading data from {config_file[0]}")
 
-                pyg_graph = pyg_graph_data(config_file, graph_file)
+                pyg_graph = pyg_graph_data(config_file[1], graph_file[1])
 
                 df = pd.read_hdf(h5_file_path, key="data")
                 for index, _ in df.iterrows():
                     measurement = self.get_sample(df, index)
                     m_onehot = to_one_hot(measurement, 2)
-                    _, dim = m_onehot.shape
-                    m_shifted_onehot = torch.cat(
-                        (torch.zeros(1, dim), m_onehot[:-1]), dim=0
-                    )
+
                     batch = Batch(
                         graph=pyg_graph,
                         m_onehot=m_onehot,
-                        m_shifted_onehot=m_shifted_onehot,
                     )
                     loaded_data.append(batch)
 
