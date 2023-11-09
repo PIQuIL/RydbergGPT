@@ -18,7 +18,7 @@ from torch_geometric.data import Batch as PyGBatch
 from rydberggpt.data.dataclasses import Batch, custom_collate
 from rydberggpt.data.loading.utils import contains_invalid_numbers
 from rydberggpt.data.utils_graph import networkx_to_pyg_data
-from rydberggpt.utils import time_and_log, to_one_hot, track_memory_usage
+from rydberggpt.utils import time_and_log, to_one_hot
 
 
 def get_rydberg_dataloader(
