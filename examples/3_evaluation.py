@@ -28,7 +28,10 @@ from rydberggpt.data.graph_structures import get_graph
 from rydberggpt.data.loading.rydberg_dataset import get_rydberg_dataloader
 from rydberggpt.data.utils_graph import networkx_to_pyg_data
 from rydberggpt.models.rydberg_encoder_decoder import get_rydberg_graph_encoder_decoder
-from rydberggpt.observables.rydberg_energy import get_rydberg_energy
+from rydberggpt.observables.rydberg_energy import (
+    get_rydberg_energy,
+    get_staggered_magnetization,
+)
 from rydberggpt.utils import create_config_from_yaml, load_yaml_file
 from rydberggpt.utils_ckpt import get_ckpt_path, get_model_from_ckpt
 
@@ -61,7 +64,7 @@ if is_cuda:
 
 ########################################################################################
 
-from_ckpt = 5
+from_ckpt = 8
 
 ##### LOADING FROM CKPT #####
 log_path = os.path.join(base_path, get_ckpt_path(from_ckpt=from_ckpt))
@@ -216,7 +219,7 @@ def snake_flip(x):
 # Default parameters
 
 L = 5
-B = 100
+B = 10
 
 delta = 2.0
 omega = 1.0
@@ -225,35 +228,34 @@ Rb = 1.15
 
 ########################################################################################
 
-# # Generate samples for model
+# Generate samples for model
 
-# rows, cols = 11,21
-# deltas = np.linspace(-0.5, 3.2, cols)
-# betas = np.logspace(-2, 8, rows, base=2)
-# prompts = []
-# for beta, delta in itr.product(betas, deltas):
-#     pyg_graph = generate_prompt(
-#         n_rows=L, n_cols=L, delta=delta, omega=omega, beta=beta, Rb=Rb
-#     )
+rows, cols = 11, 21
+deltas = np.linspace(-0.5, 3.2, cols)
+betas = np.logspace(-2, 8, rows, base=2)
+prompts = []
+for beta, delta in itr.product(betas, deltas):
+    pyg_graph = generate_prompt(
+        n_rows=L, n_cols=L, delta=delta, omega=omega, beta=beta, Rb=Rb
+    )
 
-#     [prompts.append(pyg_graph.clone()) for _ in range(B)]
+    [prompts.append(pyg_graph.clone()) for _ in range(B)]
 
-# prompts = Batch.from_data_list(prompts)
+prompts = Batch.from_data_list(prompts)
 
-# samples = model.get_samples(
-#     batch_size=len(prompts),
-#     cond=prompts,
-#     num_atoms=L**2,
-# ).cpu()
+samples = model.get_samples(
+    batch_size=len(prompts),
+    cond=prompts,
+    num_atoms=L**2,
+).cpu()
 
-
-# samples = samples[..., -1].reshape(rows, cols, B, L, L)
 
 # ########################################################################################
 
 # # Generate stitched samples for plotting
 
-# images = snake_flip(samples)
+# images = samples.reshape(rows, cols, B, L, L)
+# images = snake_flip(images)
 # images = copy.deepcopy(images)
 # images = torch.moveaxis(images, (0, 1), (-4, -2))
 # images = images.reshape(B, rows * L, cols * L)
@@ -292,51 +294,56 @@ Rb = 1.15
 
 ########################################################################################
 
-# # Calculate staggered magnetization (order parameter for checkerboard phase)
+# Calculate staggered magnetization (order parameter for checkerboard phase)
 
-# sigmas = samples - 0.5
-# idcs = np.indices((L, L))
-# checkerboard = 2 * (idcs.sum(0) % 2) - 1
+staggered_magnetization = get_staggered_magnetization(
+    samples[..., -1],
+    L,
+    L,
+    device=device,
+    undo_sample_path=lambda x, Lx, Ly: snake_flip(
+        x.reshape(*x.shape[:-1], Ly, Lx)
+    ).reshape(*x.shape[:-1], -1),
+    undo_sample_path_args=(L, L),
+).reshape(rows, cols, B)
 
-# staggered_magnetization = torch.abs((sigmas * checkerboard).mean((-1, -2)))
+staggered_magnetization_moments = np.stack(
+    [
+        staggered_magnetization.mean(-1),
+        staggered_magnetization.std(-1),
+    ]
+)
 
-# staggered_magnetization_moments = np.stack(
-#     [
-#         staggered_magnetization.mean(-1).reshape(rows, cols),
-#         staggered_magnetization.std(-1).rehape(rows, cols),
-#     ]
-# )
+########################################################################################
 
-# ########################################################################################
+# Plot staggered magnetization across the phase transition
 
-# # Plot staggered magnetization across the phase transition
+fig = plt.figure()
+ax = fig.subplots(1, 1)
 
-# fig = plt.figure()
-# ax = fig.subplots(1, 1)
+c = cm(np.linspace(0, 1, rows))
+for i, beta in enumerate(betas):
+    ax.plot(
+        deltas,
+        staggered_magnetization_moments[0, i, :],
+        color=c[i],
+        alpha=0.75,
+        label=r"$\beta={}$".format(beta),
+    )
+    ax.fill_between(
+        deltas,
+        (staggered_magnetization_moments[0] + staggered_magnetization_moments[1])[i, :],
+        (staggered_magnetization_moments[0] - staggered_magnetization_moments[1])[i, :],
+        color=c[i],
+        alpha=0.1,
+    )
 
-# c = cm(np.linspace(0, 1, rows))
-# for i, beta in enumerate(betas):
-#     ax.plot(
-#         deltas,
-#         staggered_magnetization_moments[0, i, :],
-#         color=c[i],
-#         alpha=0.75,
-#         label=r"$\beta={}$".format(beta),
-#     )
-#     ax.fill_between(
-#         deltas,
-#         (staggered_magnetization_moments[0] + staggered_magnetization_moments[1])[i, :],
-#         (staggered_magnetization_moments[0] - staggered_magnetization_moments[1])[i, :],
-#         color=c[i],
-#         alpha=0.1,
-#     )
+ax.set_xlabel(r"$\Delta$")
+ax.set_ylabel(r"$M_s$")
 
-# ax.set_xlabel(r"$\Delta$")
-# ax.set_ylabel(r"$M_s$")
-
-# ax.legend(
-#     loc="lower center", bbox_to_anchor=(0.5, 0.95), fancybox=True, shadow=True, ncol=4
-# )
+ax.legend(
+    loc="lower center", bbox_to_anchor=(0.5, 0.95), fancybox=True, shadow=True, ncol=4
+)
 
 ########################################################################################
 
@@ -358,6 +365,8 @@ deltas = np.concatenate(
     ]
 )
 deltas.sort()
+
+beta = 32
 
 
 # Generate samples
@@ -442,15 +451,15 @@ ax.plot(
     )
     for i, _ in enumerate(deltas)
 ]
-# ax.fill_between(
-#     deltas,
-#     energy_density_moments[:, 0] + energy_density_moments[:, 1] / np.sqrt(B),
-#     energy_density_moments[:, 0] - energy_density_moments[:, 1] / np.sqrt(B),
-#     alpha=0.3,
-#     color=cp[0],
-#     lw=0,
-#     zorder=1
-# )
+ax.fill_between(
+    deltas,
+    energy_density_moments[:, 0] + energy_density_moments[:, 1] / np.sqrt(B),
+    energy_density_moments[:, 0] - energy_density_moments[:, 1] / np.sqrt(B),
+    alpha=0.3,
+    color=cp[0],
+    lw=0,
+    zorder=1,
+)
 ax.fill_between(
     deltas,
     energy_density_moments[:, 0] + energy_density_moments[:, 1],
