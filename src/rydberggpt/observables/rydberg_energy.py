@@ -104,13 +104,14 @@ def get_rydberg_energy(
     # Diagonal part of energy
     diag_energy = interaction - detuning
 
-    energy = diag_energy + offdiag_energy  # Energy estimate
+    energy = diag_energy - offdiag_energy  # Energy estimate
 
     return torch.stack(
         [
             energy,
             interaction,
             detuning,
+            diag_energy,
             offdiag_energy,
         ]
     ).T
