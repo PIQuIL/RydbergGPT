@@ -1,9 +1,53 @@
 from typing import Callable
 
+import numpy as np
+
 import torch
 
 from rydberggpt.models.rydberg_encoder_decoder import RydbergEncoderDecoder
 from rydberggpt.utils import to_one_hot
+
+
+@torch.no_grad()
+def get_staggered_magnetization(
+    samples: torch.Tensor,
+    Lx: int,
+    Ly: int,
+    device: torch.device,
+    undo_sample_path=None,
+    undo_sample_path_args=None,
+):
+    """
+    Calculates staggered magnetization of the model.
+
+    Args:
+        samples (torch.Tensor): Samples drawn from model.
+        Lx (int): Linear size in the x dimension
+        Ly (int): Linear size in the y dimension
+        device (str, optional): The device on which to allocate the tensors. Defaults to "cpu".
+        undo_sample_path (torch.Tensor): Map that undoes the sample path of the model to match the labelling of in the graph.
+        undo_sample_path_args (tuple): Additional arguments for undo_sample_path.
+
+    Returns:
+        torch.Tensor: A tensor containing the estimated staggered magnetization of each sample.
+    """
+
+    if undo_sample_path is not None:
+        unpathed_samples = undo_sample_path(samples, *undo_sample_path_args)
+    else:
+        unpathed_samples = samples
+
+    unpathed_samples = unpathed_samples.reshape(-1, Ly, Lx)
+
+    unpathed_sigmas = 2 * unpathed_samples - 1
+
+    idcs = np.indices((Ly, Lx))
+    checkerboard = 2 * (idcs.sum(0) % 2) - 1
+    checkerboard = torch.from_numpy(checkerboard).to(device=device)
+
+    staggered_magnetization = torch.abs((checkerboard * unpathed_sigmas).mean((-1, -2)))
+
+    return staggered_magnetization
 
 
 @torch.no_grad()
@@ -60,7 +104,7 @@ def get_rydberg_energy(
         samples (torch.Tensor): Samples drawn from model based on cond.
         cond (torch.Tensor): A tensor containing the input condition.
         device (str, optional): The device on which to allocate the tensors. Defaults to "cpu".
-       undo_sample_path (torch.Tensor): Map that undoes the sample path of the model to match the labelling of in the graph.
+        undo_sample_path (torch.Tensor): Map that undoes the sample path of the model to match the labelling of in the graph.
         undo_sample_path_args (tuple): Additional arguments for undo_sample_path.
 
     Returns:
@@ -73,7 +117,7 @@ def get_rydberg_energy(
 
     delta = cond.x[:, 0]  # Detuning coeffs
     omega = cond.x[0, 1]  # Rabi frequency
-    beta = cond.x[0, 2] # Inverse temperature
+    beta = cond.x[0, 2]  # Inverse temperature
     Rb = cond.x[0, 3]  # Rydberg Blockade radius
 
     ########################################################################################
