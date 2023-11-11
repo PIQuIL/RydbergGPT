@@ -2,15 +2,15 @@
 transformer:
   num_heads: 10
   d_model: 40
-  num_blocks_encoder: 2
-  num_blocks_decoder: 6
+  num_blocks_encoder: 3
+  num_blocks_decoder: 3
   d_ff: 160 # usually 4 * d_model
   dropout: 0.1
   compile: False
 
 graph_embedding:
-  graph_num_layers: 2
-  graph_hidden_dim: 64 
+  graph_num_layers: 3
+  graph_hidden_dim: 512
   in_node_dim: 4 # omega delta beta, blockade_radius
 
 training:
@@ -22,7 +22,6 @@ training:
   criterion: "NLLLoss" #KLLoss
   from_checkpoint: null
   accumulate_grad_batches: 1
-  detect_anomaly: True
 
 logger:
   log_every: 30
@@ -34,8 +33,8 @@ optimizer:
   eta_min: 0.00001
 
 dataset:
-  num_workers_per_gpu: 16
-  chunks_in_memory: 50 # how many chunks of data to load into memory at once, each chunk contains 100,000 samples
+  num_workers: 10 # for each GPU process  
+  buffer_size: 50 # how many chunks of data to load into memory at once, each chunk contains 100,000 samples
 
 rydberg:
   num_states: 2
@@ -43,6 +42,7 @@ rydberg:
 profiler: 
   profiler: "PyTorchProfiler"
   advanced_monitoring: False
+  detect_anomaly: False
 
 misc:
   seed: 42
