@@ -2,14 +2,14 @@ import logging
 import random
 from typing import Tuple
 
-import networkx as nx
+# import networkx as nx
 import pandas as pd
 import torch
 from torch.utils.data.dataloader import DataLoader
 from torch.utils.data.datapipes.datapipe import IterDataPipe
 from torch.utils.data.datapipes.iter import FileLister
-from torchdata.datapipes import functional_datapipe
 
+# from torchdata.datapipes import functional_datapipe
 from rydberggpt.data.dataclasses import Batch, custom_collate
 from rydberggpt.data.utils_graph import pyg_graph_data
 from rydberggpt.utils import to_one_hot
@@ -113,12 +113,7 @@ class Buffer(IterDataPipe):
                 for index, _ in df.iterrows():
                     measurement = self.get_sample(df, index)
                     m_onehot = to_one_hot(measurement, 2)
-
-                    batch = Batch(
-                        graph=pyg_graph,
-                        m_onehot=m_onehot,
-                    )
-                    loaded_data.append(batch)
+                    loaded_data.append(Batch(graph=pyg_graph, m_onehot=m_onehot))
 
             # Shuffle the loaded data for randomness
             random.shuffle(loaded_data)
