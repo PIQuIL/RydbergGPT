@@ -28,6 +28,8 @@ def get_rydberg_dataloader(
     data_path: str = "dataset",
     buffer_size: int = 4,
 ) -> DataLoader:
+    """NOTE: We encourage the use of the dataloader found in rydberg_dataset_2.py"""
+
     rank = dist.get_rank() if torch.distributed.is_initialized() else 0
 
     dataset_path = DatasetExtractor(data_path, {}).get_list_subset_ds_path()
@@ -339,8 +341,8 @@ class InMemoryDataset(object):
         # Shuffle the indices for randomness
         random.shuffle(self.indices)
 
-        assert len(self.in_memory_dataset) == len(
-            list_subset_ds
+        assert (
+            len(self.in_memory_dataset) == len(list_subset_ds)
         ), "The number of graphs loaded is not equal to the number of subset datasets loaded."
 
     def __len__(self) -> int:
