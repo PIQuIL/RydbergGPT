@@ -1,10 +1,10 @@
-from typing import List, Tuple
-
 import torch
 import torch.nn as nn
 
-from rydberggpt.models.transformer.modules import (PositionwiseFeedForward,
-                                                   SublayerConnection)
+from rydberggpt.models.transformer.modules import (
+    PositionwiseFeedForward,
+    SublayerConnection,
+)
 from rydberggpt.models.transformer.utils import clones
 
 
