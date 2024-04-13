@@ -60,14 +60,17 @@ class GraphEmbedding(torch.nn.Module):
         Returns:
             Tensor: The output tensor with reshaped dimensions.
         """
+        # [..., num_features], [2, ...] [...]
         x, edge_index, edge_attr = data.x, data.edge_index, data.edge_attr
 
         for layer in self.layers[:-1]:
+            # [..., num_features]
             x = layer(x, edge_index, edge_attr)
 
+        # [..., d_model]
         x = self.final_norm(self.layers[-1](x, edge_index, edge_attr))
 
-        # Reshape the tensor here
         x, batch_mask = to_dense_batch(x, data.batch)
 
+        # [B, N, d_model], where N is the number of nodes or the number of atoms
         return x, batch_mask
