@@ -139,7 +139,6 @@ logs/
 data/*
 *.sublime-*
 
-checkpoints/
 
 *.pdf
 
@@ -166,6 +165,9 @@ _logs/
 data_old/
 data_subset/
 _scripts/
+dataset_test/
+dummy_dataset/
+logs_old/
 
 
 #########################################################################################
@@ -211,3 +213,5 @@ _scripts/
 *.synctex.gz
 *.synctex.gz(busy)
 *.pdfsync
+scripts/
+all_models/
