@@ -1,0 +1,477 @@
+decoder:
+  class: Decoder
+  name: decoder
+  num_parameters: 51040
+  trainable_parameters: 51040
+decoder.layers:
+  class: ModuleList
+  name: decoder.layers
+  num_parameters: 50976
+  trainable_parameters: 50976
+decoder.layers.0:
+  class: DecoderLayer
+  name: decoder.layers.0
+  num_parameters: 16992
+  trainable_parameters: 16992
+decoder.layers.0.feed_forward:
+  class: PositionwiseFeedForward
+  name: decoder.layers.0.feed_forward
+  num_parameters: 8352
+  trainable_parameters: 8352
+decoder.layers.0.feed_forward.dropout:
+  class: Dropout
+  name: decoder.layers.0.feed_forward.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+decoder.layers.0.feed_forward.w_1:
+  class: Linear
+  name: decoder.layers.0.feed_forward.w_1
+  num_parameters: 4224
+  trainable_parameters: 4224
+decoder.layers.0.feed_forward.w_2:
+  class: Linear
+  name: decoder.layers.0.feed_forward.w_2
+  num_parameters: 4128
+  trainable_parameters: 4128
+decoder.layers.0.self_attn:
+  class: MultiheadAttention
+  name: decoder.layers.0.self_attn
+  num_parameters: 4224
+  trainable_parameters: 4224
+decoder.layers.0.self_attn.out_proj:
+  class: NonDynamicallyQuantizableLinear
+  name: decoder.layers.0.self_attn.out_proj
+  num_parameters: 1056
+  trainable_parameters: 1056
+decoder.layers.0.src_attn:
+  class: MultiheadAttention
+  name: decoder.layers.0.src_attn
+  num_parameters: 4224
+  trainable_parameters: 4224
+decoder.layers.0.src_attn.out_proj:
+  class: NonDynamicallyQuantizableLinear
+  name: decoder.layers.0.src_attn.out_proj
+  num_parameters: 1056
+  trainable_parameters: 1056
+decoder.layers.0.sublayer:
+  class: ModuleList
+  name: decoder.layers.0.sublayer
+  num_parameters: 192
+  trainable_parameters: 192
+decoder.layers.0.sublayer.0:
+  class: SublayerConnection
+  name: decoder.layers.0.sublayer.0
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.0.sublayer.0.dropout:
+  class: Dropout
+  name: decoder.layers.0.sublayer.0.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+decoder.layers.0.sublayer.0.layer_norm:
+  class: LayerNorm
+  name: decoder.layers.0.sublayer.0.layer_norm
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.0.sublayer.1:
+  class: SublayerConnection
+  name: decoder.layers.0.sublayer.1
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.0.sublayer.1.dropout:
+  class: Dropout
+  name: decoder.layers.0.sublayer.1.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+decoder.layers.0.sublayer.1.layer_norm:
+  class: LayerNorm
+  name: decoder.layers.0.sublayer.1.layer_norm
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.0.sublayer.2:
+  class: SublayerConnection
+  name: decoder.layers.0.sublayer.2
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.0.sublayer.2.dropout:
+  class: Dropout
+  name: decoder.layers.0.sublayer.2.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+decoder.layers.0.sublayer.2.layer_norm:
+  class: LayerNorm
+  name: decoder.layers.0.sublayer.2.layer_norm
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.1:
+  class: DecoderLayer
+  name: decoder.layers.1
+  num_parameters: 16992
+  trainable_parameters: 16992
+decoder.layers.1.feed_forward:
+  class: PositionwiseFeedForward
+  name: decoder.layers.1.feed_forward
+  num_parameters: 8352
+  trainable_parameters: 8352
+decoder.layers.1.feed_forward.dropout:
+  class: Dropout
+  name: decoder.layers.1.feed_forward.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+decoder.layers.1.feed_forward.w_1:
+  class: Linear
+  name: decoder.layers.1.feed_forward.w_1
+  num_parameters: 4224
+  trainable_parameters: 4224
+decoder.layers.1.feed_forward.w_2:
+  class: Linear
+  name: decoder.layers.1.feed_forward.w_2
+  num_parameters: 4128
+  trainable_parameters: 4128
+decoder.layers.1.self_attn:
+  class: MultiheadAttention
+  name: decoder.layers.1.self_attn
+  num_parameters: 4224
+  trainable_parameters: 4224
+decoder.layers.1.self_attn.out_proj:
+  class: NonDynamicallyQuantizableLinear
+  name: decoder.layers.1.self_attn.out_proj
+  num_parameters: 1056
+  trainable_parameters: 1056
+decoder.layers.1.src_attn:
+  class: MultiheadAttention
+  name: decoder.layers.1.src_attn
+  num_parameters: 4224
+  trainable_parameters: 4224
+decoder.layers.1.src_attn.out_proj:
+  class: NonDynamicallyQuantizableLinear
+  name: decoder.layers.1.src_attn.out_proj
+  num_parameters: 1056
+  trainable_parameters: 1056
+decoder.layers.1.sublayer:
+  class: ModuleList
+  name: decoder.layers.1.sublayer
+  num_parameters: 192
+  trainable_parameters: 192
+decoder.layers.1.sublayer.0:
+  class: SublayerConnection
+  name: decoder.layers.1.sublayer.0
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.1.sublayer.0.dropout:
+  class: Dropout
+  name: decoder.layers.1.sublayer.0.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+decoder.layers.1.sublayer.0.layer_norm:
+  class: LayerNorm
+  name: decoder.layers.1.sublayer.0.layer_norm
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.1.sublayer.1:
+  class: SublayerConnection
+  name: decoder.layers.1.sublayer.1
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.1.sublayer.1.dropout:
+  class: Dropout
+  name: decoder.layers.1.sublayer.1.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+decoder.layers.1.sublayer.1.layer_norm:
+  class: LayerNorm
+  name: decoder.layers.1.sublayer.1.layer_norm
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.1.sublayer.2:
+  class: SublayerConnection
+  name: decoder.layers.1.sublayer.2
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.1.sublayer.2.dropout:
+  class: Dropout
+  name: decoder.layers.1.sublayer.2.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+decoder.layers.1.sublayer.2.layer_norm:
+  class: LayerNorm
+  name: decoder.layers.1.sublayer.2.layer_norm
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.2:
+  class: DecoderLayer
+  name: decoder.layers.2
+  num_parameters: 16992
+  trainable_parameters: 16992
+decoder.layers.2.feed_forward:
+  class: PositionwiseFeedForward
+  name: decoder.layers.2.feed_forward
+  num_parameters: 8352
+  trainable_parameters: 8352
+decoder.layers.2.feed_forward.dropout:
+  class: Dropout
+  name: decoder.layers.2.feed_forward.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+decoder.layers.2.feed_forward.w_1:
+  class: Linear
+  name: decoder.layers.2.feed_forward.w_1
+  num_parameters: 4224
+  trainable_parameters: 4224
+decoder.layers.2.feed_forward.w_2:
+  class: Linear
+  name: decoder.layers.2.feed_forward.w_2
+  num_parameters: 4128
+  trainable_parameters: 4128
+decoder.layers.2.self_attn:
+  class: MultiheadAttention
+  name: decoder.layers.2.self_attn
+  num_parameters: 4224
+  trainable_parameters: 4224
+decoder.layers.2.self_attn.out_proj:
+  class: NonDynamicallyQuantizableLinear
+  name: decoder.layers.2.self_attn.out_proj
+  num_parameters: 1056
+  trainable_parameters: 1056
+decoder.layers.2.src_attn:
+  class: MultiheadAttention
+  name: decoder.layers.2.src_attn
+  num_parameters: 4224
+  trainable_parameters: 4224
+decoder.layers.2.src_attn.out_proj:
+  class: NonDynamicallyQuantizableLinear
+  name: decoder.layers.2.src_attn.out_proj
+  num_parameters: 1056
+  trainable_parameters: 1056
+decoder.layers.2.sublayer:
+  class: ModuleList
+  name: decoder.layers.2.sublayer
+  num_parameters: 192
+  trainable_parameters: 192
+decoder.layers.2.sublayer.0:
+  class: SublayerConnection
+  name: decoder.layers.2.sublayer.0
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.2.sublayer.0.dropout:
+  class: Dropout
+  name: decoder.layers.2.sublayer.0.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+decoder.layers.2.sublayer.0.layer_norm:
+  class: LayerNorm
+  name: decoder.layers.2.sublayer.0.layer_norm
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.2.sublayer.1:
+  class: SublayerConnection
+  name: decoder.layers.2.sublayer.1
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.2.sublayer.1.dropout:
+  class: Dropout
+  name: decoder.layers.2.sublayer.1.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+decoder.layers.2.sublayer.1.layer_norm:
+  class: LayerNorm
+  name: decoder.layers.2.sublayer.1.layer_norm
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.2.sublayer.2:
+  class: SublayerConnection
+  name: decoder.layers.2.sublayer.2
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.layers.2.sublayer.2.dropout:
+  class: Dropout
+  name: decoder.layers.2.sublayer.2.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+decoder.layers.2.sublayer.2.layer_norm:
+  class: LayerNorm
+  name: decoder.layers.2.sublayer.2.layer_norm
+  num_parameters: 64
+  trainable_parameters: 64
+decoder.norm:
+  class: LayerNorm
+  name: decoder.norm
+  num_parameters: 64
+  trainable_parameters: 64
+encoder:
+  class: Encoder
+  name: encoder
+  num_parameters: 12768
+  trainable_parameters: 12768
+encoder.layers:
+  class: ModuleList
+  name: encoder.layers
+  num_parameters: 12704
+  trainable_parameters: 12704
+encoder.layers.0:
+  class: EncoderLayer
+  name: encoder.layers.0
+  num_parameters: 12704
+  trainable_parameters: 12704
+encoder.layers.0.feed_forward:
+  class: PositionwiseFeedForward
+  name: encoder.layers.0.feed_forward
+  num_parameters: 8352
+  trainable_parameters: 8352
+encoder.layers.0.feed_forward.dropout:
+  class: Dropout
+  name: encoder.layers.0.feed_forward.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+encoder.layers.0.feed_forward.w_1:
+  class: Linear
+  name: encoder.layers.0.feed_forward.w_1
+  num_parameters: 4224
+  trainable_parameters: 4224
+encoder.layers.0.feed_forward.w_2:
+  class: Linear
+  name: encoder.layers.0.feed_forward.w_2
+  num_parameters: 4128
+  trainable_parameters: 4128
+encoder.layers.0.self_attn:
+  class: MultiheadAttention
+  name: encoder.layers.0.self_attn
+  num_parameters: 4224
+  trainable_parameters: 4224
+encoder.layers.0.self_attn.out_proj:
+  class: NonDynamicallyQuantizableLinear
+  name: encoder.layers.0.self_attn.out_proj
+  num_parameters: 1056
+  trainable_parameters: 1056
+encoder.layers.0.sublayer:
+  class: ModuleList
+  name: encoder.layers.0.sublayer
+  num_parameters: 128
+  trainable_parameters: 128
+encoder.layers.0.sublayer.0:
+  class: SublayerConnection
+  name: encoder.layers.0.sublayer.0
+  num_parameters: 64
+  trainable_parameters: 64
+encoder.layers.0.sublayer.0.dropout:
+  class: Dropout
+  name: encoder.layers.0.sublayer.0.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+encoder.layers.0.sublayer.0.layer_norm:
+  class: LayerNorm
+  name: encoder.layers.0.sublayer.0.layer_norm
+  num_parameters: 64
+  trainable_parameters: 64
+encoder.layers.0.sublayer.1:
+  class: SublayerConnection
+  name: encoder.layers.0.sublayer.1
+  num_parameters: 64
+  trainable_parameters: 64
+encoder.layers.0.sublayer.1.dropout:
+  class: Dropout
+  name: encoder.layers.0.sublayer.1.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+encoder.layers.0.sublayer.1.layer_norm:
+  class: LayerNorm
+  name: encoder.layers.0.sublayer.1.layer_norm
+  num_parameters: 64
+  trainable_parameters: 64
+encoder.norm:
+  class: LayerNorm
+  name: encoder.norm
+  num_parameters: 64
+  trainable_parameters: 64
+generator:
+  class: Generator
+  name: generator
+  num_parameters: 66
+  trainable_parameters: 66
+generator.proj:
+  class: Linear
+  name: generator.proj
+  num_parameters: 66
+  trainable_parameters: 66
+src_embed:
+  class: GraphEmbedding
+  name: src_embed
+  num_parameters: 2592
+  trainable_parameters: 2592
+src_embed.final_norm:
+  class: LayerNorm
+  name: src_embed.final_norm
+  num_parameters: 64
+  trainable_parameters: 64
+src_embed.layers:
+  class: ModuleList
+  name: src_embed.layers
+  num_parameters: 2528
+  trainable_parameters: 2528
+src_embed.layers.0:
+  class: GraphLayer
+  name: src_embed.layers.0
+  num_parameters: 448
+  trainable_parameters: 448
+src_embed.layers.0.dropout:
+  class: Dropout
+  name: src_embed.layers.0.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+src_embed.layers.0.graph_layer:
+  class: GCNConv
+  name: src_embed.layers.0.graph_layer
+  num_parameters: 320
+  trainable_parameters: 320
+src_embed.layers.0.graph_layer.aggr_module:
+  class: SumAggregation
+  name: src_embed.layers.0.graph_layer.aggr_module
+  num_parameters: 0
+  trainable_parameters: 0
+src_embed.layers.0.graph_layer.lin:
+  class: Linear
+  name: src_embed.layers.0.graph_layer.lin
+  num_parameters: 256
+  trainable_parameters: 256
+src_embed.layers.0.norm:
+  class: LayerNorm
+  name: src_embed.layers.0.norm
+  num_parameters: 128
+  trainable_parameters: 128
+src_embed.layers.1:
+  class: GCNConv
+  name: src_embed.layers.1
+  num_parameters: 2080
+  trainable_parameters: 2080
+src_embed.layers.1.aggr_module:
+  class: SumAggregation
+  name: src_embed.layers.1.aggr_module
+  num_parameters: 0
+  trainable_parameters: 0
+src_embed.layers.1.lin:
+  class: Linear
+  name: src_embed.layers.1.lin
+  num_parameters: 2048
+  trainable_parameters: 2048
+tgt_embed:
+  class: Sequential
+  name: tgt_embed
+  num_parameters: 96
+  trainable_parameters: 96
+tgt_embed.0:
+  class: Linear
+  name: tgt_embed.0
+  num_parameters: 96
+  trainable_parameters: 96
+tgt_embed.1:
+  class: PositionalEncoding
+  name: tgt_embed.1
+  num_parameters: 0
+  trainable_parameters: 0
+tgt_embed.1.dropout:
+  class: Dropout
+  name: tgt_embed.1.dropout
+  num_parameters: 0
+  trainable_parameters: 0
+total_parameters: 66562
+total_trainable_parameters: 66562
