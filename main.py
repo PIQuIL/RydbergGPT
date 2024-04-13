@@ -5,7 +5,6 @@ import numpy as np
 import torch
 import torch.profiler
 from pytorch_lightning.loggers import TensorBoardLogger
-
 from rydberggpt.training.logger import setup_logger
 from rydberggpt.training.train import train
 from rydberggpt.utils import create_config_from_yaml, load_yaml_file
