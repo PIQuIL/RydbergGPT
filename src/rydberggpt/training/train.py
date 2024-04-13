@@ -12,6 +12,7 @@ from pytorch_lightning.callbacks import (
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.strategies import DDPStrategy
 
+# from rydberggpt.data.loading.rydberg_dataset import get_rydberg_dataloader
 from rydberggpt.data.loading.rydberg_dataset_2 import get_rydberg_dataloader_2
 from rydberggpt.models.rydberg_encoder_decoder import get_rydberg_graph_encoder_decoder
 from rydberggpt.training.callbacks.module_info_callback import ModelInfoCallback
