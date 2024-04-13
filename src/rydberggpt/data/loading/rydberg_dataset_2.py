@@ -8,8 +8,8 @@ import torch
 from torch.utils.data.dataloader import DataLoader
 from torch.utils.data.datapipes.datapipe import IterDataPipe
 from torch.utils.data.datapipes.iter import FileLister
+from torchdata.datapipes import functional_datapipe
 
-# from torchdata.datapipes import functional_datapipe
 from rydberggpt.data.dataclasses import Batch, custom_collate
 from rydberggpt.data.utils_graph import pyg_graph_data
 from rydberggpt.utils import to_one_hot
