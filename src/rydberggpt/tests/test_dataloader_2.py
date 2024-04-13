@@ -1,10 +1,9 @@
 import logging
 
-from tqdm import tqdm
-
 from rydberggpt.data.dataclasses import Batch
 from rydberggpt.data.loading.rydberg_dataset_2 import get_rydberg_dataloader_2
 from rydberggpt.utils import shift_inputs, time_and_log
+from tqdm import tqdm
 
 # setup logging
 logging.basicConfig(level=logging.INFO)
@@ -32,7 +31,6 @@ def main():
             ), f"Batch size of m_onehot is not {batch_size}."
             assert batch.m_onehot.shape[2] == 2, "Dimension of m_onehot is not 2."
 
-            temp = batch.m_onehot
             m_shifted_onehot = shift_inputs(batch.m_onehot)
             assert (
                 batch.m_onehot.shape == m_shifted_onehot.shape
