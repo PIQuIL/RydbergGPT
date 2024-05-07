@@ -1,23 +1,17 @@
 import sys
 
 import torch
-from torch import Tensor, nn
+from torch import nn
 from torch.nn import functional as F
-
 from torch_geometric.data import Batch
 
-########################################################################################
-
+from rydberggpt.models.rydberg_encoder_decoder import RydbergEncoderDecoder
 from rydberggpt.models.transformer.models import (
     Decoder,
     Encoder,
-    EncoderDecoder,
     Generator,
 )
-from rydberggpt.models.rydberg_encoder_decoder import RydbergEncoderDecoder
 from rydberggpt.utils import to_one_hot
-
-########################################################################################
 
 
 class RydbergDecoderWavefunction(RydbergEncoderDecoder):
@@ -56,7 +50,7 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
         self.register_buffer("batch_mask", batch_mask)
         pass
 
-    def forward(self, tgt: Tensor) -> Tensor:
+    def forward(self, tgt: torch.Tensor) -> torch.Tensor:
         memory = self.memory.repeat([*tgt.shape[:-2], 1, 1])
         batch_mask = self.batch_mask.repeat([*tgt.shape[:-2], 1])
 
@@ -87,7 +81,7 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
 
     pass
 
-    def get_log_probs(self, x):
+    def get_log_probs(self, x: torch.Tensor):
         """
         Compute the log probabilities of a given input tensor.
 
@@ -114,7 +108,11 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
         return y
 
     def get_samples(
-        self, batch_size, fmt_onehot=True, requires_grad=False, verbose=True
+        self,
+        batch_size: int,
+        fmt_onehot: bool = True,
+        requires_grad: bool = False,
+        verbose: bool = True,
     ):
         """
         Generate samples using the forward pass and sampling from the conditional probabilities.
@@ -218,19 +216,15 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
             torch.Tensor: A tensor containing the estimated energy of each sample alongside its decomposition into terms.
         """
 
-        model = self
         samples = samples
         cond = self.cond
 
         delta = cond.x[:, 0]  # Detuning coeffs
         omega = cond.x[0, 1]  # Rabi frequency
-        beta = cond.x[0, 2] # Inverse Temperature
+        # beta = cond.x[0, 2]  # Inverse Temperature
         Rb = cond.x[0, 3]  # Rydberg Blockade radius
 
-        ########################################################################################
-
         # Estimate interaction/Rydberg blockade term
-
         if undo_sample_path is not None:
             unpathed_samples = undo_sample_path(samples, *undo_sample_path_args)
         else:
@@ -267,7 +261,9 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
             ]
         ).T
 
-    def variational_loss(self, batch_size, undo_sample_path, undo_sample_path_args):
+    def variational_loss(
+        self, batch_size: int, undo_sample_path, undo_sample_path_args
+    ):
         samples = self.get_samples(
             batch_size=batch_size, fmt_onehot=False, requires_grad=True, verbose=False
         )
