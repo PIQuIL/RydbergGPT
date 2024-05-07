@@ -1,12 +1,10 @@
 import copy
 import sys
-from typing import Tuple
 
 import torch
-from pytorch_lightning import LightningModule
-from torch import Tensor, nn
+from torch import nn
 from torch_geometric.data import Batch
-from torch_geometric.nn import GATConv, GCNConv
+from torch_geometric.nn import GCNConv
 
 from rydberggpt.models.graph_embedding.models import GraphEmbedding
 from rydberggpt.models.transformer.layers import DecoderLayer, EncoderLayer
@@ -61,7 +59,6 @@ def get_rydberg_graph_encoder_decoder(config):
 
 
 class RydbergEncoderDecoder(EncoderDecoder):
-
     """
     RydbergTransformer is a specific implementation of the Encoder-Decoder architecture
     that uses an encoder and decoder composed of multiple layers of EncoderLayer and DecoderLayer
@@ -91,7 +88,7 @@ class RydbergEncoderDecoder(EncoderDecoder):
         self.config = config
 
     @torch.no_grad()
-    def get_log_probs(self, x, cond):
+    def get_log_probs(self, x: torch.Tensor, cond: Batch):
         """
         Compute the log probabilities of a given input tensor.
 
@@ -122,7 +119,13 @@ class RydbergEncoderDecoder(EncoderDecoder):
         return y
 
     @torch.no_grad()
-    def get_samples(self, batch_size, cond, num_atoms, fmt_onehot=True):
+    def get_samples(
+        self,
+        batch_size: int,
+        cond: Batch,
+        num_atoms: int,
+        fmt_onehot: bool = True,
+    ):
         """
         Generate samples using the forward pass and sampling from the conditional probabilities.
         The samples can be returned either in one-hot encoding format or in label format,
