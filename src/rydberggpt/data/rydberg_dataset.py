@@ -2,13 +2,12 @@ import logging
 import random
 from typing import Tuple
 
-# import networkx as nx
 import pandas as pd
 import torch
+import torchdata  # NOTE: this import is important for the code to work
 from torch.utils.data.dataloader import DataLoader
 from torch.utils.data.datapipes.datapipe import IterDataPipe
 from torch.utils.data.datapipes.iter import FileLister
-from torchdata.datapipes import functional_datapipe
 
 from rydberggpt.data.dataclasses import Batch, custom_collate
 from rydberggpt.data.utils_graph import pyg_graph_data
@@ -17,7 +16,7 @@ from rydberggpt.utils import to_one_hot
 logging.basicConfig(level=logging.INFO)
 
 
-def get_rydberg_dataloader_2(
+def get_rydberg_dataloader(
     batch_size: int = 10,
     num_workers: int = 0,
     data_path: str = "dataset",
@@ -76,7 +75,7 @@ def build_datapipes(root_dir: str, batch_size: int, buffer_size: int):
     return datapipe
 
 
-def classify_file_fn(filepath):
+def classify_file_fn(filepath: str):
     if filepath.endswith("config.json"):
         return 0
     if filepath.endswith("dataset.h5"):
@@ -105,7 +104,6 @@ class Buffer(IterDataPipe):
             loaded_data = []
             for j in range(i, min(i + self.buffer_size, len(folder_pairs))):
                 config_file, h5_file_path, graph_file = folder_pairs[j]
-                # logging.info(f"Loading data from {config_file[0]}")
 
                 pyg_graph = pyg_graph_data(config_file[1], graph_file[1])
 
