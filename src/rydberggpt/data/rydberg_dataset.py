@@ -28,14 +28,13 @@ def get_rydberg_dataloader(
         root_dir=data_path, batch_size=batch_size, buffer_size=buffer_size
     )
 
-    train_loader = DataLoader(
+    data_loader = DataLoader(
         datapipe,
         batch_size=None,
         num_workers=num_workers,
     )
 
-    # NOTE do we need a validation loader?
-    return train_loader, train_loader
+    return data_loader
 
 
 def build_datapipes(root_dir: str, batch_size: int, buffer_size: int):
