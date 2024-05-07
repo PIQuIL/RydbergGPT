@@ -1,7 +1,4 @@
-from typing import Callable
-
 import numpy as np
-
 import torch
 
 from rydberggpt.models.rydberg_encoder_decoder import RydbergEncoderDecoder
@@ -70,6 +67,10 @@ def get_x_magnetization(
         torch.Tensor: A tensor containing the estimated x magnetization of each sample.
     """
 
+    model = model.to(device)
+    samples = samples.to(device)
+    cond = cond.to(device)
+
     # Create all possible states achievable by a single spin flip
     flipped = (samples[:, None, :] + torch.eye(samples.shape[-1])[None, ...]) % 2
     flipped = flipped.reshape(-1, samples.shape[-1])
@@ -117,13 +118,10 @@ def get_rydberg_energy(
 
     delta = cond.x[:, 0]  # Detuning coeffs
     omega = cond.x[0, 1]  # Rabi frequency
-    beta = cond.x[0, 2]  # Inverse temperature
+    # beta = cond.x[0, 2]  # Inverse temperature
     Rb = cond.x[0, 3]  # Rydberg Blockade radius
 
-    ########################################################################################
-
     # Estimate interaction/Rydberg blockade term
-
     if undo_sample_path is not None:
         unpathed_samples = undo_sample_path(samples, *undo_sample_path_args)
     else:
@@ -138,17 +136,13 @@ def get_rydberg_energy(
         * omega
     )
 
-    # Estimate detuning term
     detuning = (delta * unpathed_samples).sum(1)  # sum over sequence length
 
-    # Estimate sigma_x
     x_magnetization = get_x_magnetization(model, samples, cond, device)
+
     offdiag_energy = 0.5 * omega * x_magnetization
-
-    # Diagonal part of energy
     diag_energy = interaction - detuning
-
-    energy = diag_energy - offdiag_energy  # Energy estimate
+    energy = diag_energy - offdiag_energy
 
     return torch.stack(
         [
