@@ -1,13 +1,13 @@
-name: rydberggpt
+name: rydberggpt2
 channels:
   - pytorch
   - conda-forge
   - defaults
 dependencies:
-  - pytorch::pytorch
-  - pytorch::torchvision
-  - pytorch::torchaudio
-  - torchdata
+  - pytorch::pytorch==2.2.0
+  - pytorch::torchvision>=0.15.2
+  - pytorch::torchaudio>=0.7.1
+  - torchdata>=0.7.1
   - numpy>=1.23
   - tensorboard>=2.12
   - matplotlib
@@ -18,12 +18,12 @@ dependencies:
   - joblib
   - seaborn
   - imageio
-  - pytorch-lightning
+  - pytorch-lightning>=2.2.0
   - h5py
   - pytest
   - pip
   - pip:
     - torch-tb-profiler
-    - torch-summary # try this one 
+    - torch-summary 
     - tables 
-    - torch_geometric
+    - torch_geometric>=2.4.0
