@@ -182,5 +182,4 @@ class Generator(nn.Module):
         """
 
         proj_offset = self.proj(x) + 1e-10
-        # taking the log prob from a almost zero prob is challenging we need to add
         return F.log_softmax(proj_offset, dim=-1)  # [batch_size, seq_len, vocab_size]
