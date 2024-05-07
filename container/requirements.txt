@@ -1,7 +1,8 @@
 matplotlib
-torchvision
-torchaudio
-torchdata
+torch>=2.2.0
+torchvision>=0.15.2
+torchaudio>=0.7.1
+torchdata>=0.7.1
 numpy>=1.23
 tensorboard>=2.12
 matplotlib
@@ -11,10 +12,10 @@ pandas
 joblib
 seaborn
 imageio
-pytorch-lightning
+pytorch-lightning>=2.2.0
 torch-tb-profiler
 h5py
 pytest
 scikit-learn
 tables
-torch_geometric
+torch_geometric>=2.4.0
