@@ -31,7 +31,7 @@ If you prefer to run the code outside of a container, you can set up a Conda env
    Run the following command to create a Conda environment based on the `environment.yml` file:
 
    ```bash
-   conda env create -f environment.yml
+   conda env create -f container/environment.yml
    ```
 
 ## Building with Docker
@@ -62,3 +62,10 @@ If you prefer to run the code outside of a container, you can set up a Conda env
    apptainer build my_container.sif pytorch_recipe.def
    ```
 
+## Install RydbergGPT
+
+Once you have built the environment or container, you can install the RydbergGPT package in developer mode by running the following command:
+
+```bash
+pip install -e .
+```
