@@ -12,7 +12,7 @@ from pytorch_lightning.callbacks import (
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.strategies import DDPStrategy
 
-from rydberggpt.data.loading.rydberg_dataset import get_rydberg_dataloader
+from rydberggpt.data.rydberg_dataset import get_rydberg_dataloader
 from rydberggpt.models.rydberg_encoder_decoder import get_rydberg_graph_encoder_decoder
 from rydberggpt.training.callbacks.module_info_callback import ModelInfoCallback
 from rydberggpt.training.monitoring import setup_profiler
@@ -27,13 +27,13 @@ torch.set_float32_matmul_precision("medium")
 
 def load_data(config, dataset_path: str):
     logging.info(f"Loading data from {dataset_path}...")
-    train_loader, val_loader = get_rydberg_dataloader(
+    train_loader = get_rydberg_dataloader(
         batch_size=config.batch_size,
         num_workers=config.num_workers,
         data_path=dataset_path,
         buffer_size=config.buffer_size,
     )
-    return train_loader, val_loader
+    return train_loader
 
 
 def create_model(config):
@@ -97,14 +97,14 @@ def train(
         detect_anomaly=config.detect_anomaly,
     )
 
-    train_loader, val_loader = load_data(config, dataset_path)
+    train_loader = load_data(config, dataset_path)
 
     if config.from_checkpoint is not None:
         logging.info(f"Loading model from checkpoint {config.from_checkpoint}...")
         log_path = get_ckpt_path(from_ckpt=config.from_checkpoint)
         checkpoint_path = find_latest_ckpt(log_path)
         trainer.fit(
-            rydberg_gpt_trainer, train_loader, val_loader, ckpt_path=checkpoint_path
+            rydberg_gpt_trainer, train_loader, train_loader, ckpt_path=checkpoint_path
         )
     else:
         trainer.fit(rydberg_gpt_trainer, train_loader)
