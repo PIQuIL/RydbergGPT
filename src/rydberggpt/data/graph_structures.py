@@ -4,7 +4,6 @@ import numpy as np
 from rydberggpt.data.dataclasses import BaseGraph
 
 
-# TODO add more graph structures
 def get_graph(config: BaseGraph) -> nx.Graph:
     """
     Generates a graph based on the given configuration.
