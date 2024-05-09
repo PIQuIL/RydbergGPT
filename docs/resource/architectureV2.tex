@@ -58,7 +58,7 @@
 }
 }
 
-\node [align=center] at (\L/2+0.5, 0 ) {\Large $H(V(a / R_b), \Delta, \Omega), \beta$};
+\node [align=center] at (\L/2+0.5, 0 ) {\Large $\mathbf{x} = \{H(R_b, \Delta, \Omega), \beta \}$};
 
 \coordinate (input1) at (\L/2+0.5,\L+0.5) ;
 
@@ -112,7 +112,7 @@
     \draw [->, opacity=0.5, line width = 2] (spin2-\ip-\j) -- (spin2-\ip-\jp);
 }
 
-\node [align=center] at ($(\L/2+0.5, 0) + (6,0)$) {\Large $\sigma = \{ \sigma_1,\sigma_1,...,\sigma_N \}$};
+\node [align=center] at ($(\L/2+0.5, 0) + (6,0)$) {\Large $\boldsymbol{\sigma} = \{ \sigma_1,\sigma_1,...,\sigma_N \}$};
 
 \coordinate (input2) at ($(input1) + (6,0)$);
 
@@ -128,7 +128,7 @@
 \node [align=center,anchor=south, rectangle, fill=cyan!10, draw, rounded corners=0.5cm, minimum height=1cm, minimum width=4cm] (dec_ffnn) at ($(dec_mha_cross.north) + (0,1)$) {FFNN};
 
 
-\node (output2) at($(tfdec.north) + (0,1)$) {\Large $P = \{ P(\sigma_1), P(\sigma_2|\sigma_1),...,P(\sigma_N|\sigma_{<N}) \}$};
+\node (output2) at($(tfdec.north) + (0,1)$) {\Large $p_\theta(\boldsymbol{\sigma};\mathbf{x}) = \{ p_\theta(\sigma_1;\mathbf{x}), p_\theta(\sigma_2|\sigma_1;\mathbf{x}),...,p_\theta(\sigma_N|\sigma_{<N};\mathbf{x}) \}$};
 
 \draw [->,line width=2] (input2) -- (dec_emb);
 \draw [->,line width=2] (dec_emb) -- (dec_posemb);
