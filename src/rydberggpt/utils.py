@@ -51,7 +51,7 @@ def shift_inputs(tensor: torch.Tensor) -> torch.Tensor:
         tensor (torch.Tensor): The input tensor of shape [B, S, D].
 
     Returns:
-        torch.Tensor: The resulting tensor after the shift and pad operation.
+        (torch.Tensor): The resulting tensor after the shift and pad operation.
     """
     B, _, D = tensor.size()
     zero_padding = torch.zeros((B, 1, D), device=tensor.device, dtype=tensor.dtype)
@@ -66,9 +66,6 @@ def save_to_yaml(data: Dict[str, Any], filename: str) -> None:
     Args:
         data (Dict[str, Any]): The dictionary to be saved.
         filename (str): The path to the file where the dictionary will be saved.
-
-    Returns:
-        None
     """
     with open(filename, "w") as file:
         yaml.dump(data, file)
@@ -85,7 +82,7 @@ def to_one_hot(
         num_classes: Number of classes in the one-hot representation.
 
     Returns:
-        data: The one-hot representation of the input data.
+        data (torch.Tensor): The one-hot representation of the input data.
     """
 
     if isinstance(data, (list, tuple)):
@@ -107,7 +104,7 @@ def create_dataclass_from_dict(name: str, data: Dict[str, Any]) -> Type:
         data (Dict[str, Any]): A dictionary containing the dataclass fields and their values.
 
     Returns:
-        Type: A new dataclass with the specified name and fields.
+        (Type): A new dataclass with the specified name and fields.
     """
     fields = [(key, type(value)) for key, value in data.items()]
     return make_dataclass(name, fields)
@@ -161,7 +158,7 @@ def create_config_from_yaml(yaml_content: Dict) -> dataclass:
         yaml_content (Dict): A dictionary containing the YAML content.
 
     Returns:
-        dataclass: A dataclass object representing the config.
+        (dataclass): A dataclass object representing the config.
     """
     flattened_config = flatten_yaml(yaml_content)
     Config = create_dataclass_from_dict("Config", flattened_config)
@@ -177,7 +174,7 @@ def load_config_file(checkpoint_path: str, config_file: str = "hparams.yaml") ->
         config_file (str, optional): The name of the configuration file, defaults to "hparams.yaml".
 
     Returns:
-        str: The path to the configuration file.
+        (str): The path to the configuration file.
 
     Raises:
         FileNotFoundError: If the configuration file is not found in the specified directory.

@@ -13,7 +13,7 @@ class NLLLoss(pl.LightningModule):
     The loss is calculated by taking the negative log of the probabilities predicted by the model for the true class labels.
 
     Methods:
-        forward(cond_log_probs: Tensor, tgt: Tensor) -> Tensor:
+        forward:
             Computes the NLL loss based on the conditional log probabilities and the target values.
 
     Examples:
@@ -33,7 +33,7 @@ class NLLLoss(pl.LightningModule):
             tgt (Tensor): The target values.
 
         Returns:
-            Tensor: The computed NLL loss.
+            (Tensor): The computed NLL loss.
         """
         num_atoms = tgt.shape[-2] - (tgt == 0.0).all(-1).sum(-1)
         log_probs = (cond_log_probs * tgt).sum(dim=(-2, -1))

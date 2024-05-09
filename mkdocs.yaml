@@ -16,7 +16,11 @@ nav:
     - Data: data.md
   - API reference:
     - Data: reference/data.md
-    - Models: reference/models.md
+    - Models:
+      - Models: reference/models/index.md
+      - Graph: reference/models/graph.md
+      - Transformer: reference/models/transformer.md
+    - Training: reference/training.md
     - Observables: reference/observables.md
     - Utilities: reference/utils.md
 
@@ -76,6 +80,7 @@ plugins:
             - https://pytorch.org/docs/stable/objects.inv
             - https://pytorch.org/data/main/objects.inv
             - https://pytorch-geometric.readthedocs.io/en/latest/objects.inv
+            - https://lightning.ai/docs/pytorch/stable/objects.inv
             - https://networkx.org/documentation/stable/objects.inv
 
 markdown_extensions:

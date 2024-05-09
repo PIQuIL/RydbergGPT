@@ -1,0 +1,1 @@
+::: rydberggpt.models.graph_embedding

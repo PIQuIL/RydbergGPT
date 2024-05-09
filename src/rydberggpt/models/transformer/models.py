@@ -44,7 +44,7 @@ class EncoderDecoder(pl.LightningModule):
             src (torch.Tensor): The source tensor of shape (batch_size, src_seq_length, d_model_src).
 
         Returns:
-            torch.Tensor: The output tensor after passing through the encoder-decoder architecture,
+            (torch.Tensor): The output tensor after passing through the encoder-decoder architecture,
                           with shape (batch_size, tgt_seq_length, d_model).
         """
 
@@ -60,7 +60,7 @@ class EncoderDecoder(pl.LightningModule):
             src (torch.Tensor): The source tensor of shape (batch_size, src_seq_length, d_model_src).
 
         Returns:
-            torch.Tensor: The encoded tensor of shape (batch_size, src_seq_length, d_model_tgt).
+            (torch.Tensor): The encoded tensor of shape (batch_size, src_seq_length, d_model_tgt).
         """
 
         x, batch_mask = self.src_embed(src)
@@ -78,7 +78,7 @@ class EncoderDecoder(pl.LightningModule):
             memory (torch.Tensor): The memory tensor of shape (batch_size, src_seq_length, d_model).
 
         Returns:
-            torch.Tensor: The decoded tensor of shape (batch_size, tgt_seq_length, d_model).
+            (torch.Tensor): The decoded tensor of shape (batch_size, tgt_seq_length, d_model).
         """
         return self.decoder(self.tgt_embed(tgt), memory, batch_mask=batch_mask)
 
@@ -109,7 +109,7 @@ class Encoder(nn.Module):
             batch_mask (torch.Tensor): The mask tensor for batches.
 
         Returns:
-            torch.Tensor: The output tensor after passing through all layers of the encoder,
+            (torch.Tensor): The output tensor after passing through all layers of the encoder,
                           with the same shape as the input tensor (batch_size, seq_length, d_model).
         """
         for layer in self.layers:
@@ -146,7 +146,7 @@ class Decoder(nn.Module):
             batch_mask (torch.Tensor): The mask tensor for batches.
 
         Returns:
-            torch.Tensor: The output tensor after passing through all layers of the decoder of shape (batch_size, seq_length, d_model).
+            (torch.Tensor): The output tensor after passing through all layers of the decoder of shape (batch_size, seq_length, d_model).
         """
         for layer in self.layers:
             x = layer(x, memory, batch_mask=batch_mask)
@@ -177,7 +177,7 @@ class Generator(nn.Module):
             x (torch.Tensor): The input tensor of shape (batch_size, seq_length, d_model).
 
         Returns:
-            torch.Tensor: The output tensor of shape (batch_size, seq_length, vocab_size),
+            (torch.Tensor): The output tensor of shape (batch_size, seq_length, vocab_size),
                           with log-softmax applied along the last dimension.
         """
 

@@ -47,7 +47,7 @@ class DecoderLayer(nn.Module):
             batch_mask (torch.Tensor): The mask tensor for batches.
 
         Returns:
-            torch.Tensor: The output tensor.
+            (torch.Tensor): The output tensor.
         """
 
         causal_attn_mask = torch.meshgrid(
@@ -104,7 +104,7 @@ class EncoderLayer(nn.Module):
             batch_mask (torch.Tensor): The mask tensor for batches.
 
         Returns:
-            torch.Tensor: The output tensor.
+            (torch.Tensor): The output tensor.
         """
 
         batch_key_mask = batch_mask

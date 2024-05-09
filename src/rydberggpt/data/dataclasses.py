@@ -17,17 +17,21 @@ class BaseGraph(ABC):
     Rb: float
     delta: float
     omega: float
-    beta: float  # we cannot know the temperature of the system. Maybe remove?
+    beta: float
 
 
 @dataclass
 class GridGraph(BaseGraph):
+    """A dataclass representing the configuration of a grid graph"""
+
     n_rows: int
     n_cols: int
 
 
 @dataclass
 class Batch:
+    """A dataclass representing a batch of graphs"""
+
     graph: Data
     m_onehot: torch.Tensor
 
@@ -40,7 +44,7 @@ def custom_collate(batch: List[Batch]) -> Batch:
         batch (List[Batch]): A list of Batch objects to be collated.
 
     Returns:
-        Batch: A single Batch object containing the collated data.
+        (Batch): A single Batch object containing the collated data.
     """
 
     graph_batch = PyGBatch.from_data_list([b.graph for b in batch])
