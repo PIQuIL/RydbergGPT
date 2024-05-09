@@ -7,7 +7,7 @@ from torch import nn
 from torchsummary import summary
 
 # from rydberggpt.data.loading.dataset_rydberg import get_dataloaders, load_dataset
-from rydberggpt.data.loading.rydberg_dataset import get_rydberg_dataloader
+from rydberggpt.data.rydberg_dataset import get_rydberg_dataloader
 from rydberggpt.models.encoder_decoder_transformer import get_rydberg_encoder_decoder
 from rydberggpt.training.loss import LabelSmoothing
 from rydberggpt.utils import to_one_hot
