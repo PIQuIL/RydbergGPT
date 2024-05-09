@@ -50,8 +50,15 @@ pip install -e .
 ```
 
 ## Documentation <a name="documentation"></a>
+Documentation is implemented with [MkDocs](https://www.mkdocs.org/), to deploy the documentation run the following commands:
+```bash
+# Install package with mkdocs dependencies
+pip install .[docs]
 
-Currently unavaiable
+# Deploy the documentation server locally
+mkdocs serve
+```
+The documentation should then be available at http://localhost:8000.
 
 ## Architecture  <a name="architecture"></a>
 
