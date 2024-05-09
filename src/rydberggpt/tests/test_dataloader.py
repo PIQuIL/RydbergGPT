@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 def test_dataloader():
     batch_size = 128
     buffer_size = 2
-    num_workers = 1
+    num_workers = 0
     base_dir = "src/rydberggpt/tests/dataset_test/"
 
     dataloader = get_rydberg_dataloader(
@@ -49,4 +49,4 @@ def test_dataloader():
     print(counter)
 
 
-# test_dataloader()
+test_dataloader()
