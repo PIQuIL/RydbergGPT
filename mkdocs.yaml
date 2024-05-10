@@ -5,7 +5,15 @@ site_description: A Large Language Model for Rydberg Atom Array Physics
 repo_name: PIQuIL/RydbergGPT
 repo_url: https://github.com/PIQuIL/RydbergGPT
 
+copyright: Copyright &copy; 2024 Open Quantum Design
+
 use_directory_urls: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/OpenQuantumDesign
+      name: Open Quantum Design GitHub
 
 nav:
   - Get Started:

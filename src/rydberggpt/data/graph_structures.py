@@ -12,7 +12,7 @@ def get_graph(config: BaseGraph) -> nx.Graph:
         config (BaseGraph): The graph configuration, an instance of a subclass of the BaseGraph dataclass.
 
     Returns:
-        nx.Graph: The generated graph based on the configuration.
+        (nx.Graph): The generated graph based on the configuration.
 
     Raises:
         NotImplementedError: If the graph name provided in the configuration is not implemented.
@@ -35,7 +35,7 @@ def generate_grid_graph(n_rows: int, n_cols: int) -> nx.Graph:
         n_cols (int): The number of columns in the grid.
 
     Returns:
-        nx.Graph: The generated grid graph with node positions and edge weights.
+        (nx.Graph): The generated grid graph with node positions and edge weights.
     """
 
     # Create an empty graph

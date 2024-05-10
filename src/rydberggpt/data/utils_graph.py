@@ -16,7 +16,7 @@ def pyg_graph_data(config, graph_data):
         config_data (Dict): The configuration data for the graph.
 
     Returns:
-        PyG Data: The graph as a PyG Data object.
+        (Data): The graph as a PyG Data object.
 
     """
     node_features = torch.tensor(
@@ -41,7 +41,7 @@ def networkx_to_pyg_data(graph: nx.Graph, node_features: torch.Tensor) -> Data:
         graph: NetworkX graph object.
 
     Returns:
-        A PyTorch Geometric Data object representing the input graph.
+        (Data): A PyTorch Geometric Data object representing the input graph.
     """
 
     x = node_features.repeat(len(graph.nodes()), 1)
@@ -68,7 +68,7 @@ def batch_pyg_data(data_list: List[Data]) -> Data:
         data_list: List of PyTorch Geometric Data objects.
 
     Returns:
-        A single batched Data object containing all input Data objects.
+        (Data): A single batched Data object containing all input Data objects.
     """
     batched_data = PyGBatch.from_data_list(data_list)
     return batched_data
@@ -82,7 +82,7 @@ def graph_to_dict(graph: nx.Graph) -> Dict:
         graph: NetworkX graph object.
 
     Returns:
-        A dictionary representing the NetworkX graph.
+        (Dict): A dictionary representing the NetworkX graph.
     """
     graph_dict = nx.node_link_data(graph)
     return graph_dict
@@ -108,7 +108,7 @@ def read_graph_from_json(file_path: str) -> Dict:
         file_path: Path to the JSON file to read.
 
     Returns:
-        A dictionary representing a NetworkX graph.
+        (Dict): A dictionary representing a NetworkX graph.
     """
     with open(file_path, "r") as f:
         graph_dict = json.load(f)
@@ -123,7 +123,7 @@ def dict_to_graph(graph_dict: Dict) -> nx.Graph:
         graph_dict: Dictionary representing a NetworkX graph.
 
     Returns:
-        NetworkX graph object.
+        (nx.Graph): NetworkX graph object.
     """
     graph = nx.node_link_graph(graph_dict)
     return graph

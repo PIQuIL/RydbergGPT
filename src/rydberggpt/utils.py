@@ -23,9 +23,11 @@ def time_and_log(fn: Callable[..., Any]) -> Callable[..., Any]:
         Callable[..., Any]: The wrapped function.
 
     Usage:
+        ```py
         @time_and_log
         def my_function(arg1, arg2):
             # function logic here
+        ```
     """
 
     def wrapped(*args: Any, **kwargs: Any) -> Any:
