@@ -14,7 +14,7 @@ def set_example_input_array(train_loader: DataLoader) -> Tuple[Any, Any]:
         train_loader (DataLoader): The DataLoader instance for the training data.
 
     Returns:
-        Tuple[Any, Any]: A tuple containing m_onehot and graph from the example batch.
+        (Tuple[Any, Any]): A tuple containing m_onehot and graph from the example batch.
     """
     logging.info("Setting example input array...")
     example_batch = next(iter(train_loader))

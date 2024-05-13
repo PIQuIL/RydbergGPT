@@ -1,0 +1,124 @@
+
+site_name: RydbergGPT
+site_description: A Large Language Model for Rydberg Atom Array Physics
+
+repo_name: PIQuIL/RydbergGPT
+repo_url: https://github.com/PIQuIL/RydbergGPT
+
+copyright: Copyright &copy; 2024 Open Quantum Design
+
+use_directory_urls: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/OpenQuantumDesign
+      name: Open Quantum Design GitHub
+
+nav:
+  - Get Started:
+    - RydbergGPT: index.md
+    - Installation: installation.md
+    - Usage: usage.md
+    - Architecture: architecture.md
+    - Data: data.md
+  - API reference:
+    - Data: reference/data.md
+    - Models:
+      - Models: reference/models/index.md
+      - Graph: reference/models/graph.md
+      - Transformer: reference/models/transformer.md
+    - Training: reference/training.md
+    - Observables: reference/observables.md
+    - Utilities: reference/utils.md
+
+theme:
+  name: material
+
+  palette:
+  - media: '(prefers-color-scheme: light)'
+    scheme: default
+    primary: deep-orange
+    accent: amber
+    toggle:
+      icon: material/lightbulb
+      name: Switch to dark mode
+  - media: '(prefers-color-scheme: dark)'
+    scheme: slate
+    primary: deep-orange
+    accent: amber
+    toggle:
+      icon: material/lightbulb-outline
+      name: Switch to light mode
+
+  features:
+  - search.suggest
+  - search.highlight
+  - content.tabs.link
+  - content.tooltips
+  - content.code.annotate
+  - content.code.copy
+  - content.code.select
+  - navigation.tabs
+  - navigation.tabs.sticky
+  - navigation.sections
+  - navigation.top
+  - navigation.prune
+  - toc.follow
+
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+            show_root_heading: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            show_submodules: true
+            docstring_style: "google"
+            docstring_section_style: "table"
+            show_signature: true
+            show_signature_annotations: true
+            signature_crossrefs: true
+            separate_signature: false
+          import:
+            - https://docs.python.org/3/objects.inv
+            - https://numpy.org/doc/stable/objects.inv
+            - https://pytorch.org/docs/stable/objects.inv
+            - https://pytorch.org/data/main/objects.inv
+            - https://pytorch-geometric.readthedocs.io/en/latest/objects.inv
+            - https://lightning.ai/docs/pytorch/stable/objects.inv
+            - https://networkx.org/documentation/stable/objects.inv
+
+markdown_extensions:
+  - toc:
+      permalink: true
+      toc_depth: 4
+
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+
+  - pymdownx.tabbed:
+      alternate_style: true
+
+  - pymdownx.blocks.admonition
+  - pymdownx.blocks.details
+
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - javascripts/config.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

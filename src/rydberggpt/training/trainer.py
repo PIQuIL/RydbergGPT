@@ -49,7 +49,7 @@ class RydbergGPTTrainer(pl.LightningModule):
             cond (torch.Tensor): Conditioning tensor. # TODO prompt
 
         Returns:
-            torch.Tensor: Conditional log probabilities tensor.
+            (torch.Tensor): Conditional log probabilities tensor.
         """
         out = self.model.forward(m_onehot, cond)
         cond_log_probs = self.model.generator(out)
@@ -64,7 +64,7 @@ class RydbergGPTTrainer(pl.LightningModule):
             batch_idx (int): The index of the current batch.
 
         Returns:
-            torch.Tensor: The training loss for the current batch.
+            (torch.Tensor): The training loss for the current batch.
         """
         m_shifted_onehot = shift_inputs(batch.m_onehot)
 
@@ -78,7 +78,7 @@ class RydbergGPTTrainer(pl.LightningModule):
         Configures the optimizer and learning rate scheduler for the RydbergGPTTrainer.
 
         Returns:
-            Dict[str, Union[optim.Optimizer, Dict]]: A dictionary containing the optimizer and lr_scheduler configurations.
+            (Dict[str, Union[optim.Optimizer, Dict]]): A dictionary containing the optimizer and lr_scheduler configurations.
         """
         optimizer_class = getattr(optim, self.config.optimizer)
         optimizer = optimizer_class(

@@ -27,13 +27,9 @@ The`config.yaml` is used to define the hyperparameters for :
 - Others
 
 ### Training <a name="training"></a> 
-To train RydbergGPT locally, execute the `train.py` with :
+To train RydbergGPT locally, execute the `main.py` with :
 ```bash
-python train.py --config_name=config_small.yaml
-```
-For the cluster:
-```bash
-.scripts/train.sh
+python main.py --config_name=config_small.yaml
 ```
 
 ## Installation <a name="installation"></a>
@@ -41,18 +37,28 @@ Clone the repository using the following command :
 ```bash
 git clone https://github.com/PIQuIL/RydbergGPT
 ```
-Install with pip :
+
+Create a conda environment
 ```bash
-cd RydbergGPT
-pip install .
+conda create --name rydberg_env python=3.11
 ```
 
-if you prefer to use a containerized version, see `container/README.md`.
-
+and finally install via pip in developer mode:
+```bash
+cd RydbergGPT
+pip install -e .
+```
 
 ## Documentation <a name="documentation"></a>
+Documentation is implemented with [MkDocs](https://www.mkdocs.org/), to deploy the documentation run the following commands:
+```bash
+# Install package with mkdocs dependencies
+pip install .[docs]
 
-Currently unavaiable
+# Deploy the documentation server locally
+mkdocs serve
+```
+The documentation should then be available at http://localhost:8000.
 
 ## Architecture  <a name="architecture"></a>
 
@@ -73,7 +79,7 @@ Here, $V_{ij}$ = blockade interaction strength between atoms $i$ and $j$, $R_b$ 
 
 Vanilla transformer architecture taken from [Attention is All You Need](https://arxiv.org/pdf/1706.03762.pdf).
 
-![Architecture](https://github.com/PIQuIL/RydbergGPT/blob/main/resources/architecture%20diagram.jpg)
+![Architecture](https://github.com/PIQuIL/RydbergGPT/blob/main/docs/resource/architectureV1.jpg)
 
 ```math
 \begin{align}
@@ -100,8 +106,8 @@ R_b &= [1.05, 1.15, 1.3] \\
 ```
 There are a total of `8 x 10 x 3 x 9 = 2160` configurations (see [table](https://github.com/PIQuIL/RydbergGPT/blob/main/resources/Generated_training_data.md)).
 
-## Acknowledgements <a name="acknowledgements"></a>
-
+<!-- ## Acknowledgements <a name="acknowledgements"></a> -->
+<!-- 
 We sincerely thank the authors of the following very helpful codebases we used when building this repository :
 
 - Transformer tutorials:
@@ -109,8 +115,8 @@ We sincerely thank the authors of the following very helpful codebases we used w
     - [Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)
 - Transformer quantum state:
     - [Predicting Properties of Quantum Systems with Conditional Generative Models](https://github.com/PennyLaneAI/generative-quantum-states)
-    - [Transformer Quantum State](https://github.com/yuanhangzhang98/transformer_quantum_state)
-
+    - [Transformer Quantum State](https://github.com/yuanhangzhang98/transformer_quantum_state) -->
+<!-- 
 
 ## References <a name="references"></a>
 
@@ -121,4 +127,4 @@ author	= {Ashish Vaswani and Noam Shazeer and Niki Parmar and Jakob Uszkoreit an
 year	= {2017},
 URL	= {https://arxiv.org/pdf/1706.03762.pdf}
 }
-```
+``` -->

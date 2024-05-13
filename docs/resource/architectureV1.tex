@@ -1,0 +1,181 @@
+\documentclass{standalone}
+\usepackage{amsmath,amssymb,pgfmath,pgffor,tikz,xcolor,xifthen}
+\usetikzlibrary{calc,decorations.pathmorphing,decorations.pathreplacing,patterns,backgrounds}
+
+
+\begin{document}
+
+\def\x{20}
+\def\xx{27}
+\def\y{9}
+\def\d{4}
+\def\a{1}
+\def\b{4}
+\def\c{1}
+\def\e{0.75}
+\def\f{3}
+\def\g{2}
+
+\begin{tikzpicture}[
+    scale=1.,
+    show background rectangle,
+    background rectangle/.style={fill=white},
+    color=black,]
+
+    \coordinate (encoderbox) at (0,0);
+    \coordinate (encoderbox_south) at ($(encoderbox) + (\x/2,-\y)$);
+    \coordinate (encoderbox_west) at ($(encoderbox) + (0,-\y/2)$);
+    \coordinate (encoderbox_east) at ($(encoderbox) + (\x,-\y/2)$);
+
+    \draw [-,fill=teal!15] (encoderbox) --++ (0,-\y) --++ (\x,0) --++ (0,\y) --++ (-\x,0);
+    \node [anchor=south] (encoder) at ($(encoderbox) + (\x/2,0) + (0,0.5)$) {\huge Transformer Encoder};
+
+    \coordinate (encodermha) at ($(encoderbox_west) + (0.5*\x-1.5*\d-0.5,0)  $);
+    \coordinate (encoderlayernorm1) at ($(encodermha) + (\d,0)$);
+    \coordinate (encoderfeedforward) at ($(encoderlayernorm1) + (\d,0)$);
+    \coordinate (encoderlayernorm2) at ($(encoderfeedforward) + (\d,0)$);
+    \coordinate (encoderblockmultiplier) at ($(encodermha) + (-\a,\b) + (3*\d+1+2*\a,0)$);
+
+    \node [anchor=west] at (encoderblockmultiplier) {\Large $\times N_{\mathrm{block}}$};
+
+    \draw [dashed, fill=yellow!10] ($(encodermha) + (-\a,\b)$) --++ (3*\d+1+2*\a,0) --++ (0,-2*\b) --++ (-3*\d-1-2*\a,0) --++ (0,2*\b);
+
+    \node [draw, rectangle, fill=red!10, minimum width=1.cm,anchor=west] at (encodermha) {\rotatebox{270}{\Large Multi Head Attention}};
+
+    \node [draw, rectangle, fill=blue!10, minimum width=1.cm,anchor=west] at (encoderlayernorm1) {\rotatebox{270}{\textwidth 1pt \Large Layer Normalization}};
+
+    \node [draw, rectangle, fill=green!10, minimum width=1.cm,anchor=west] at (encoderfeedforward) {\rotatebox{270}{\textwidth 1pt \Large Feedforward Layer}};
+
+    \node [draw, rectangle, fill=blue!10, minimum width=1.cm,anchor=west] at (encoderlayernorm2) {\rotatebox{270}{\textwidth 1pt \Large Layer Normalization}};
+
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+    \coordinate (decoderbox) at ($(encoderbox) + (0,-\y) + (0,-\f)$);
+    \coordinate (decoderbox_north) at ($(decoderbox) + (\xx/2,0)$);
+    \coordinate (decoderbox_west) at ($(decoderbox) + (0,-\y/2)$);
+    \coordinate (decoderbox_east) at ($(decoderbox) + (\xx,-\y/2)$);
+
+
+    \draw [-,fill=teal!15] (decoderbox) --++ (0,-\y) --++ (\xx,0) --++ (0,\y) --++ (-\xx,0);
+    \node [anchor=north] (decoder) at ($(decoderbox) + (\xx/2,-\y) + (0,-0.5)$) {\huge Transformer Decoder};
+
+
+    \coordinate (decodermha) at ($(decoderbox_west) + (0.5*\xx-2.5*\d-0.5,0) $);
+    \coordinate (decoderlayernorm1) at ($(decodermha) + (\d,0)$);
+    \coordinate (encoderdecodermha) at ($(decoderlayernorm1) + (\d,0)$);
+    \coordinate (decoderlayernorm2) at ($(encoderdecodermha) + (\d,0)$);
+    \coordinate (decoderfeedforward) at ($(decoderlayernorm2) + (\d,0)$);
+    \coordinate (decoderlayernorm3) at ($(decoderfeedforward) + (\d,0)$);
+    \coordinate (decoderblockmultiplier) at ($(decodermha) + (-\a,\b) + (5*\d+1+2*\a,0)$);
+
+    \draw [dashed, fill=yellow!10] ($(decodermha) + (-\a,\b)$) --++ (5*\d+1+2*\a,0) --++ (0,-2*\b) --++ (-5*\d-1-2*\a,0) --++ (0,2*\b);
+
+    \node [anchor=west] at (decoderblockmultiplier) {\Large $\times N_{\mathrm{block}}$};
+
+    \node [draw, rectangle, fill=red!10, minimum width=1.cm,anchor=west] at (decodermha) {\rotatebox{270}{\Large Multi Head Attention (Causal)}};
+
+    \node [draw, rectangle, fill=red!10, minimum width=1.cm,anchor=west] at (encoderdecodermha) {\rotatebox{270}{\Large Multi Head Attention}};
+
+    \node [draw, rectangle, fill=green!10, minimum width=1.cm,anchor=west] at (decoderfeedforward) {\rotatebox{270}{\textwidth 1pt \Large Feedforward Layer}};
+
+    \node [draw, rectangle, fill=blue!10, minimum width=1.cm,anchor=west] at (decoderlayernorm1) {\rotatebox{270}{\textwidth 1pt \Large Layer Normalization}};
+
+    \node [draw, rectangle, fill=blue!10, minimum width=1.cm,anchor=west] at (decoderlayernorm2) {\rotatebox{270}{\textwidth 1pt \Large Layer Normalization}};
+
+    \node [draw, rectangle, fill=blue!10, minimum width=1.cm,anchor=west] at (decoderlayernorm3) {\rotatebox{270}{\textwidth 1pt \Large Layer Normalization}};
+
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    \coordinate (encoderinput) at ($(encoderbox_west) + (-4,0)$);
+    \coordinate (encoderoutput) at ($(encoderbox_south) + (0,-1)$);
+    \coordinate (decoderinput) at ($(decoderbox_west) + (-4,0)$);
+    \coordinate (decoderoutput) at ($(decoderbox_east) + (2,0)$);
+
+
+    \draw [->,line width=2pt] (encoderbox_west) to (encodermha);
+    \draw [<-,line width=2pt] ($(encodermha) + (0,\c)$) --++ (-\c,0) --++ (0,-\c);
+    \draw [<-,line width=2pt] ($(encodermha) + (0,-\c)$) --++ (-\c,0) --++ (0,\c);
+    \draw [->,line width=2pt]  ($(encodermha) + (1,0)$) to (encoderlayernorm1);
+    \draw [->,line width=2pt]  ($(encoderlayernorm1) + (1,0)$) to (encoderfeedforward);
+    \draw [->,line width=2pt]  ($(encoderfeedforward) + (1,0)$) to (encoderlayernorm2);
+    \draw [->,line width=2pt] ($(encoderlayernorm2) + (1,0)$) --++ (\a,0) --++ (0,-\b) --++ (-3*\d-1-2*\a,0) --++ (-\e*0.5*\x+\e*1.5*\d+\e*0.5+\e*\a,0) --++ (0, \b);
+    \draw [->,line width=2pt] ($(encoderlayernorm2) + (1,0)$) --++ (\a,0) --++ (0.5*\x-1.5*\d-0.5-\a,0);
+    \draw [->,line width=2pt] (encoderbox_east) --++ (1,0) --++ (0,-0.5*\y-1) -- (encoderoutput);
+
+
+    \draw [-,line width=2pt] ($(encoderbox_west) + (\e*0.5*\x-\e*1.5*\d-\e*0.5-\e*\a,0)$) --++ (0,\b) -| ($(encodermha) + (0.5*\d-0.5+1,0)$) node [at end, circle, fill=white, draw] {\Large \textbf +};
+    \draw [-, line width=2pt] ($(encoderlayernorm1) + (0.5*\d-0.5+1,0)$) --++ (0,\b) -| ($(encoderfeedforward) + (0.5*\d-0.5+1,0)$) node [at end, circle, fill=white, draw] {\Large \textbf +};
+
+
+
+    \coordinate (encoderdecoderconnection) at ($(encoderbox_south) + (0,-\f)$);
+
+    \draw [->,line width=2pt] (encoderoutput) to (encoderdecoderconnection);
+    \node [anchor=west] at ($.5*(encoderoutput) + .5*(encoderdecoderconnection)$) {\Large $X$ (shape: $[B,T,E]$)};
+
+    \draw [->,line width=2pt] (decoderbox_west) to (decodermha);
+    \draw [<-,line width=2pt] ($(decodermha) + (0,\c)$) --++ (-\c,0) --++ (0,-\c);
+    \draw [<-,line width=2pt] ($(decodermha) + (0,-\c)$) --++ (-\c,0) --++ (0,\c);
+    \draw [->,line width=2pt]  ($(decodermha) + (1,0)$) to (decoderlayernorm1);
+    \draw [->,line width=2pt]  ($(decoderlayernorm1) + (1,0) + (0,-\c)$) to ($(encoderdecodermha)+ (0,-\c)$);
+    \draw [->,line width=2pt]  (encoderdecoderconnection) |- (encoderdecodermha);
+    \draw [<-,line width=2pt]  ($(encoderdecodermha) + (0,\c)$) -| (encoderdecoderconnection);
+    \draw [->,line width=2pt]  ($(encoderdecodermha) + (1,0)$) to (decoderlayernorm2);
+    \draw [->,line width=2pt]  ($(decoderlayernorm2) + (1,0)$) to (decoderfeedforward);
+    \draw [->,line width=2pt]  ($(decoderfeedforward) + (1,0)$) to (decoderlayernorm3);
+    \draw [->,line width=2pt] ($(decoderlayernorm3) + (1,0)$) to (decoderbox_east);
+    \draw [->,line width=2pt] ($(decoderlayernorm3) + (1,0)$) --++ (\a,0) --++ (0,-\b) --++ (-5*\d-1-2*\a,0) --++ (-\e*0.5*\xx+\e*2.5*\d+\e*0.5+\e*\a,0) --++ (0, \b);
+
+    \draw [-,line width=2pt] ($(decoderbox_west) + (\e*0.5*\xx-\e*2.5*\d-\e*0.5-\e*\a,0)$) --++ (0,\b) -| ($(decodermha) + (0.5*\d-0.5+1,0)$) node [at end, circle, fill=white, draw] {\Large \textbf +};
+    \draw [-, line width=2pt] ($(decoderlayernorm1) + (0.5*\d-0.5+1,-1)$) --++ (0,-\b+2) -| ($(encoderdecodermha) + (0.5*\d-0.5+1,0)$) node [at end, circle, fill=white, draw] {\Large \textbf +};
+    \draw [-, line width=2pt] ($(decoderlayernorm2) + (0.5*\d-0.5+1,0)$) --++ (0,\b) -| ($(decoderfeedforward) + (0.5*\d-0.5+1,0)$) node [at end, circle, fill=white, draw] {\Large \textbf +};
+
+    \draw [->,line width=2pt] (decoderbox_east) to (decoderoutput);
+
+    \node [anchor=north] at ($.5*(decoderbox_east)+.5*(decoderoutput)$) {\rotatebox{270}{\Large $Y$ (shape: $[B,S,E]$)}};
+
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+    \coordinate (dense) at (decoderoutput);
+    \coordinate (softmax) at ($(dense) + (\g,0)$);
+    \coordinate (prob) at ($(softmax) + (\g,0)$);
+
+    \node [draw, rectangle, fill=orange!10, minimum width=1.cm,anchor=west] at (dense) {\rotatebox{270}{\Large Dense Layer}};
+    \node [draw, rectangle, fill=purple!10, minimum width=1.cm,anchor=west] at (softmax) {\rotatebox{270}{\Large Softmax}};
+    \node [anchor=west] at (prob) {\Large $P$ (shape: $[B,S,2]$)};
+
+    \draw [->,line width=2pt]  ($(dense) + (1,0)$) to (softmax);
+    \draw [->,line width=2pt]  ($(softmax) + (1,0)$) to (prob);
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    \coordinate (encoderemb) at ($(encoderinput) + (1,0)$);
+    \coordinate (decoderemb) at ($(decoderinput) + (1,0)$);
+    \coordinate (encoderposemb) at ($(encoderemb) + (2,0)$);
+    \coordinate (decoderposemb) at ($(decoderemb) + (2,0)$);
+
+
+    \draw [->,line width=2pt] (encoderinput) to (encoderbox_west);
+    \node [anchor=east] at (encoderinput) {\Large $H$ (shape: $[B,T,4]$)};
+    \draw [->,line width=2pt] (decoderinput) to (decoderbox_west);
+    \node [anchor=east] at (decoderinput) {\Large $\sigma$ (shape: $[B,S,2]$)};
+
+    \node [draw, rectangle, fill=gray!10, minimum width=1.cm,anchor=west] at (encoderemb) {\rotatebox{270}{\Large Embedding Layer}};
+    \node [draw, rectangle, fill=gray!10, minimum width=1.cm,anchor=west] at (decoderemb) {\rotatebox{270}{\Large Embedding Layer}};
+
+
+    \node [circle, fill=white, draw, minimum size=0.8cm,line width=1.5] (encoderposembnode) at (encoderposemb) {};
+    \draw[looseness=2,line width=1.5] (encoderposembnode.west) to[out=70,in =110] (encoderposembnode.center) to [out=-70,in=-110](encoderposembnode.east);
+
+    \node [circle, fill=white, draw, minimum size=0.8cm,line width=1.5] (decoderposembnode) at (decoderposemb) {};
+    \draw[looseness=2,line width=1.5] (decoderposembnode.west) to[out=70,in =110] (decoderposembnode.center) to [out=-70,in=-110](decoderposembnode.east);
+
+
+\end{tikzpicture}
+
+\end{document}

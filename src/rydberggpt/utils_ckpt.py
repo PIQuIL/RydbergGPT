@@ -1,6 +1,6 @@
 import os
 import re
-from typing import Type, Union
+from typing import Optional
 
 import pytorch_lightning as pl
 from torch import nn
@@ -16,10 +16,10 @@ def get_ckpt_path(from_ckpt: int, log_dir: str = "logs/lightning_logs") -> str:
     Args:
         from_ckpt (int): The version number of the checkpoint.
         log_dir (str, optional): The root directory where checkpoints are stored.
-                                 Defaults to "logs/lightning_logs".
+                                Defaults to "logs/lightning_logs".
 
     Returns:
-        str: The path to the specified checkpoint version directory.
+        (str): The path to the specified checkpoint version directory.
 
     Raises:
         FileNotFoundError: If no checkpoint is found in the specified directory.
@@ -40,7 +40,7 @@ def find_latest_ckpt(log_dir: str):
         log_dir (str): The path to the log directory containing the checkpoint files.
 
     Returns:
-        str: The path to the latest checkpoint file.
+        (str): The path to the latest checkpoint file.
     """
     log_dir = os.path.join(log_dir, "checkpoints")
     ckpt_files = [file for file in os.listdir(log_dir) if file.endswith(".ckpt")]
@@ -53,7 +53,7 @@ def find_latest_ckpt(log_dir: str):
     return os.path.join(log_dir, latest_ckpt)
 
 
-def find_best_ckpt(log_dir: str) -> Union[str, None]:
+def find_best_ckpt(log_dir: str) -> Optional[str]:
     """
     Find the best checkpoint file (with the lowest training loss) in the specified log directory.
 
@@ -61,7 +61,7 @@ def find_best_ckpt(log_dir: str) -> Union[str, None]:
         log_dir (str): The path to the log directory containing the checkpoint files.
 
     Returns:
-        str: The path to the checkpoint file with the lowest training loss.
+        (str): The path to the checkpoint file with the lowest training loss.
     """
     log_dir = os.path.join(log_dir, "checkpoints")
     ckpt_files = [file for file in os.listdir(log_dir) if file.endswith(".ckpt")]
@@ -89,7 +89,7 @@ def get_model_from_ckpt(
     log_path: str,
     model: nn.Module,
     ckpt: str = "best",
-    trainer: Type[pl.LightningModule] = RydbergGPTTrainer,
+    trainer: pl.LightningModule = RydbergGPTTrainer,
 ) -> nn.Module:
     """
     Load a model from a specified checkpoint file in the log directory.
@@ -98,10 +98,10 @@ def get_model_from_ckpt(
         log_path (str): The path to the log directory containing the checkpoint files.
         model (nn.Module): The model class to load.
         ckpt (str, optional): The checkpoint to load. Must be either "best" or "latest". Defaults to "best".
-        trainer (Type[pl.LightningModule], optional): The trainer class to use for loading the model. Defaults to RydbergGPTTrainer.
+        trainer (pl.LightningModule, optional): The trainer class to use for loading the model. Defaults to RydbergGPTTrainer.
 
     Returns:
-        nn.Module: The loaded model.
+        (nn.Module): The loaded model.
 
     Raises:
         ValueError: If the value of ckpt is not "best" or "latest".

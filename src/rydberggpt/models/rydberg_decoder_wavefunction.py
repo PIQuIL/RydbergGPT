@@ -66,7 +66,7 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
             model (RydbergEncoderDecoder): The model used to generate a RydbergDecoderWavefunction.
 
         Returns:
-            RydbergDecoderWavefunction: The wavefunction taken from a trained RydergEncoderDecoder model for the groundstate of the Hamiltonian/graph specified by cond.
+            (RydbergDecoderWavefunction): The wavefunction taken from a trained RydergEncoderDecoder model for the groundstate of the Hamiltonian/graph specified by cond.
 
         """
         return cls(
@@ -89,7 +89,7 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
             x (torch.Tensor): The input tensor.
 
         Returns:
-            torch.Tensor: The log probabilities.
+            (torch.Tensor): The log probabilities.
         """
 
         assert (
@@ -127,7 +127,7 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
             verbose (bool, optional): A flag indicating whether to print sampling progress. Defaults to True,
 
         Returns:
-            torch.Tensor: A tensor containing the generated samples. The shape of the tensor is (batch_size, num_atoms, 2) for one-hot encoding format, and (batch_size, num_atoms) for label format. The samples are padded according to the number of nodes in each graph within `cond`.
+            (torch.Tensor): A tensor containing the generated samples. The shape of the tensor is (batch_size, num_atoms, 2) for one-hot encoding format, and (batch_size, num_atoms) for label format. The samples are padded according to the number of nodes in each graph within `cond`.
         """
         if verbose:
             print("")
@@ -179,7 +179,7 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
             samples (torch.Tensor): Samples drawn from model based on cond.
 
         Returns:
-            torch.Tensor: A tensor containing the estimated x magnetization of each sample.
+            (torch.Tensor): A tensor containing the estimated x magnetization of each sample.
         """
 
         # Create all possible states achievable by a single spin flip
@@ -213,7 +213,7 @@ class RydbergDecoderWavefunction(RydbergEncoderDecoder):
            undo_sample_path_args (tuple): Additional arguments for undo_sample_path.
 
         Returns:
-            torch.Tensor: A tensor containing the estimated energy of each sample alongside its decomposition into terms.
+            (torch.Tensor): A tensor containing the estimated energy of each sample alongside its decomposition into terms.
         """
 
         samples = samples

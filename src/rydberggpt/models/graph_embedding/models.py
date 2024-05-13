@@ -58,7 +58,7 @@ class GraphEmbedding(torch.nn.Module):
             data (Data): The input graph data.
 
         Returns:
-            Tensor: The output tensor with reshaped dimensions.
+            (Tensor): The output tensor with reshaped dimensions.
         """
         # [..., num_features], [2, ...] [...]
         x, edge_index, edge_attr = data.x, data.edge_index, data.edge_attr

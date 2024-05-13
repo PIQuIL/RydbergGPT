@@ -32,7 +32,7 @@ class GraphLayer(nn.Module):
             edge_attr (OptTensor): Edge feature matrix.
 
         Returns:
-            torch.Tensor: The output tensor after passing through the GraphLayer.
+            (torch.Tensor): The output tensor after passing through the GraphLayer.
         """
         x = self.graph_layer(x, edge_index, edge_attr)
         x = F.relu(self.norm(x))

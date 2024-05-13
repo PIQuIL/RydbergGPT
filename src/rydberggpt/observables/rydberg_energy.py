@@ -26,7 +26,7 @@ def get_staggered_magnetization(
         undo_sample_path_args (tuple): Additional arguments for undo_sample_path.
 
     Returns:
-        torch.Tensor: A tensor containing the estimated staggered magnetization of each sample.
+        (torch.Tensor): A tensor containing the estimated staggered magnetization of each sample.
     """
 
     if undo_sample_path is not None:
@@ -64,7 +64,7 @@ def get_x_magnetization(
         device (str, optional): The device on which to allocate the tensors. Defaults to "cpu".
 
     Returns:
-        torch.Tensor: A tensor containing the estimated x magnetization of each sample.
+        (torch.Tensor): A tensor containing the estimated x magnetization of each sample.
     """
 
     model = model.to(device)
@@ -109,7 +109,7 @@ def get_rydberg_energy(
         undo_sample_path_args (tuple): Additional arguments for undo_sample_path.
 
     Returns:
-        torch.Tensor: A tensor containing the estimated energy of each sample alongside its decomposition into terms.
+        (torch.Tensor): A tensor containing the estimated energy of each sample alongside its decomposition into terms.
     """
 
     model = model.to(device)

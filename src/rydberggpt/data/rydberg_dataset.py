@@ -21,7 +21,7 @@ def get_rydberg_dataloader(
     num_workers: int = 0,
     data_path: str = "dataset",
     buffer_size: int = 4,
-) -> Tuple[DataLoader, DataLoader]:
+) -> DataLoader:
     # Tutorial how to use datapipes with Dataloader
     # https://pytorch.org/data/main/dp_tutorial.html
     datapipe = build_datapipes(
@@ -55,7 +55,7 @@ def build_datapipes(root_dir: str, batch_size: int, buffer_size: int):
         buffer_size (int): The buffer size to use when buffering data into batches.
 
     Returns:
-        IterDataPipe: The final data pipe containing batches of processed data.
+        (IterDataPipe): The final data pipe containing batches of processed data.
     """
     file_lister = FileLister([root_dir], recursive=True)
     config_dp, dataset_dp, graph_dp = file_lister.demux(

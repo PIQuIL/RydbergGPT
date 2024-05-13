@@ -30,7 +30,7 @@ class SublayerConnection(nn.Module):
             sublayer (nn.Module): The sublayer module.
 
         Returns:
-            torch.Tensor: The output tensor.
+            (torch.Tensor): The output tensor.
         """
         # NOTE For GPT2 the authors moved Layer normalization (Ba et al., 2016)
         # to the input of each sub-block.
@@ -62,7 +62,7 @@ class PositionwiseFeedForward(nn.Module):
             x (torch.Tensor): The input tensor.
 
         Returns:
-            torch.Tensor: The output tensor.
+            (torch.Tensor): The output tensor.
         """
         return self.w_2(self.dropout(F.relu(self.w_1(x))))
 
@@ -89,7 +89,7 @@ class Embeddings(nn.Module):
             x (torch.Tensor): The input tensor.
 
         Returns:
-            torch.Tensor: The output tensor.
+            (torch.Tensor): The output tensor.
         """
         x = self.lut(x) * math.sqrt(self.d_model)
         return x

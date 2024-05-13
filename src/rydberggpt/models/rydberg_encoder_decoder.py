@@ -97,7 +97,7 @@ class RydbergEncoderDecoder(EncoderDecoder):
             cond (Batch): The conditional graph structure.
 
         Returns:
-            torch.Tensor: The log probabilities.
+            (torch.Tensor): The log probabilities.
         """
 
         if not hasattr(cond, "num_graphs"):
@@ -140,7 +140,7 @@ class RydbergEncoderDecoder(EncoderDecoder):
               in one-hot encoding format. If False, the samples are returned in label format. Defaults to True.
 
         Returns:
-            torch.Tensor: A tensor containing the generated samples. The shape of the tensor is (batch_size, num_atoms, 2) for one-hot encoding format, and (batch_size, num_atoms) for label format. The samples are padded according to the number of nodes in each graph within `cond`.
+            (torch.Tensor): A tensor containing the generated samples. The shape of the tensor is (batch_size, num_atoms, 2) for one-hot encoding format, and (batch_size, num_atoms) for label format. The samples are padded according to the number of nodes in each graph within `cond`.
         """
 
         if not hasattr(cond, "num_graphs"):

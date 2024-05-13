@@ -17,7 +17,7 @@ def snake_flip(x: torch.Tensor) -> torch.Tensor:
         x (torch.Tensor): The tensor to apply the snake flip to, dimensions should be [..., Ly, Lx].
 
     Returns:
-        torch.Tensor: The "snake" flipped tensor, dimensions will be [..., Ly, Lx].
+        (torch.Tensor): The "snake" flipped tensor, dimensions will be [..., Ly, Lx].
     """
 
     if not isinstance(x, torch.Tensor):
@@ -40,6 +40,6 @@ def flattened_snake_flip(x: torch.Tensor, Lx: int, Ly: int) -> torch.Tensor:
         x (torch.Tensor): The tensor to apply the snake flip to, dimensions should be [..., Ly * Lx].
 
     Returns:
-        torch.Tensor: The "snake" flipped tensor, dimensions will be [..., Ly * Lx].
+        (torch.Tensor): The "snake" flipped tensor, dimensions will be [..., Ly * Lx].
     """
     return snake_flip(x.reshape(*x.shape[:-1], Ly, Lx)).reshape(*x.shape[:-1], -1)
