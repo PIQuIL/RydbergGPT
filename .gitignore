@@ -165,7 +165,6 @@ _logs/
 data_old/
 data_subset/
 _scripts/
-dataset_test/
 dummy_dataset/
 logs_old/
 
