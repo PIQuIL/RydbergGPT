@@ -16,7 +16,7 @@ from torch_geometric.data import Batch
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 base_path = os.path.abspath(".")
-log_path = os.path.join(base_path, "models/ds_1/")
+log_path = os.path.join(base_path, "models/M_1/")
 
 yaml_dict = load_yaml_file(log_path, "hparams.yaml")
 config: dataclass = create_config_from_yaml(yaml_dict)
