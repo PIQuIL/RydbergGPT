@@ -22,9 +22,9 @@ nav:
     - Usage: usage.md
     - Architecture: architecture.md
     - Data: data.md
-  - Examples:
-    - Overview: examples/1_overview.ipynb
-    - Dataset: examples/2_rydberg_dataset.ipynb
+  - Tutorials:
+    - Overview: examples/1_Overview.ipynb
+    - Dataset: examples/2_Dataset.ipynb
     - Observables: examples/3_Observables.ipynb
   - API reference:
     - Data: reference/data.md
