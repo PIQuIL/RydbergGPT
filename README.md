@@ -97,8 +97,7 @@ R_b &= [1.05, 1.15, 1.3] \\
 ```
 There are a total of `8 x 10 x 3 x 9 = 2160` configurations (see [table](https://github.com/PIQuIL/RydbergGPT/blob/main/resources/Generated_training_data.md)).
 
-<!-- ## Acknowledgements <a name="acknowledgements"></a> -->
-<!-- 
+## Acknowledgements <a name="acknowledgements"></a>
 We sincerely thank the authors of the following very helpful codebases we used when building this repository :
 
 - Transformer tutorials:
@@ -106,8 +105,8 @@ We sincerely thank the authors of the following very helpful codebases we used w
     - [Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)
 - Transformer quantum state:
     - [Predicting Properties of Quantum Systems with Conditional Generative Models](https://github.com/PennyLaneAI/generative-quantum-states)
-    - [Transformer Quantum State](https://github.com/yuanhangzhang98/transformer_quantum_state) -->
-<!-- 
+    - [Transformer Quantum State](https://github.com/yuanhangzhang98/transformer_quantum_state)
+
 
 ## References <a name="references"></a>
 
@@ -118,4 +117,4 @@ author	= {Ashish Vaswani and Noam Shazeer and Niki Parmar and Jakob Uszkoreit an
 year	= {2017},
 URL	= {https://arxiv.org/pdf/1706.03762.pdf}
 }
-``` -->
+```
