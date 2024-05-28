@@ -13,6 +13,9 @@ pip install .
 ```
 
 ## Usage
+### Tutorials
+You find tutorials for using RydbergGPT in the [`examples/`](https://github.com/PIQuIL/RydbergGPT/tree/main/examples) folder.
+
 ### Configuration
 The`config.yaml` is used to define the hyperparameters for:
 - Model architecture
