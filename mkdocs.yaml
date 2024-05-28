@@ -16,17 +16,15 @@ extra:
       name: Open Quantum Design GitHub
 
 nav:
-  - Get Started:
-    - RydbergGPT: index.md
-    - Installation: installation.md
-    - Usage: usage.md
-    - Architecture: architecture.md
+  - Introduction:
+    - Welcome to RydbergGPT: index.md
+    - Get Started: get_started.md
     - Data: data.md
   - Tutorials:
     - Overview: examples/1_Overview.ipynb
     - Dataset: examples/2_Dataset.ipynb
     - Observables: examples/3_Observables.ipynb
-  - API reference:
+  - API Reference:
     - Data: reference/data.md
     - Models:
       - Models: reference/models/index.md
