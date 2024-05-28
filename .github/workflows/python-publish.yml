@@ -26,5 +26,5 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: python -m pip install -e . --no-deps
-      - run: pip install mkdocstrings pymdown-extensions mkdocs-material mkdocstrings-python
+      - run: pip install mkdocstrings pymdown-extensions mkdocs-material mkdocstrings-python mknotebooks
       - run: mkdocs gh-deploy --force
