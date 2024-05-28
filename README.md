@@ -13,8 +13,6 @@ A large language model (LLM) for Rydberg atom array physics.
     - [Rydberg System](#rydbergsystem) <br/>
     - [Transformer](#transformer) <br/>
     - [Data](#data) <br/>
-- [Acknowledgements](#acknowledgements) <br/>
-- [References](#references) <br/>
 
 
 ## Quick Start <a name="quickstart"></a>
