@@ -22,6 +22,10 @@ nav:
     - Usage: usage.md
     - Architecture: architecture.md
     - Data: data.md
+  - Examples:
+    - Overview: examples/1_overview.ipynb
+    - Dataset: examples/2_rydberg_dataset.ipynb
+    - Observables: examples/3_Observables.ipynb
   - API reference:
     - Data: reference/data.md
     - Models:
@@ -67,6 +71,11 @@ theme:
   - toc.follow
 
 plugins:
+  - mknotebooks:
+      execute: false
+      timeout: 100
+      allow_errors: True
+  - search:
   - mkdocstrings:
       handlers:
         python:
