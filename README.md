@@ -50,18 +50,9 @@ pip install -e .
 ```
 
 ## Documentation <a name="documentation"></a>
-Documentation is implemented with [MkDocs](https://www.mkdocs.org/), to deploy the documentation run the following commands:
-```bash
-# Install package with mkdocs dependencies
-pip install .[docs]
-
-# Deploy the documentation server locally
-mkdocs serve
-```
-The documentation should then be available at http://localhost:8000.
+Documentation is implemented with [MkDocs](https://www.mkdocs.org/) and available at https://piquil.github.io/RydbergGPT.
 
 ## Architecture  <a name="architecture"></a>
-
 
 ### Rydberg System <a name="rydbergsystem"></a>
 Consider the standard Rydberg Hamiltonian of the form :
