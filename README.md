@@ -70,17 +70,11 @@ Here, $V_{ij}$ = blockade interaction strength between atoms $i$ and $j$, $R_b$ 
 
 Vanilla transformer architecture taken from [Attention is All You Need](https://arxiv.org/pdf/1706.03762.pdf).
 
-![Architecture](https://github.com/PIQuIL/RydbergGPT/blob/main/docs/resource/architectureV1.jpg)
+![Architecture](https://github.com/PIQuIL/RydbergGPT/blob/main/docs/resource/architecture.png)
 
-```math
-\begin{align}
-H_i &= \mathrm{GraphNN}(\mathrm{edges} = V_{ij} \ ; \mathrm{nodes}=\Omega_i, \Delta_i, R_b, \beta) \\
-&= \text{Hamiltonian parameters encoded in a sequence by a graph neural network,} \\
-\sigma_i &= \text{one-hot encoding of measured spin of qubit $i$,} \\
-P_i &= P(\sigma_i | \sigma_{< i}) = \text{conditional probability distribution of spin $i$} \\
-i &= \text{sequence index (either $T$ or $S$ axis shown in the architecture diagram).}
-\end{align}
-```
+- $\mathbf{x} =$ experimental settings
+- $\sigma_i =$ one-hot encoding of measured qubit $i$
+- $p_{\theta}(\sigma_i | \sigma_{< i}) =$ neural network conditional probability distribution of qubit $i$
 
 The transformer encoder represents the Rydberg Hamiltonian with a sequence. <br/>
 The transformer decoder represents the corresponding ground state wavefunction.
