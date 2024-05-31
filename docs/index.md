@@ -22,16 +22,17 @@ $$
 - $\hat{n}_i =$ number operator at qubit $i$
 - $\delta =$ detuning at qubit $i$
 - $\Omega =$ Rabi frequency at qubit $i$
+- $\beta =$ Inverse temperature of system
 
 ### Transformer
 
 Vanilla transformer architecture taken from [Attention is All You Need](https://arxiv.org/pdf/1706.03762.pdf).
 
-![Architecture](resource/architectureV1.jpg)
+![Architecture](resource/architecture.png)
 
-- $H_i = \mathrm{GraphNN}(\mathrm{edges} = V_{ij} \ ; \mathrm{nodes}= \{ \Omega, \Delta, R_b, \beta \}_i)$
+- $\mathbf{x} =$ experimental settings
 - $\sigma_i =$ one-hot encoding of measured qubit $i$
-- $P_i = P(\sigma_i | \sigma_{< i}) =$ conditional probability distribution of qubit $i$
+- $p_{\theta}(\sigma_i | \sigma_{< i}) =$ neural network conditional probability distribution of qubit $i$
 
 
 The transformer encoder represents the Rydberg Hamiltonian with a sequence. <br/>
