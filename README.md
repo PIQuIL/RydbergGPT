@@ -68,7 +68,7 @@ Here, $V_{ij}$ = blockade interaction strength between atoms $i$ and $j$, $R_b$ 
 
 Vanilla transformer architecture taken from [Attention is All You Need](https://arxiv.org/pdf/1706.03762.pdf).
 
-![Architecture](https://github.com/PIQuIL/RydbergGPT/blob/main/docs/resource/architecture.png)
+<img src="https://github.com/PIQuIL/RydbergGPT/blob/main/docs/resource/architecture.png" width="600" />
 
 - $\mathbf{x} =$ experimental settings
 - $\sigma_i =$ one-hot encoding of measured qubit $i$
