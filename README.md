@@ -78,13 +78,12 @@ The transformer encoder represents the Rydberg Hamiltonian with a sequence. <br/
 The transformer decoder represents the corresponding ground state wavefunction.
 
 ### Data <a name="data"></a>
-Consider setting $\Omega = 4.24$ and varying the other Hamiltonian parameters independently :
+Consider setting $\Omega = 1$ and varying the other Hamiltonian parameters independently :
 ```math
 \begin{align}
-L &= [5, 6, 11, 12, 15, 16, 19, 20] \\
-\Delta &= [-1.545, -0.545, 3.955, 4.455, 4.955, 5.455, 6.455, 7.455, 12.455, 13.455] \\
-R_b &= [1.05, 1.15, 1.3] \\
-\beta &= [0.5, 1, 2, 4, 8, 16, 32, 48, 64]
+L &= [5, 6, 11, 12, 15, 16] \\
+\delta / \Omega &= [-0.36, -0.13, 0.93, 1.05, 1.17, 1.29, 1.52, 1.76, 2.94, 3.17] \\
+R_b / a &= [1.05, 1.15, 1.3] \\
+\beta \Omega &= [0.5, 1, 2, 4, 8, 16, 32, 48, 64]
 \end{align}
 ```
-There are a total of `8 x 10 x 3 x 9 = 2160` configurations (see [table](https://github.com/PIQuIL/RydbergGPT/blob/main/resources/Generated_training_data.md)).
