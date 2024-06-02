@@ -35,4 +35,3 @@ $$
 $$
 \beta \Omega = [0.5, 1, 2, 4, 8, 16, 32, 48, 64]
 $$
-There are a total of `8 x 10 x 3 x 9 = 2160` configurations.
