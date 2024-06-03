@@ -1,5 +1,5 @@
 # RydbergGPT
-A large language model (LLM) for Rydberg atom array physics.
+A large language model (LLM) for Rydberg atom array physics. Manuscript available on [arXiv](https://arxiv.org/abs/2405.21052).
 
 ## Architecture 
 
