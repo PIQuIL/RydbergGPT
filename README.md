@@ -1,7 +1,7 @@
 <!-- [![Python package](https://github.com/PIQuIL/RydbergGPT/actions/workflows/python-package.yml/badge.svg)](https://github.com/PIQuIL/RydbergGPT/actions/workflows/python-package.yml) -->
 
 # RydbergGPT
-A large language model (LLM) for Rydberg atom array physics.
+A large language model (LLM) for Rydberg atom array physics. Manuscript available on [arXiv](https://arxiv.org/abs/2405.21052).
 
 ## Table of contents
 - [Quick Start](#quickstart) <br/>
