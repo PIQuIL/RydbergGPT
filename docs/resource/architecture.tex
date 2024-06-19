@@ -139,7 +139,7 @@
     \node [align=center,anchor=south, rectangle, fill=MCyan100, draw, rounded corners=0.5cm, minimum height=1cm, minimum width=4cm] (dec_ffnn) at ($(dec_mha_cross.north) + (0,1)$) {FFNN};
 
 
-    \node (output2) at($(tfdec.north) + (0,1)$) {\Large $p_\theta(\boldsymbol{\sigma}) = \{ p_\theta(\sigma_1), p_\theta(\sigma_2|\sigma_1),...,p_\theta(\sigma_N|\sigma_{<N}) \}$};
+    \node (output2) at($(tfdec.north) + (0,1)$) {\Large $p_\theta(\boldsymbol{\sigma}) = p_\theta(\sigma_1)p_\theta(\sigma_2|\sigma_1)...p_\theta(\sigma_N|\sigma_{<N})$};
 
     \draw [-stealth,line width=2] (input2) -- (dec_emb);
     \draw [-stealth,line width=2] (dec_emb) -- (dec_posemb);
