@@ -87,4 +87,4 @@ R_b / a &= [1.05, 1.15, 1.3] \\
 \beta \Omega &= [0.5, 1, 2, 4, 8, 16, 32, 48, 64]
 \end{align}
 ```
-Data available on [pennylane datasets](https://pennylane.ai/datasets/other/rydberggpt)
+Data available on [Pennylane Datasets](https://pennylane.ai/datasets/other/rydberggpt)
